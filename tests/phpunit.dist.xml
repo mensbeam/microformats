@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<phpunit 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+    colors="true"
+    bootstrap="bootstrap.php"
+    convertErrorsToExceptions="false"
+    convertNoticesToExceptions="false"
+    convertWarningsToExceptions="false"
+    beStrictAboutTestsThatDoNotTestAnything="true"
+    beStrictAboutOutputDuringTests="true"
+    forceCoversAnnotation="true"
+    executionOrder="defects"
+>
+
+
+<coverage processUncoveredFiles="true">
+    <include>
+        <directory suffix=".php">../lib</directory>
+    </include>
+</coverage>
+<testsuites>
+</testsuites>
+</phpunit>

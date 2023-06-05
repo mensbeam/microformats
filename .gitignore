@@ -1,0 +1,44 @@
+# Temporary files
+
+/tests/coverage/
+/.php_cs.cache
+/.php-cs-fixer.cache
+/tests/.phpunit.result.cache
+
+# Dependencies
+
+/vendor/
+/vendor-bin/*/vendor
+
+# Windows files
+
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+
+# macOS files
+
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+
+# archives
+
+*.zip
+*.7z
+*.tar.gz
+*.tar.xz
+*.tgz
+*.deb
+*.rpm
+*.dmg
+*.cab
+*.msi
+*.msm
+*.msp

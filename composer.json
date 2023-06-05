@@ -1,0 +1,48 @@
+{
+    "name": "mensbeam/microformats",
+    "type": "library",
+    "description": "A microformats parser",
+    "keywords": ["microformats", "mf2"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "J. King",
+            "email": "jking@jkingweb.ca",
+            "homepage": "https://jkingweb.ca/"
+        }
+
+    ],
+    "require": {
+        "php": ">=7.1",
+        "ext-json": "*",
+        "ext-dom": "*"
+    },
+    "require-dev": {
+        "bamarni/composer-bin-plugin": "*"
+    },
+    "config": {
+        "platform": {
+            "php": "7.3.33"
+        },
+        "allow-plugins": {
+            "bamarni/composer-bin-plugin": true
+        }
+    },
+    "extra": {
+        "bamarni-bin": {
+            "bin-links": false,
+            "forward-command": true
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "MensBeam\\Microformats\\": "lib/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "MensBeam\\Microformats\\Test\\": "tests/lib/",
+            "MensBeam\\Microformats\\TestCase\\": "tests/cases/"
+        }
+    }
+}
