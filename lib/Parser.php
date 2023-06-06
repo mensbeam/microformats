@@ -8,9 +8,20 @@ declare(strict_types=1);
 namespace MensBeam\Microformats;
 
 class Parser {
+    protected const BACKCOMPAT_ROOTS = [
+        'adr'               => "h-adr",
+        'vcard'             => "h-card",
+        'hentry'            => "h-entry",
+        'vevent'            => "h-event",
+        'geo'               => "h-geo",
+        'hproduct'          => "h-product",
+        'hrecipe'           => "h-recipe",
+        'hresume'           => "h-resume",
+        'hreview'           => "h-review",
+        'hreview-aggregate' => "h-review-aggregate",
+    ];
     protected $rootNode;
     protected $baseUrl;
-    protected $out;
 
     /** Parses a DOMElement for microformats
      * 
@@ -21,49 +32,76 @@ class Parser {
         $this->rootNode = $node;
         $this->baseUrl = $baseUrl;
         # start with an empty JSON "items" array and "rels" & "rel-urls" hashes:
-        $this->out = [
+        $out = [
             'items'    => [],
             'rels'     => [],
             'rel-urls' => [],
         ];
         # parse the root element for class microformats, adding to the JSON items array accordingly
         while ($node) {
-            [$node, $item] = $this->parseRoot($node);
+            # parse element class for root class name(s) "h-*" and if none, backcompat root classes
+            $classes = $this->parseClasses($node);
+            if ($types = $this->matchRootsMf2($classes)) {
+                $item = $this->parseMf2($node, $types); 
+            } elseif ($types = $this->matchRootsBackcompat($classes)) {
+                $item = $this->parseBackcompat($node, $types); 
+            }
             if ($item) {
-                $this->out[] = $item;
+                $out[] = $item;
+                $node = $this->nextNode($node, $this->rootNode, false);
+            } else {
+                $node = $this->nextNode($node, $this->rootNode, true);
             }
         }
 
-        return $this->out;
+        // TODO: clean up instance properties
+        return $out;
     }
 
-    protected function parseRoot(\DOMElement $root): array {
-        $node = $root;
-        # parse element class for root class name(s) "h-*" and if none, backcompat root classes
-        $classes = preg_split("[ \r\n\t\f]+", $node->getAttribute("class"));
-        $types = array_filter($classes, function($c) {
-            // exclude Tailwind classes https://tailwindcss.com/docs/height
-            return substr($c, 0, 2) === "h-" && !preg_match('/^h-(?:\d+(?:\.\d+|\/\d+)?|px|auto|full|screen|min|max|fit|\[[^\]]*\])$/', $c);
-        });
-        if ($types) {
-            return $this->parseMf2($node, $types); 
+    protected function parseClasses(\DOMElement $node): array {
+        $attr = trim($node->getAttribute("class"), " \r\n\t\f");
+        if ($attr !== "") {
+            return preg_split("/[ \r\n\t\f]+/sS", $attr);
+        } else {
+            return [];
         }
-        // find backcompat classes
+    }
+
+    protected function matchRootsMf2(array $classes): array {
+        return array_filter($classes, function($c) {
+            # The "*" for root (and property) class names consists of an
+            #   optional vendor prefix (series of 1+ number or lowercase
+            #   a-z characters i.e. [0-9a-z]+, followed by '-'), then one
+            #   or more '-' separated lowercase a-z words.
+            // exclude Tailwind classes https://tailwindcss.com/docs/height
+            return preg_match('/^h(?:-[a-z0-9]+)?(?:-[a-z]+)+$/S', $c) && !preg_match('/^h-(?:px|auto|full|screen|min|max|fit)$/S', $c);
+        });
+    }
+
+    protected function matchRootsBackcompat(array $classes): array {
+        $out = [];
+        foreach ($classes as $c) {
+            if ($compat = self::BACKCOMPAT_ROOTS[$c] ?? null) {
+                $out[] = $compat;
+            }
+        }
+        return $out;
     }
 
     /** Finds the next node in tree order after $node, if any
      * 
      * @param \DOMNode $node The context node
+     * @param \DOMElement $root The element to consider the contextual root of the tree
      * @param bool $considerChildren Whether or not child nodes are valid next nodes
      */
-    protected function nextNode(\DOMNode $node, bool $considerChildren): ?\DOMNode {
-        if ($node->hasChildNodes() && $considerChildren) {
+    protected function nextNode(\DOMNode $node, \DOMElement $root, bool $considerChildren): ?\DOMNode {
+        if ($considerChildren && $node->localName !== "template" && $node->hasChildNodes()) {
             return $node->firstChild;
         }
         $next = $node->nextSibling;
         while (!$next) {
             $node = $node->parentNode;
-            if ($node->isSameNode($this->rootNode)) {
+            if ($node->isSameNode($root)) {
                 return null;
             }
             $next = $node->nextSibling;
