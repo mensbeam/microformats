@@ -67,7 +67,16 @@ class Parser {
             'tz'                => ["p-tz"],
             'rev'               => ["dt-rev"],
         ],
-        'h-entry'            => [],
+        'h-entry'            => [
+            // NOTE: h-entry mapping requires special handling beyond what is listed here
+            'entry-title'   => ["p-name"],
+            'entry-summary' => ["p-summary"],
+            'entry-content' => ["e-content"],
+            'published'     => ["dt-published"],
+            'updated'       => ["dt-updated"],
+            'author'        => ["p-author", "vcard"],
+            'category'      => ["p-category"],
+        ],
         'h-event'            => [],
         'h-geo'              => [],
         'h-product'          => [],
@@ -120,7 +129,7 @@ class Parser {
     protected function parseClasses(\DOMElement $node): array {
         $attr = trim($node->getAttribute("class"), " \r\n\t\f");
         if ($attr !== "") {
-            return preg_split("/[ \r\n\t\f]+/sS", $attr);
+            return array_unique(preg_split("/[ \r\n\t\f]+/sS", $attr));
         } else {
             return [];
         }
@@ -153,8 +162,8 @@ class Parser {
         # create a new { } structure
         $out = [
             # type: [array of unique microformat "h-*" type(s) on the element sorted alphabetically]
-            // NOTE: sorting will be done below
-            'type' => array_unique($types),
+            // NOTE: sorting will be done below; uniqueness was already computed when classes were parsed
+            'type' => $types,
             # properties: { } - to be filled in when that element itself is parsed for microformats properties
             'properties' => [],
             # if the element has a non-empty id attribute:
@@ -169,9 +178,16 @@ class Parser {
         while ($node = $this->nextElement($node ?? $root, $root, !($isRoot = $isRoot ?? false))) {
             $isRoot = false;
             $classes = $this->parseClasses($node);
-            # if parsing a backcompat root, parse child element class name(s) for backcompat properties
-            # else parse a child element class for property class name(s) "p-*,u-*,dt-*,e-*"
-            $properties = $backcompat ? $this->matchPropsBackcompat($classes, $out['type']) : $this->matchPropsMf2($classes);
+            if ($backcompat) {
+                # if parsing a backcompat root, parse child element class name(s) for backcompat properties
+                // we do this by substituting the real class list for a mapped
+                //   one and later filling in special properties when needed
+                $classes = $this->mapClassesBackcompat($node, $out['type']);
+            } else {
+                # else parse a child element class for property class name(s) "p-*,u-*,dt-*,e-*"
+                $classes = $this->parseClasses($node);
+            }
+            $properties = $this->matchPropsMf2($classes);
             # if such class(es) are found, it is a property element
             # add properties found to current microformat's properties: { } structure
             foreach ($properties as [$pType, $pName]) {
@@ -205,6 +221,14 @@ class Parser {
             }
         }
         return $out;
+    }
+
+    protected function mapClassesBackcompat(\DOMElement $node, array $types): array {
+        $out = [];
+        $classes = $this->parseClasses($node);
+        foreach ($classes as $c) {
+        }
+
     }
 
     /** Finds the next node in tree order after $node, if any
