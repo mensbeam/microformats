@@ -11,6 +11,7 @@ class Parser {
     protected const BACKCOMPAT_ROOTS = [
         'adr'               => "h-adr",
         'vcard'             => "h-card",
+        'hfeed'             => "h-feed",
         'hentry'            => "h-entry",
         'vevent'            => "h-event",
         'geo'               => "h-geo",
@@ -67,6 +68,9 @@ class Parser {
             'tz'                => ["p-tz"],
             'rev'               => ["dt-rev"],
         ],
+        'h-feed'             => [
+            // NOTE: h-feed mapping requires special handling beyond what is listed here
+        ],
         'h-entry'            => [
             // NOTE: h-entry mapping requires special handling beyond what is listed here
             'entry-title'   => ["p-name"],
@@ -77,14 +81,79 @@ class Parser {
             'author'        => ["p-author", "vcard"],
             'category'      => ["p-category"],
         ],
-        'h-event'            => [],
-        'h-geo'              => [],
-        'h-product'          => [],
-        'h-recipe'           => [],
-        'h-resume'           => [],
-        'h-review'           => [],
-        'h-review-aggregate' => [],
-
+        'h-event'            => [
+            'summary'     => ["p-name"],
+            'dtstart'     => ["dt-start"],
+            'dtend'       => ["dt-end"],
+            'duration'    => ["dt-duration"],
+            'description' => ["p-description"],
+            'url'         => ["u-url"],
+            'category'    => ["p-category"],
+            'location'    => ["p-location", "vcard", "adr"],
+            'geo'         => ["p-geo", "geo"],
+            'latitude'    => ["p-latitude"],
+            'longitude'   => ["p-longitude"],
+        ],
+        'h-geo'              => [
+            'latitude'  => ["p-latitude"],
+            'longitude' => ["p-longitude"],
+        ],
+        'h-product'          => [
+            'fn'          => ["p-name"],
+            'photo'       => ["u-photo"],
+            'brand'       => ["p-brand"],
+            'category'    => ["p-category"],
+            'description' => ["p-description"],
+            'identifier'  => ["u-identifier"],
+            'url'         => ["u-url"],
+            'review'      => ["p-review", "hreview"],
+            'price'       => ["p-price"],
+        ],
+        'h-recipe'           => [
+            'fn'           => ["p-name"],
+            'ingredient'   => ["p-ingredient"],
+            'yield'        => ["p-yield"],
+            'instructions' => ["e-instructions"],
+            'duration'     => ["dt-duration"],
+            'photo'        => ["u-photo"],
+            'summary'      => ["p-summary"],
+            'author'       => ["p-author", "vcard"],
+            'nutrition'    => ["p-nutrition"],
+            'published'    => ["dt-published"],
+        ],
+        'h-resume'           => [
+            'summary'     => ["p-summary"],
+            'contact'     => ["p-contact", "vcard"],
+            'education'   => ["p-education", "vevent"],
+            'experience'  => ["p-experience", "vevent"],
+            'skill'       => ["p-skill"],
+            'affiliation' => ["p-affiliation", "vcard"],
+        ],
+        'h-review'           => [
+            // NOTE: h-review mapping requires special handling beyond what is listed here
+            'summary' => ["p-name"],
+            //fn - parse as p-name of the item being reviewed (p-item h-item p-name)
+            //photo - parse as u-photo of the item being reviewed (p-item h-item u-photo)
+            //url - parse as u-url of the item being reviewed (p-item h-item u-url)
+            'reviewer' => ["p-reviewer", "vcard"],
+            'dtreviewed' => ["dt-reviewed"],
+            'rating' => ["p-rating"],
+            'best' => ["p-best"],
+            'worst' => ["p-worst"],
+            'description' => ["e-description"],
+        ],
+        'h-review-aggregate' => [
+            // NOTE: h-review-aggregate mapping requires special handling beyond what is listed here
+            'summary' => ["p-name"],
+            //fn - parse as p-name of the item being reviewed (p-item h-item p-name)
+            //photo - parse as u-photo of the item being reviewed (p-item h-item u-photo)
+            //url - parse as u-url of the item being reviewed (p-item h-item u-url)
+            'rating' => ["p-rating"],
+            'best' => ["p-best"],
+            'worst' => ["p-worst"],
+            'count' => ["p-count"],
+            'votes' => ["p-votes"],
+        ],
     ];
 
     protected $rootNode;
