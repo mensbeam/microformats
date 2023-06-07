@@ -131,15 +131,15 @@ class Parser {
         ],
         'h-review'           => [
             // NOTE: h-review mapping requires special handling beyond what is listed here
-            'summary' => ["p-name"],
+            'summary'     => ["p-name"],
             //fn - parse as p-name of the item being reviewed (p-item h-item p-name)
             //photo - parse as u-photo of the item being reviewed (p-item h-item u-photo)
             //url - parse as u-url of the item being reviewed (p-item h-item u-url)
-            'reviewer' => ["p-reviewer", "vcard"],
-            'dtreviewed' => ["dt-reviewed"],
-            'rating' => ["p-rating"],
-            'best' => ["p-best"],
-            'worst' => ["p-worst"],
+            'reviewer'    => ["p-reviewer", "vcard"],
+            'dtreviewed'  => ["dt-reviewed"],
+            'rating'      => ["p-rating"],
+            'best'        => ["p-best"],
+            'worst'       => ["p-worst"],
             'description' => ["e-description"],
         ],
         'h-review-aggregate' => [
@@ -148,11 +148,11 @@ class Parser {
             //fn - parse as p-name of the item being reviewed (p-item h-item p-name)
             //photo - parse as u-photo of the item being reviewed (p-item h-item u-photo)
             //url - parse as u-url of the item being reviewed (p-item h-item u-url)
-            'rating' => ["p-rating"],
-            'best' => ["p-best"],
-            'worst' => ["p-worst"],
-            'count' => ["p-count"],
-            'votes' => ["p-votes"],
+            'rating'  => ["p-rating"],
+            'best'    => ["p-best"],
+            'worst'   => ["p-worst"],
+            'count'   => ["p-count"],
+            'votes'   => ["p-votes"],
         ],
     ];
 
@@ -247,14 +247,12 @@ class Parser {
         while ($node = $this->nextElement($node ?? $root, $root, !($isRoot = $isRoot ?? false))) {
             $isRoot = false;
             $classes = $this->parseClasses($node);
+            # if parsing a backcompat root, parse child element class name(s) for backcompat properties
+            # else parse a child element class for property class name(s) "p-*,u-*,dt-*,e-*"
+            // we do this by substituting the real class list for a mapped
+            //   one and later filling in special properties when needed
             if ($backcompat) {
-                # if parsing a backcompat root, parse child element class name(s) for backcompat properties
-                // we do this by substituting the real class list for a mapped
-                //   one and later filling in special properties when needed
-                $classes = $this->mapClassesBackcompat($node, $out['type']);
-            } else {
-                # else parse a child element class for property class name(s) "p-*,u-*,dt-*,e-*"
-                $classes = $this->parseClasses($node);
+                $classes = $this->mapClassesBackcompat($classes, $out['type']);
             }
             $properties = $this->matchPropsMf2($classes);
             # if such class(es) are found, it is a property element
@@ -292,12 +290,25 @@ class Parser {
         return $out;
     }
 
-    protected function mapClassesBackcompat(\DOMElement $node, array $types): array {
+    /** Maps backcompat classes to their v2 equivalents, discarding anything else
+     * 
+     * Because v2 sub-roots are also acceptable when processing a backcompat
+     * root, these are also retained
+     */
+    protected function mapClassesBackcompat(array $classes, array $types): array {
         $out = [];
-        $classes = $this->parseClasses($node);
         foreach ($classes as $c) {
+            foreach ($types as $t) {
+                if (($map = static::BACKCOMPAT_PROPERTIES[$t][$c] ?? null) !== null) {
+                    array_push($out, ...$map);
+                    break;
+                }
+            }
         }
-
+        if ($roots = $this->matchRootsMf2($classes)) {
+            array_push($out, ...$roots);
+        }
+        return array_unique($out);
     }
 
     /** Finds the next node in tree order after $node, if any
