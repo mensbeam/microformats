@@ -254,14 +254,14 @@ class Parser {
             if ($backcompat) {
                 $classes = $this->mapClassesBackcompat($classes, $out['type']);
             }
-            $properties = $this->matchPropsMf2($classes);
+            $properties = $this->parseProperties($node, $classes, $backcompat, $types);
             # if such class(es) are found, it is a property element
             # add properties found to current microformat's properties: { } structure
-            foreach ($properties as [$pType, $pName]) {
-                if (!isset($out['properties'][$pName])) {
-                    $out['properties'][$pName] = [];
+            foreach ($properties as $k => $v) {
+                if (!isset($out['properties'][$k])) {
+                    $out['properties'][$k] = [];
                 }
-                $out['properties'][$pName][] = $this->parseProperty($node, $pType, $pName);
+                array_push($out['properties'][$k], ...$v);
             }
             # parse a child element for microformats (recurse)
             $child = null;
@@ -274,6 +274,9 @@ class Parser {
                 $isRoot = true;
             }
         }
+    }
+
+    protected function parseProperties(\DOMElement $node, array $classes, bool $backcompat, array $types): array {
     }
 
     protected function matchPropsMf2(array $classes): array {
