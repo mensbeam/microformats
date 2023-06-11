@@ -23,140 +23,133 @@ class Parser {
     ];
     protected const BACKCOMPAT_PROPERTIES = [
         'h-adr'              => [
-            'post-office-box'  => ["p-post-office-box"],
-            'extended-address' => ["p-extended-address"],
-            'street-address'   => ["p-street-address"],
-            'locality'         => ["p-locality"],
-            'region'           => ["p-region"],
-            'postal-code'      => ["p-postal-code"],
-            'country-name'     => ["p-country-name"],
+            'post-office-box'  => ["p", "post-office-box"],
+            'extended-address' => ["p", "extended-address"],
+            'street-address'   => ["p", "street-address"],
+            'locality'         => ["p", "locality"],
+            'region'           => ["p", "region"],
+            'postal-code'      => ["p", "postal-code"],
+            'country-name'     => ["p", "country-name"],
         ],
         'h-card'             => [
-            'fn'                => ["p-name"],
-            'honorific-prefix'  => ["p-honorific-prefix"],
-            'given-name'        => ["p-given-name"],
-            'additional-name'   => ["p-additional-name"],
-            'family-name'       => ["p-family-name"],
-            'honorific-suffix'  => ["p-honorific-suffix"],
-            'nickname'          => ["p-nickname"],
-            'email'             => ["u-email"],
-            'logo'              => ["u-logo"],
-            'photo'             => ["u-photo"],
-            'url'               => ["u-url"],
-            'uid'               => ["u-uid"],
-            'category'          => ["p-category"],
-            'adr'               => ["p-adr", "adr"],
-            'extended-address'  => ["p-extended-address"],
-            'street-address'    => ["p-street-address"],
-            'locality'          => ["p-locality"],
-            'region'            => ["p-region"],
-            'postal-code'       => ["p-postal-code"],
-            'country-name'      => ["p-country-name"],
-            'label'             => ["p-label"],
-            'geo'               => ["p-geo", "geo"],
-            'latitude'          => ["p-latitude"],
-            'longitude'         => ["p-longitude"],
-            'tel'               => ["p-tel"],
-            'note'              => ["p-note"],
-            'bday'              => ["dt-bday"],
-            'key'               => ["u-key"],
-            'org'               => ["p-org"],
-            'organization-name' => ["p-organization-name"],
-            'organization-unit' => ["p-organization-unit"],
-            'title'             => ["p-job-title"],
-            'role'              => ["p-role"],
-            'tz'                => ["p-tz"],
-            'rev'               => ["dt-rev"],
+            'fn'                => ["p", "name"],
+            'honorific-prefix'  => ["p", "honorific-prefix"],
+            'given-name'        => ["p", "given-name"],
+            'additional-name'   => ["p", "additional-name"],
+            'family-name'       => ["p", "family-name"],
+            'honorific-suffix'  => ["p", "honorific-suffix"],
+            'nickname'          => ["p", "nickname"],
+            'email'             => ["u", "email"],
+            'logo'              => ["u", "logo"],
+            'photo'             => ["u", "photo"],
+            'url'               => ["u", "url"],
+            'uid'               => ["u", "uid"],
+            'category'          => ["p", "category"],
+            'adr'               => ["p", "adr"],
+            'extended-address'  => ["p", "extended-address"],
+            'street-address'    => ["p", "street-address"],
+            'locality'          => ["p", "locality"],
+            'region'            => ["p", "region"],
+            'postal-code'       => ["p", "postal-code"],
+            'country-name'      => ["p", "country-name"],
+            'label'             => ["p", "label"],
+            'geo'               => ["p", "geo"],
+            'latitude'          => ["p", "latitude"],
+            'longitude'         => ["p", "longitude"],
+            'tel'               => ["p", "tel"],
+            'note'              => ["p", "note"],
+            'bday'              => ["dt", "bday"],
+            'key'               => ["u", "key"],
+            'org'               => ["p", "org"],
+            'organization-name' => ["p", "organization-name"],
+            'organization-unit' => ["p", "organization-unit"],
+            'title'             => ["p", "job-title"],
+            'role'              => ["p", "role"],
+            'tz'                => ["p", "tz"],
+            'rev'               => ["dt", "rev"],
         ],
         'h-feed'             => [
             // NOTE: h-feed mapping requires special handling beyond what is listed here
         ],
         'h-entry'            => [
             // NOTE: h-entry mapping requires special handling beyond what is listed here
-            'entry-title'   => ["p-name"],
-            'entry-summary' => ["p-summary"],
-            'entry-content' => ["e-content"],
-            'published'     => ["dt-published"],
-            'updated'       => ["dt-updated"],
-            'author'        => ["p-author", "vcard"],
-            'category'      => ["p-category"],
+            'entry-title'   => ["p", "name"],
+            'entry-summary' => ["p", "summary"],
+            'entry-content' => ["e", "content"],
+            'published'     => ["dt", "published"],
+            'updated'       => ["dt", "updated"],
+            'author'        => ["p", "author"],
+            'category'      => ["p", "category"],
         ],
         'h-event'            => [
-            'summary'     => ["p-name"],
-            'dtstart'     => ["dt-start"],
-            'dtend'       => ["dt-end"],
-            'duration'    => ["dt-duration"],
-            'description' => ["p-description"],
-            'url'         => ["u-url"],
-            'category'    => ["p-category"],
-            'location'    => ["p-location", "vcard", "adr"],
-            'geo'         => ["p-geo", "geo"],
-            'latitude'    => ["p-latitude"],
-            'longitude'   => ["p-longitude"],
+            'summary'     => ["p", "name"],
+            'dtstart'     => ["dt", "start"],
+            'dtend'       => ["dt", "end"],
+            'duration'    => ["dt", "duration"],
+            'description' => ["p", "description"],
+            'url'         => ["u", "url"],
+            'category'    => ["p", "category"],
+            'location'    => ["p", "location"],
+            'geo'         => ["p", "geo"],
+            'latitude'    => ["p", "latitude"],
+            'longitude'   => ["p", "longitude"],
         ],
         'h-geo'              => [
-            'latitude'  => ["p-latitude"],
-            'longitude' => ["p-longitude"],
+            'latitude'  => ["p", "latitude"],
+            'longitude' => ["p", "longitude"],
         ],
         'h-product'          => [
-            'fn'          => ["p-name"],
-            'photo'       => ["u-photo"],
-            'brand'       => ["p-brand"],
-            'category'    => ["p-category"],
-            'description' => ["p-description"],
-            'identifier'  => ["u-identifier"],
-            'url'         => ["u-url"],
-            'review'      => ["p-review", "hreview"],
-            'price'       => ["p-price"],
+            'fn'          => ["p", "name"],
+            'photo'       => ["u", "photo"],
+            'brand'       => ["p", "brand"],
+            'category'    => ["p", "category"],
+            'description' => ["p", "description"],
+            'identifier'  => ["u", "identifier"],
+            'url'         => ["u", "url"],
+            'review'      => ["p", "review"],
+            'price'       => ["p", "price"],
         ],
         'h-recipe'           => [
-            'fn'           => ["p-name"],
-            'ingredient'   => ["p-ingredient"],
-            'yield'        => ["p-yield"],
-            'instructions' => ["e-instructions"],
-            'duration'     => ["dt-duration"],
-            'photo'        => ["u-photo"],
-            'summary'      => ["p-summary"],
-            'author'       => ["p-author", "vcard"],
-            'nutrition'    => ["p-nutrition"],
-            'published'    => ["dt-published"],
+            'fn'           => ["p", "name"],
+            'ingredient'   => ["p", "ingredient"],
+            'yield'        => ["p", "yield"],
+            'instructions' => ["e", "instructions"],
+            'duration'     => ["dt", "duration"],
+            'photo'        => ["u", "photo"],
+            'summary'      => ["p", "summary"],
+            'author'       => ["p", "author"],
+            'nutrition'    => ["p", "nutrition"],
+            'published'    => ["dt", "published"],
         ],
         'h-resume'           => [
-            'summary'     => ["p-summary"],
-            'contact'     => ["p-contact", "vcard"],
-            'education'   => ["p-education", "vevent"],
-            'experience'  => ["p-experience", "vevent"],
-            'skill'       => ["p-skill"],
-            'affiliation' => ["p-affiliation", "vcard"],
+            'summary'     => ["p", "summary"],
+            'contact'     => ["p", "contact"],
+            'education'   => ["p", "education"],
+            'experience'  => ["p", "experience"],
+            'skill'       => ["p", "skill"],
+            'affiliation' => ["p", "affiliation"],
         ],
         'h-review'           => [
             // NOTE: h-review mapping requires special handling beyond what is listed here
-            'summary'     => ["p-name"],
-            //fn - parse as p-name of the item being reviewed (p-item h-item p-name)
-            //photo - parse as u-photo of the item being reviewed (p-item h-item u-photo)
-            //url - parse as u-url of the item being reviewed (p-item h-item u-url)
-            'reviewer'    => ["p-reviewer", "vcard"],
-            'dtreviewed'  => ["dt-reviewed"],
-            'rating'      => ["p-rating"],
-            'best'        => ["p-best"],
-            'worst'       => ["p-worst"],
-            'description' => ["e-description"],
+            'summary'     => ["p", "name"],
+            'reviewer'    => ["p", "reviewer"],
+            'dtreviewed'  => ["dt", "reviewed"],
+            'rating'      => ["p", "rating"],
+            'best'        => ["p", "best"],
+            'worst'       => ["p", "worst"],
+            'description' => ["e", "description"],
         ],
         'h-review-aggregate' => [
             // NOTE: h-review-aggregate mapping requires special handling beyond what is listed here
-            'summary' => ["p-name"],
-            //fn - parse as p-name of the item being reviewed (p-item h-item p-name)
-            //photo - parse as u-photo of the item being reviewed (p-item h-item u-photo)
-            //url - parse as u-url of the item being reviewed (p-item h-item u-url)
-            'rating'  => ["p-rating"],
-            'best'    => ["p-best"],
-            'worst'   => ["p-worst"],
-            'count'   => ["p-count"],
-            'votes'   => ["p-votes"],
+            'summary' => ["p", "name"],
+            'rating'  => ["p", "rating"],
+            'best'    => ["p", "best"],
+            'worst'   => ["p", "worst"],
+            'count'   => ["p", "count"],
+            'votes'   => ["p", "votes"],
         ],
     ];
 
-    protected $rootNode;
     protected $baseUrl;
 
     /** Parses a DOMElement for microformats
@@ -247,14 +240,13 @@ class Parser {
         while ($node = $this->nextElement($node ?? $root, $root, !($isRoot = $isRoot ?? false))) {
             $isRoot = false;
             $classes = $this->parseClasses($node);
-            # if parsing a backcompat root, parse child element class name(s) for backcompat properties
-            # else parse a child element class for property class name(s) "p-*,u-*,dt-*,e-*"
-            // we do this by substituting the real class list for a mapped
-            //   one and later filling in special properties when needed
             if ($backcompat) {
-                $classes = $this->mapClassesBackcompat($classes, $out['type']);
+                # if parsing a backcompat root, parse child element class name(s) for backcompat properties
+                $properties = $this->parsePropertiesBackcompat($node, $classes, $types);
+            } else {
+                # else parse a child element class for property class name(s) "p-*,u-*,dt-*,e-*"
+                $properties = $this->parsePropertiesMf2($node, $classes);
             }
-            $properties = $this->parseProperties($node, $classes, $backcompat, $types);
             # if such class(es) are found, it is a property element
             # add properties found to current microformat's properties: { } structure
             foreach ($properties as $k => $v) {
@@ -276,29 +268,46 @@ class Parser {
         }
     }
 
-    protected function parseProperties(\DOMElement $node, array $classes, bool $backcompat, array $types): array {
-    }
-
-    protected function matchPropsMf2(array $classes): array {
+    protected function parsePropertiesMf2(\DOMElement $node, array $classes): array {
         $out = [];
         foreach ($classes as $c) {
             # The "*" for root (and property) class names consists of an
             #   optional vendor prefix (series of 1+ number or lowercase
             #   a-z characters i.e. [0-9a-z]+, followed by '-'), then one
             #   or more '-' separated lowercase a-z words.
-            if (preg_match('/^(p|u|dt|e)((?:-[a-z0-9]+)?(?:-[a-z]+)+)$/S', $c, $match)) {
-                $out[] = [$match[1], substr($match[2], 1)];
+            if (!preg_match('/^(p|u|dt|e)((?:-[a-z0-9]+)?(?:-[a-z]+)+)$/S', $c, $match)) {
+                continue;
             }
+            $prefix = $match[1];
+            $key = substr($match[2], 1);
+            if (!isset($out[$key])) {
+                $out[$key] = [];
+            }
+            $out[$key][] = $this->parseProperty($node, $prefix);
         }
         return $out;
     }
 
-    /** Maps backcompat classes to their v2 equivalents, discarding anything else
-     * 
-     * Because v2 sub-roots are also acceptable when processing a backcompat
-     * root, these are also retained
-     */
-    protected function mapClassesBackcompat(array $classes, array $types): array {
+    protected function parseProperty(\DOMElement $node, string $prefix) {
+        switch ($prefix) {
+            case "p":
+                // TODO
+                break;
+            case "u":
+                // TODO
+                break;
+            case "dt":
+                // TODO
+                break;
+            case "e":
+                //TODO
+                break;
+            default:
+                throw new \Exception("Unimplemented prefix $prefix");
+        }
+    }
+
+    protected function parsePropertiesBackcompat(\DOMElement $node, array &$classes, array $types): array {
         $out = [];
         foreach ($classes as $c) {
             foreach ($types as $t) {
