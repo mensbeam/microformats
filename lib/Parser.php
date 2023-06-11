@@ -22,132 +22,75 @@ class Parser {
         'hreview-aggregate' => "h-review-aggregate",
     ];
     protected const BACKCOMPAT_PROPERTIES = [
-        'h-adr'              => [
-            'post-office-box'  => ["p", "post-office-box"],
-            'extended-address' => ["p", "extended-address"],
-            'street-address'   => ["p", "street-address"],
-            'locality'         => ["p", "locality"],
-            'region'           => ["p", "region"],
-            'postal-code'      => ["p", "postal-code"],
-            'country-name'     => ["p", "country-name"],
-        ],
-        'h-card'             => [
-            'fn'                => ["p", "name"],
-            'honorific-prefix'  => ["p", "honorific-prefix"],
-            'given-name'        => ["p", "given-name"],
-            'additional-name'   => ["p", "additional-name"],
-            'family-name'       => ["p", "family-name"],
-            'honorific-suffix'  => ["p", "honorific-suffix"],
-            'nickname'          => ["p", "nickname"],
-            'email'             => ["u", "email"],
-            'logo'              => ["u", "logo"],
-            'photo'             => ["u", "photo"],
-            'url'               => ["u", "url"],
-            'uid'               => ["u", "uid"],
-            'category'          => ["p", "category"],
-            'adr'               => ["p", "adr"],
-            'extended-address'  => ["p", "extended-address"],
-            'street-address'    => ["p", "street-address"],
-            'locality'          => ["p", "locality"],
-            'region'            => ["p", "region"],
-            'postal-code'       => ["p", "postal-code"],
-            'country-name'      => ["p", "country-name"],
-            'label'             => ["p", "label"],
-            'geo'               => ["p", "geo"],
-            'latitude'          => ["p", "latitude"],
-            'longitude'         => ["p", "longitude"],
-            'tel'               => ["p", "tel"],
-            'note'              => ["p", "note"],
-            'bday'              => ["dt", "bday"],
-            'key'               => ["u", "key"],
-            'org'               => ["p", "org"],
-            'organization-name' => ["p", "organization-name"],
-            'organization-unit' => ["p", "organization-unit"],
-            'title'             => ["p", "job-title"],
-            'role'              => ["p", "role"],
-            'tz'                => ["p", "tz"],
-            'rev'               => ["dt", "rev"],
-        ],
-        'h-feed'             => [
-            // NOTE: h-feed mapping requires special handling beyond what is listed here
-        ],
-        'h-entry'            => [
-            // NOTE: h-entry mapping requires special handling beyond what is listed here
-            'entry-title'   => ["p", "name"],
-            'entry-summary' => ["p", "summary"],
-            'entry-content' => ["e", "content"],
-            'published'     => ["dt", "published"],
-            'updated'       => ["dt", "updated"],
-            'author'        => ["p", "author"],
-            'category'      => ["p", "category"],
-        ],
-        'h-event'            => [
-            'summary'     => ["p", "name"],
-            'dtstart'     => ["dt", "start"],
-            'dtend'       => ["dt", "end"],
-            'duration'    => ["dt", "duration"],
-            'description' => ["p", "description"],
-            'url'         => ["u", "url"],
-            'category'    => ["p", "category"],
-            'location'    => ["p", "location"],
-            'geo'         => ["p", "geo"],
-            'latitude'    => ["p", "latitude"],
-            'longitude'   => ["p", "longitude"],
-        ],
-        'h-geo'              => [
-            'latitude'  => ["p", "latitude"],
-            'longitude' => ["p", "longitude"],
-        ],
-        'h-product'          => [
-            'fn'          => ["p", "name"],
-            'photo'       => ["u", "photo"],
-            'brand'       => ["p", "brand"],
-            'category'    => ["p", "category"],
-            'description' => ["p", "description"],
-            'identifier'  => ["u", "identifier"],
-            'url'         => ["u", "url"],
-            'review'      => ["p", "review"],
-            'price'       => ["p", "price"],
-        ],
-        'h-recipe'           => [
-            'fn'           => ["p", "name"],
-            'ingredient'   => ["p", "ingredient"],
-            'yield'        => ["p", "yield"],
-            'instructions' => ["e", "instructions"],
-            'duration'     => ["dt", "duration"],
-            'photo'        => ["u", "photo"],
-            'summary'      => ["p", "summary"],
-            'author'       => ["p", "author"],
-            'nutrition'    => ["p", "nutrition"],
-            'published'    => ["dt", "published"],
-        ],
-        'h-resume'           => [
-            'summary'     => ["p", "summary"],
-            'contact'     => ["p", "contact"],
-            'education'   => ["p", "education"],
-            'experience'  => ["p", "experience"],
-            'skill'       => ["p", "skill"],
-            'affiliation' => ["p", "affiliation"],
-        ],
-        'h-review'           => [
-            // NOTE: h-review mapping requires special handling beyond what is listed here
-            'summary'     => ["p", "name"],
-            'reviewer'    => ["p", "reviewer"],
-            'dtreviewed'  => ["dt", "reviewed"],
-            'rating'      => ["p", "rating"],
-            'best'        => ["p", "best"],
-            'worst'       => ["p", "worst"],
-            'description' => ["e", "description"],
-        ],
-        'h-review-aggregate' => [
-            // NOTE: h-review-aggregate mapping requires special handling beyond what is listed here
-            'summary' => ["p", "name"],
-            'rating'  => ["p", "rating"],
-            'best'    => ["p", "best"],
-            'worst'   => ["p", "worst"],
-            'count'   => ["p", "count"],
-            'votes'   => ["p", "votes"],
-        ],
+        'additional-name'   => ['h-card' => ["p", "additional-name"]],
+        'adr'               => ['h-card' => ["p", "adr"]],
+        'affiliation'       => ['h-resume' => ["p", "affiliation", ["vcard"]]],
+        'author'            => ['h-entry' => ["p", "author" ["vcard"]], 'h-recipe' => ["p", "author", ["vcard"]]],
+        'bday'              => ['h-card' => ["dt", "bday"]],
+        'best'              => ['h-review' => ["p", "best"], 'h-review-aggregate' => ["p", "best"]],
+        'brand'             => ['h-product' => ["p", "brand"]],
+        'category'          => ['h-card' => ["p", "category"], 'h-entry' => ["p", "category"], 'h-event' => ["p", "category"],  'h-product' => ["p", "category"]],
+        'contact'           => ['h-resume' => ["p", "contact", ["vcard"]]],
+        'count'             => ['h-review-aggregate' => ["p", "count"]],
+        'country-name'      => ['h-adr' => ["p", "country-name"], 'h-card' => ["p", "country-name"]],
+        'description'       => ['h-event' => ["p", "description"], 'h-product' => ["p", "description"], 'h-review' => ["e", "description"]],
+        'dtend'             => ['h-event' => ["dt", "end"]],
+        'dtreviewed'        => ['h-review' => ["dt", "reviewed"]],
+        'dtstart'           => ['h-event' => ["dt", "start"]],
+        'duration'          => ['h-event' => ["dt", "duration"], 'h-recipe' => ["dt", "duration"]],
+        'education'         => ['h-resume' => ["p", "education", ["vevent"]]],
+        'email'             => ['h-card' => ["u", "email"]],
+        'entry-content'     => ['h-entry' => ["e", "content"]],
+        'entry-summary'     => ['h-entry' => ["p", "summary"]],
+        'entry-title'       => ['h-entry' => ["p", "name"]],
+        'experience'        => ['h-resume' => ["p", "experience", ["vevent"]]],
+        'extended-address'  => ['h-adr' => ["p", "extended-address"], 'h-card' => ["p", "extended-address"]],
+        'family-name'       => ['h-card' => ["p", "family-name"]],
+        'fn'                => ['h-card' => ["p", "name"], 'h-product' => ["p", "name"], 'h-recipe' => ["p", "name"]],
+        'geo'               => ['h-card' => ["p", "geo"], 'h-event' => ["p", "geo"]],
+        'given-name'        => ['h-card' => ["p", "given-name"]],
+        'honorific-prefix'  => ['h-card' => ["p", "honorific-prefix"]],
+        'honorific-suffix'  => ['h-card' => ["p", "honorific-suffix"]],
+        'identifier'        => ['h-product' => ["u", "identifier"]],
+        'ingredient'        => ['h-recipe' => ["p", "ingredient"]],
+        'instructions'      => ['h-recipe' => ["e", "instructions"]],
+        'key'               => ['h-card' => ["u", "key"]],
+        'label'             => ['h-card' => ["p", "label"]],
+        'latitude'          => ['h-card' => ["p", "latitude"], 'h-event' => ["p", "latitude"], 'h-geo' => ["p", "latitude"]],
+        'locality'          => ['h-adr' => ["p", "locality"], 'h-card' => ["p", "locality"]],
+        'location'          => ['h-event' => ["p", "location", ["adr", "vcard"]]],
+        'logo'              => ['h-card' => ["u", "logo"]],
+        'longitude'         => ['h-card' => ["p", "longitude"], 'h-event' => ["p", "longitude"], 'h-geo' => ["p", "longitude"]],
+        'nickname'          => ['h-card' => ["p", "nickname"]],
+        'note'              => ['h-card' => ["p", "note"]],
+        'nutrition'         => ['h-recipe' => ["p", "nutrition"]],
+        'organization-name' => ['h-card' => ["p", "organization-name"]],
+        'organization-unit' => ['h-card' => ["p", "organization-unit"]],
+        'org'               => ['h-card' => ["p", "org"]],
+        'photo'             => ['h-card' => ["u", "photo"], 'h-product' => ["u", "photo"], 'h-recipe' => ["u", "photo"]],
+        'postal-code'       => ['h-adr' => ["p", "postal-code"], 'h-card' => ["p", "postal-code"]],
+        'post-office-box'   => ['h-adr' => ["p", "post-office-box"], 'h-card' => ["p", "post-office-box"]],
+        'price'             => ['h-product' => ["p", "price"]],
+        'published'         => ['h-entry' => ["dt", "published"], 'h-recipe' => ["dt", "published"]],
+        'rating'            => ['h-review' => ["p", "rating"], 'h-review-aggregate' => ["p", "rating"]],
+        'region'            => ['h-adr' => ["p", "region"], 'h-card' => ["p", "region"]],
+        'rev'               => ['h-card' => ["dt", "rev"]],
+        'reviewer'          => ['h-review' => ["p", "reviewer"]],
+        'review'            => ['h-product' => ["p", "review", ["hreview"]]],
+        'role'              => ['h-card' => ["p", "role"]],
+        'skill'             => ['h-resume' => ["p", "skill"]],
+        'street-address'    => ['h-adr' => ["p", "street-address"], 'h-card' => ["p", "street-address"]],
+        'summary'           => ['h-event' => ["p", "name"], 'h-recipe' => ["p", "summary"], 'h-resume' => ["p", "summary"], 'h-review' => ["p", "name"], 'h-review-aggregate' => ["p", "name"]],
+        'tel'               => ['h-card' => ["p", "tel"]],
+        'title'             => ['h-card' => ["p", "job-title"]],
+        'tz'                => ['h-card' => ["p", "tz"]],
+        'uid'               => ['h-card' => ["u", "uid"]],
+        'updated'           => ['h-entry' => ["dt", "updated"]],
+        'url'               => ['h-card' => ["u", "url"], 'h-product' => ["u", "url"]],
+        'url'               => ['h-event' => ["u", "url"]],
+        'votes'             => ['h-review-aggregate' => ["p", "votes"]],
+        'worst'             => ['h-review' => ["p", "worst"], 'h-review-aggregate' => ["p", "worst"]],
+        'yield'             => ['h-recipe' => ["p", "yield"]],
     ];
 
     protected $baseUrl;
@@ -158,7 +101,7 @@ class Parser {
      * @param string $baseURL The base URL against which to resolve relative URLs in the output
      */
     public function parseNode(\DOMElement $node, string $baseUrl = ""): array {
-        $this->rootNode = $node;
+        $root = $node;
         $this->baseUrl = $baseUrl;
         # start with an empty JSON "items" array and "rels" & "rel-urls" hashes:
         $out = [
@@ -177,11 +120,11 @@ class Parser {
                 $out[] = $this->parseMicroformat($node, $types, true);
             } else {
                 # if none found, parse child elements for microformats (depth first, doc order)
-                $node = $this->nextElement($node, $this->rootNode, true);
+                $node = $this->nextElement($node, $root, true);
                 continue;
             }
             // continue to the next element, passing over children (they have already been examined)
-            $node = $this->nextElement($node, $this->rootNode, false);
+            $node = $this->nextElement($node, $root, false);
         }
 
         // TODO: clean up instance properties
@@ -288,14 +231,49 @@ class Parser {
         return $out;
     }
 
+    protected function parsePropertiesBackcompat(\DOMElement $node, array &$classes, array $types): array {
+        $out = [];
+        foreach ($classes as $c) {
+            foreach ($types as $t) {
+                $map = static::BACKCOMPAT_PROPERTIES[$c][$t] ?? null;
+                if (!$map) {
+                    // TODO : handle special mapped properties
+                    continue;
+                }
+                $prefix = $map[0];
+                $key = $map[1];
+                $roots = $map[2] ?? [];
+                if (!isset($out[$key])) {
+                    $out[$key] = [];
+                }
+                $out[$key][] = $this->parseProperty($node, $prefix);
+                foreach ($roots as $r) {
+                    if (!in_array($r, $classes)) {
+                        $classes[] = $r;
+                    }
+                }
+            }
+        }
+        // TODO: handle link relations
+        return $out;
+    }
+
     protected function parseProperty(\DOMElement $node, string $prefix) {
         switch ($prefix) {
             case "p":
                 // TODO
                 break;
             case "u":
-                // TODO
-                break;
+                if (in_array($node->localName, ["a", "area", "link"]) && $node->hasAttribute("href")) {
+                    return $this->normalizeUrl($node->getAttribute("href"));
+                } elseif ($node->localName === "img" && $node->hasAttribute("src")) {
+                    // TODO
+                    return;
+                } elseif (in_array($node->localName, ["audio", "video", "source", "iframe"]) && $node->hasAttribute("src")) {
+                    return $this->normalizeUrl($node->getAttribute("src"));
+                } elseif ($node->localName === "video" && $node->hasAttribute("poster")) {
+                    return $this->normalizeUrl($node->getAttribute("href"));
+                }
             case "dt":
                 // TODO
                 break;
@@ -305,22 +283,6 @@ class Parser {
             default:
                 throw new \Exception("Unimplemented prefix $prefix");
         }
-    }
-
-    protected function parsePropertiesBackcompat(\DOMElement $node, array &$classes, array $types): array {
-        $out = [];
-        foreach ($classes as $c) {
-            foreach ($types as $t) {
-                if (($map = static::BACKCOMPAT_PROPERTIES[$t][$c] ?? null) !== null) {
-                    array_push($out, ...$map);
-                    break;
-                }
-            }
-        }
-        if ($roots = $this->matchRootsMf2($classes)) {
-            array_push($out, ...$roots);
-        }
-        return array_unique($out);
     }
 
     /** Finds the next node in tree order after $node, if any
