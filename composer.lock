@@ -4,8 +4,238 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b0a58ccd5873863e4784641715d18209",
-    "packages": [],
+    "content-hash": "aab10199e9e50dbce6d862a256a96dc7",
+    "packages": [
+        {
+            "name": "mensbeam/html-parser",
+            "version": "1.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mensbeam/HTML-Parser.git",
+                "reference": "2b8a31ce472190013faab710f6f7ad41a486a740"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mensbeam/HTML-Parser/zipball/2b8a31ce472190013faab710f6f7ad41a486a740",
+                "reference": "2b8a31ce472190013faab710f6f7ad41a486a740",
+                "shasum": ""
+            },
+            "require": {
+                "ext-dom": "*",
+                "mensbeam/intl": ">=0.9.1",
+                "mensbeam/mimesniff": ">=0.2.0",
+                "php": ">=7.1"
+            },
+            "require-dev": {
+                "bamarni/composer-bin-plugin": "^1.3"
+            },
+            "suggest": {
+                "ext-ctype": "Improved performance"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "lib/Parser/ctype.php"
+                ],
+                "psr-4": {
+                    "MensBeam\\HTML\\": [
+                        "lib/"
+                    ]
+                },
+                "classmap": [
+                    "lib/Parser/Token.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Dustin Wilson",
+                    "email": "dustin@dustinwilson.com",
+                    "homepage": "https://dustinwilson.com/"
+                },
+                {
+                    "name": "J. King",
+                    "email": "jking@jkingweb.ca",
+                    "homepage": "https://jkingweb.ca/"
+                }
+            ],
+            "description": "Parser and serializer for modern HTML documents",
+            "keywords": [
+                "HTML5",
+                "WHATWG",
+                "dom",
+                "html",
+                "parser",
+                "parsing"
+            ],
+            "support": {
+                "source": "https://github.com/mensbeam/HTML-Parser/tree/1.3.1"
+            },
+            "time": "2023-04-20T19:55:47+00:00"
+        },
+        {
+            "name": "mensbeam/intl",
+            "version": "0.9.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mensbeam/intl.git",
+                "reference": "88dbf8398ab69e71164ac073f9ec011be2baa4ae"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mensbeam/intl/zipball/88dbf8398ab69e71164ac073f9ec011be2baa4ae",
+                "reference": "88dbf8398ab69e71164ac073f9ec011be2baa4ae",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1"
+            },
+            "require-dev": {
+                "bamarni/composer-bin-plugin": "*",
+                "ext-intl": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "MensBeam\\Intl\\": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "J. King",
+                    "email": "jking@jkingweb.ca",
+                    "homepage": "https://jkingweb.ca/"
+                }
+            ],
+            "description": "A set of dependency-free basic internationalization tools",
+            "keywords": [
+                "WHATWG",
+                "charset",
+                "encoding",
+                "internationalization",
+                "intl",
+                "unicode",
+                "utf-8",
+                "utf8"
+            ],
+            "support": {
+                "issues": "https://github.com/mensbeam/intl/issues",
+                "source": "https://github.com/mensbeam/intl/tree/0.9.2"
+            },
+            "time": "2023-01-25T22:12:58+00:00"
+        },
+        {
+            "name": "mensbeam/mimesniff",
+            "version": "0.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mensbeam/mime.git",
+                "reference": "c19be2496ab1e27fbf9c3483c2a9faa2781796cd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mensbeam/mime/zipball/c19be2496ab1e27fbf9c3483c2a9faa2781796cd",
+                "reference": "c19be2496ab1e27fbf9c3483c2a9faa2781796cd",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1",
+                "psr/http-message": "^1.0"
+            },
+            "require-dev": {
+                "bamarni/composer-bin-plugin": "^1.3",
+                "ext-intl": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "MensBeam\\Mime\\": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "J. King",
+                    "email": "jking@jkingweb.ca",
+                    "homepage": "https://jkingweb.ca/"
+                }
+            ],
+            "description": "An implementation of the WHATWG MIME Sniffing specification",
+            "keywords": [
+                "WHATWG",
+                "mime",
+                "mimesniff"
+            ],
+            "support": {
+                "issues": "https://github.com/mensbeam/mime/issues",
+                "source": "https://github.com/mensbeam/mime/tree/0.2.1"
+            },
+            "time": "2021-03-07T03:58:00+00:00"
+        },
+        {
+            "name": "psr/http-message",
+            "version": "1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-message.git",
+                "reference": "cb6ce4845ce34a8ad9e68117c10ee90a29919eba"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-message/zipball/cb6ce4845ce34a8ad9e68117c10ee90a29919eba",
+                "reference": "cb6ce4845ce34a8ad9e68117c10ee90a29919eba",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2 || ^8.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Message\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP messages",
+            "homepage": "https://github.com/php-fig/http-message",
+            "keywords": [
+                "http",
+                "http-message",
+                "psr",
+                "psr-7",
+                "request",
+                "response"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/http-message/tree/1.1"
+            },
+            "time": "2023-04-04T09:50:52+00:00"
+        }
+    ],
     "packages-dev": [
         {
             "name": "bamarni/composer-bin-plugin",

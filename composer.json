@@ -15,7 +15,8 @@
     "require": {
         "php": ">=7.1",
         "ext-json": "*",
-        "ext-dom": "*"
+        "ext-dom": "*",
+        "mensbeam/html-parser": "1.*"
     },
     "require-dev": {
         "bamarni/composer-bin-plugin": "*"

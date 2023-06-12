@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace MensBeam\Microformats;
 
+use MensBeam\HTML\Parser\Serializer;
+
 class Parser {
     protected const BACKCOMPAT_ROOTS = [
         'adr'               => "h-adr",
@@ -275,46 +277,97 @@ class Parser {
                     # else if img.p-x[alt] or area.p-x[alt], then return the alt attribute
                     return $node->getAttribute("alt");
                 } else {
-                    # else return the textContent of the element after
+                    # else return the textContent of the element after [cleaning]
                     return $this->getCleanText($node, $prefix);
                 }
             case "u":
                 # To parse an element for a u-x property value (whether explicit u-* or backcompat equivalent):
                 if (in_array($node->localName, ["a", "area", "link"]) && $node->hasAttribute("href")) {
                     # if a.u-x[href] or area.u-x[href] or link.u-x[href], then get the href attribute
-                    return $this->normalizeUrl($node->getAttribute("href"));
+                    $url = $node->getAttribute("href");
                 } elseif ($node->localName === "img" && $node->hasAttribute("src")) {
                     # else if img.u-x[src] return the result of "parse an img element for src and alt" (see Sec.1.5)
                     return $this->parseImg($node);
                 } elseif (in_array($node->localName, ["audio", "video", "source", "iframe"]) && $node->hasAttribute("src")) {
                     # else if audio.u-x[src] or video.u-x[src] or source.u-x[src] or iframe.u-x[src], then get the src attribute
-                    return $this->normalizeUrl($node->getAttribute("src"));
+                    $url = $node->getAttribute("src");
                 } elseif ($node->localName === "video" && $node->hasAttribute("poster")) {
                     # else if video.u-x[poster], then get the poster attribute
-                    return $this->normalizeUrl($node->getAttribute("href"));
+                    $url = $node->getAttribute("href");
                 } elseif ($node->localName === "object" && $node->hasAttribute("data")) {
                     # else if object.u-x[data], then get the data attribute
-                    return $this->normalizeUrl($node->getAttribute("data"));
+                    $url = $node->getAttribute("data");
                 } elseif ($url = $this->getValueClassPattern($node)) {
                     # else parse the element for the Value Class Pattern. If a value is found, get it
-                    return $this->normalizeUrl($url);
+                    // Nothing to do in this branch
                 } elseif ($node->localName === "abbr" && $node->hasAttribute("title")) {
                     # else if abbr.u-x[title], then get the title attribute
-                    return $this->normalizeUrl($node->getAttribute("title"));
+                    $url = $node->getAttribute("title");
                 } elseif (in_array($node->localName, ["data", "input"]) && $node->hasAttribute("value")) {
                     # else if data.u-x[value] or input.u-x[value], then get the value attribute
-                    return $this->normalizeUrl($node->getAttribute("value"));
+                    $url = $node->getAttribute("value");
                 } else {
+                    # else get the textContent of the element after removing all leading/trailing spaces and nested <script> & <style> elements
+                    $url = $this->getCleanText($node, $prefix);
+                }
+                # return the normalized absolute URL of the gotten value,
+                #   following the containing document's language's rules for
+                #   resolving relative URLs (e.g. in HTML, use the current URL
+                #   context as determined by the page, and first <base>
+                #   element, if any).
+                return $this->normalizeUrl($url);
+            case "dt":
+                # To parse an element for a dt-x property value (whether explicit dt-* or backcompat equivalent):
+                if ($date = $this->getValueClassPattern($node)) {
+                    # parse the element for the Value Class Pattern, including the date and time parsing rules. If a value is found, then return it.
+                    return $date;
+                } elseif (in_array($node->localName, ["time", "ins", "del"]) && $node->hasAttribute("datetime")) {
+                    # if time.dt-x[datetime] or ins.dt-x[datetime] or del.dt-x[datetime], then return the datetime attribute
+                    return $node->getAttribute("datetime");
+                } elseif ($node->localName === "abbr" && $node->hasAttribute("title")) {
+                    # else if abbr.dt-x[title], then return the title attribute
+                    return $node->getAttribute("title");
+                } elseif (in_array($node->localName, ["data", "input"]) && $node->hasAttribute("value")) {
+                    # else if data.dt-x[value] or input.dt-x[value], then return the value attribute
+                    return $node->getAttribute("value");
+                } else {
+                    # else return the textContent of the element after removing all leading/trailing spaces and nested <script> & <style> elements.
                     return $this->getCleanText($node, $prefix);
                 }
-            case "dt":
-                // TODO
-                break;
             case "e":
-                //TODO
-                break;
+                # To parse an element for a e-x property value (whether explicit "e-*" or backcompat equivalent):
+                # return a dictionary with two keys:
+                # html: the innerHTML of the element by using the HTML spec:
+                #   Serializing HTML Fragments algorithm, with
+                #   leading/trailing spaces removed. Proposed: and normalized
+                #   absolute URLs in all URL attributes except those that are
+                #   fragment-only, e.g. start with '#'.(issue 38)
+                # value: the textContent of the element after [cleaning]
+                $copy = $node->cloneNode(true);
+                // TODO: normalize URLs
+                return [
+                    'html' => trim(Serializer::serializeInner($copy)),
+                    'value' => $this->getCleanText($node, $prefix),
+                ];
             default:
                 throw new \Exception("Unimplemented prefix $prefix");
+        }
+    }
+
+    protected function parseImg(\DOMElement $node) {
+        # To parse an img element for src and alt attributes:
+        if ($node->localName === "img" && $node->hasAttribute("alt")) {
+            # if img[alt]
+            # return a new {} structure with
+            return [
+                # value: the element's src attribute as a normalized absolute URL
+                'value' => $this->normalizeUrl($node->getAttribute("src")),
+                # alt: the element's alt attribute
+                'alt'   => trim($node->getAttribute("alt")),
+            ];
+        } else {
+            # else return the element's src attribute as a normalized absolute URL
+            return $this->normalizeUrl($node->getAttribute("src"));
         }
     }
 
