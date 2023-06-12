@@ -261,18 +261,42 @@ class Parser {
     protected function parseProperty(\DOMElement $node, string $prefix) {
         switch ($prefix) {
             case "p":
-                // TODO
-                break;
+                # To parse an element for a p-x property value (whether explicit p-* or backcompat equivalent):
+                if ($text = $this->getValueClassPattern($node)) {
+                    # Parse the element for the Value Class Pattern. If a value is found, return it.
+                    return $text;
+                } elseif (in_array($node->localName, ["abbr", "link"]) && $node->hasAttribute("title")) {
+                    # If abbr.p-x[title] or link.p-x[title], return the title attribute.
+                    return $node->getAttribute("href");
+                }
             case "u":
+                # To parse an element for a u-x property value (whether explicit u-* or backcompat equivalent):
                 if (in_array($node->localName, ["a", "area", "link"]) && $node->hasAttribute("href")) {
+                    # if a.u-x[href] or area.u-x[href] or link.u-x[href], then get the href attribute
                     return $this->normalizeUrl($node->getAttribute("href"));
                 } elseif ($node->localName === "img" && $node->hasAttribute("src")) {
-                    // TODO
-                    return;
+                    # else if img.u-x[src] return the result of "parse an img element for src and alt" (see Sec.1.5)
+                    return $this->parseImg($node);
                 } elseif (in_array($node->localName, ["audio", "video", "source", "iframe"]) && $node->hasAttribute("src")) {
+                    # else if audio.u-x[src] or video.u-x[src] or source.u-x[src] or iframe.u-x[src], then get the src attribute
                     return $this->normalizeUrl($node->getAttribute("src"));
                 } elseif ($node->localName === "video" && $node->hasAttribute("poster")) {
+                    # else if video.u-x[poster], then get the poster attribute
                     return $this->normalizeUrl($node->getAttribute("href"));
+                } elseif ($node->localName === "object" && $node->hasAttribute("data")) {
+                    # else if object.u-x[data], then get the data attribute
+                    return $this->normalizeUrl($node->getAttribute("data"));
+                } elseif ($url = $this->getValueClassPattern($node)) {
+                    # else parse the element for the Value Class Pattern. If a value is found, get it
+                    return $this->normalizeUrl($url);
+                } elseif ($node->localName === "abbr" && $node->hasAttribute("title")) {
+                    # else if abbr.u-x[title], then get the title attribute
+                    return $this->normalizeUrl($node->getAttribute("title"));
+                } elseif (in_array($node->localName, ["data", "input"]) && $node->hasAttribute("value")) {
+                    # else if data.u-x[value] or input.u-x[value], then get the value attribute
+                    return $this->normalizeUrl($node->getAttribute("value"));
+                } else {
+                    return $this->normalizeUrl($this->getCleanText($node));
                 }
             case "dt":
                 // TODO
