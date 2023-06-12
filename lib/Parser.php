@@ -94,6 +94,29 @@ class Parser {
         'worst'             => ['h-review' => ["p", "worst"], 'h-review-aggregate' => ["p", "worst"]],
         'yield'             => ['h-recipe' => ["p", "yield"]],
     ];
+    protected const URL_ATTRS = [
+        ''           => ["itemid", "itemprop", "itemtype"],
+        'a'          => ["href", "ping"],
+        'area'       => ["href", "ping"],
+        'audio'      => ["src"],
+        'base'       => ["href"],
+        'blockquote' => ["cite"],
+        'button'     => ["formaction"],
+        'del'        => ["cite"],
+        'embed'      => ["src"],
+        'form'       => ["action"],
+        'iframe'     => ["src"],
+        'img'        => ["src"],
+        'input'      => ["formaction", "src"],
+        'ins'        => ["cite"],
+        'link'       => ["href"],
+        'object'     => ["data"],
+        'q'          => ["cite"],
+        'script'     => ["src"],
+        'source'     => ["src"],
+        'track'      => ["src"],
+        'video'      => ["poster", "src"],
+    ];
 
     protected $baseUrl;
 
@@ -104,7 +127,9 @@ class Parser {
      */
     public function parseNode(\DOMElement $node, string $baseUrl = ""): array {
         $root = $node;
+        // Perform HTML base-URL resolution
         $this->baseUrl = $baseUrl;
+        $this->baseUrl = $this->getBaseUrl($root, $baseUrl);
         # start with an empty JSON "items" array and "rels" & "rel-urls" hashes:
         $out = [
             'items'    => [],
@@ -211,6 +236,7 @@ class Parser {
                 $isRoot = true;
             }
         }
+        return $out;
     }
 
     protected function parsePropertiesMf2(\DOMElement $node, array $classes): array {
@@ -354,6 +380,9 @@ class Parser {
         }
     }
 
+    protected function getValueClassPattern(\DOMElement $node) {
+    }
+
     protected function parseImg(\DOMElement $node) {
         # To parse an img element for src and alt attributes:
         if ($node->localName === "img" && $node->hasAttribute("alt")) {
@@ -369,6 +398,11 @@ class Parser {
             # else return the element's src attribute as a normalized absolute URL
             return $this->normalizeUrl($node->getAttribute("src"));
         }
+    }
+
+    protected function normalizeUrl(string $url): string {
+        // Stub
+        return $url;
     }
 
     protected function getCleanText(\DOMElement $node, string $prefix): string {
@@ -390,6 +424,14 @@ class Parser {
             $e->parentNode->replaceChild($e->ownerDocument->createTextNode(" ".$attr." "), $e);
         }
         return trim($copy->textContent);
+    }
+
+    protected function getBaseUrl(\DOMElement $root, string $base): string {
+        $set = $root->ownerDocument->getElementsByTagName("base");
+        if ($set->length) {
+            return $this->normalizeUrl($set[0]->getAttribute("href"));
+        }
+        return $base;
     }
 
     /** Finds the next node in tree order after $node, if any
