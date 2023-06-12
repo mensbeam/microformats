@@ -268,6 +268,15 @@ class Parser {
                 } elseif (in_array($node->localName, ["abbr", "link"]) && $node->hasAttribute("title")) {
                     # If abbr.p-x[title] or link.p-x[title], return the title attribute.
                     return $node->getAttribute("href");
+                } elseif (in_array($node->localName, ["data", "input"]) && $node->hasAttribute("value")) {
+                    # else if data.p-x[value] or input.p-x[value], then return the value attribute
+                    return $node->getAttribute("value");
+                } elseif (in_array($node->localName, ["img", "area"]) && $node->hasAttribute("alt")) {
+                    # else if img.p-x[alt] or area.p-x[alt], then return the alt attribute
+                    return $node->getAttribute("alt");
+                } else {
+                    # else return the textContent of the element after
+                    return $this->getCleanText($node, $prefix);
                 }
             case "u":
                 # To parse an element for a u-x property value (whether explicit u-* or backcompat equivalent):
@@ -296,7 +305,7 @@ class Parser {
                     # else if data.u-x[value] or input.u-x[value], then get the value attribute
                     return $this->normalizeUrl($node->getAttribute("value"));
                 } else {
-                    return $this->normalizeUrl($this->getCleanText($node));
+                    return $this->getCleanText($node, $prefix);
                 }
             case "dt":
                 // TODO
@@ -307,6 +316,27 @@ class Parser {
             default:
                 throw new \Exception("Unimplemented prefix $prefix");
         }
+    }
+
+    protected function getCleanText(\DOMElement $node, string $prefix): string {
+        $copy = $node->cloneNode(true);
+        foreach ($copy->getElementsByTagName("script") as $e) {
+            $e->parentNode->removeChild($e);
+        }
+        foreach ($copy->getElementsByTagName("style") as $e) {
+            $e->parentNode->removeChild($e);
+        }
+        foreach ($copy->getElementsByTagName("img") as $e) {
+            $alt = $e->getAttribute("alt");
+            $src = $e->hasAttribute("src") ? $this->normalizeUrl($e->getAttribute("src")) : "";
+            if ($prefix === "u") {
+                $attr = strlen($src) ? $src : "";
+            } else {
+                $attr = strlen($alt) ? $alt : $src;
+            }
+            $e->parentNode->replaceChild($e->ownerDocument->createTextNode(" ".$attr." "), $e);
+        }
+        return trim($copy->textContent);
     }
 
     /** Finds the next node in tree order after $node, if any
