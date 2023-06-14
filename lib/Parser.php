@@ -105,6 +105,7 @@ class Parser {
         'tag'      => ['h-entry' => ["p", "category", [], null, true], 'h-feed' => ["p", "category"], 'h-review' => ["p", "category"], , 'h-review-aggregate' => ["p", "category"]],
         'author'   => ['h-entry' => ["u", "author", [], null, true]],
     ];
+    /** @var array The list of attributes which contain URLs, and their host elements */
     protected const URL_ATTRS = [
         ''           => ["itemid", "itemprop", "itemtype"],
         'a'          => ["href", "ping"],
@@ -127,6 +128,52 @@ class Parser {
         'source'     => ["src"],
         'track'      => ["src"],
         'video'      => ["poster", "src"],
+    ];
+    protected const DATE_TYPE_DATE = 1 << 0;
+    protected const DATE_TYPE_HOUR = 1 << 1;
+    protected const DATE_TYPE_MIN = 1 << 2;
+    protected const DATE_TYPE_SEC = 1 << 3;
+    protected const DATE_TYPE_TIME = self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN | self::DATE_TYPE_SEC;
+    protected const DATE_TYPE_ZONE = 1 << 4;
+    protected const DATE_INPUT_FORMATS = [
+        # YYYY-MM-DD
+        'Y-m-d' => self::DATE_TYPE_DATE,
+        # YYYY-DDD
+        'Y-z'   => self::DATE_TYPE_DATE,
+    ];
+    protected const TIME_INPUT_FORMATS = [
+        # HH:MM:SS-XX:YY HH:MM:SS+XX:YY
+        'H:i:sP'  => self::DATE_TYPE_TIME | self::DATE_TYPE_ZONE,
+        # HH:MM:SS-XXYY HH:MM:SS+XXYY
+        'H:i:sO'  => self::DATE_TYPE_TIME | self::DATE_TYPE_ZONE,
+        # HH:MM:SSZ
+        'H:i:s\Z' => self::DATE_TYPE_TIME | self::DATE_TYPE_ZONE,
+        # HH:MM:SS
+        'H:i:s'   => self::DATE_TYPE_TIME,
+        # HH:MM-XX:YY HH:MM+XX:YY
+        'H:iP'    => self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN | self::DATE_TYPE_ZONE,
+        # HH:MM-XXYY HH:MM+XXYY
+        'H:iO'    => self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN | self::DATE_TYPE_ZONE,
+        # HH:MMZ
+        'H:i\Z'   => self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN | self::DATE_TYPE_ZONE,
+        # HH:MM
+        'H:i'     => self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN,
+        # HH:MM:SSam HH:MM:SSpm
+        'h:i:sa'  => self::DATE_TYPE_TIME,
+        # HH:MMam HH:MMpm
+        'h:ia'    => self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN,
+        # HHam HHpm
+        'ha'      => self::DATE_TYPE_HOUR,
+    ];
+    protected const ZONE_INPUT_FORMATS = [
+        # -XX:YY +XX:YY
+        'P'  => self::DATE_TYPE_ZONE,
+        # -XXYY +XXYY
+        'O'  => self::DATE_TYPE_ZONE,
+        # -XX +XX
+        // Hour-only time zones require special processing
+        # Z
+        '\Z' => self::DATE_TYPE_ZONE,
     ];
 
     protected $baseUrl;
@@ -244,12 +291,12 @@ class Parser {
                     } elseif (!isset($out['properties'][$container][0][$key])) {
                         $out['properties'][$container][0][$key] = [];
                     }
-                    $out['properties'][$container][0][$key][] = $this->parseProperty($node, $prefix, $backcompat);
+                    $out['properties'][$container][0][$key][] = $this->parseProperty($node, $prefix, $backcompat ? $types : []);
                 } else {
                     if (!isset($out['properties'][$key])) {
                         $out['properties'][$key] = [];
                     }
-                    $out['properties'][$key][] = $this->parseProperty($node, $prefix, $backcompat);
+                    $out['properties'][$key][] = $this->parseProperty($node, $prefix, $backcompat ? $types : []);
                 }
                 // now add any extra roots to the element's class list; this only ever occurs during backcompat processing
                 foreach ($extraRoots ?? [] as $r) {
@@ -316,15 +363,14 @@ class Parser {
                 $out[] = ["u", "url"];
             }
         }
-        // TODO: handle link relations
         return $out;
     }
 
-    protected function parseProperty(\DOMElement $node, string $prefix, bool $backcompat) {
+    protected function parseProperty(\DOMElement $node, string $prefix, array $backcompatTypes) {
         switch ($prefix) {
             case "p":
                 # To parse an element for a p-x property value (whether explicit p-* or backcompat equivalent):
-                if ($text = $this->getValueClassPattern($node, $prefix)) {
+                if ($text = $this->getValueClassPattern($node, $prefix, $backcompatTypes)) {
                     # Parse the element for the Value Class Pattern. If a value is found, return it.
                     return $text;
                 } elseif (in_array($node->localName, ["abbr", "link"]) && $node->hasAttribute("title")) {
@@ -357,7 +403,7 @@ class Parser {
                 } elseif ($node->localName === "object" && $node->hasAttribute("data")) {
                     # else if object.u-x[data], then get the data attribute
                     $url = $node->getAttribute("data");
-                } elseif ($url = $this->getValueClassPattern($node, $prefix)) {
+                } elseif ($url = $this->getValueClassPattern($node, $prefix, $backcompatTypes)) {
                     # else parse the element for the Value Class Pattern. If a value is found, get it
                     // Nothing to do in this branch
                 } elseif ($node->localName === "abbr" && $node->hasAttribute("title")) {
@@ -378,7 +424,7 @@ class Parser {
                 return $this->normalizeUrl($url);
             case "dt":
                 # To parse an element for a dt-x property value (whether explicit dt-* or backcompat equivalent):
-                if ($date = $this->getValueClassPattern($node, $prefix)) {
+                if ($date = $this->getValueClassPattern($node, $prefix, $backcompatTypes)) {
                     # parse the element for the Value Class Pattern, including the date and time parsing rules. If a value is found, then return it.
                     return $date;
                 } elseif (in_array($node->localName, ["time", "ins", "del"]) && $node->hasAttribute("datetime")) {
@@ -414,9 +460,75 @@ class Parser {
         }
     }
 
-    protected function getValueClassPattern(\DOMElement $node, string $prefix, ) {
-        // TODO: stub
-        return null;
+    protected function getValueClassPattern(\DOMElement $node, string $prefix, array $backcompatTypes) {
+        $out = [];
+        $root = $node;
+        $skipChildren = false;
+        while ($node = $this->nextElement($node, $root, !$skipChildren)) {
+            $classes = $this->parseTokens($node, "class");
+            if (
+                ($backcompatTypes && ($this->matchRootsBackcompat($classes) || $this->matchPropertiesBackcompat($classes, $backcompatTypes, $node)))
+                || ($this->matchRootsMf2($classes) || $this->matchPropertiesMf2($classes))
+            ) {
+                // only consider elements which are not themselves properties or roots
+                // NOTE: The specification doesn't mention roots, but these should surely be skipped as well
+                $skipChildren = true;
+            } elseif (in_array("value", $classes)) {
+                # Where an element with such a microformat property class name
+                #   has a descendant with class name value (a "value element")
+                #   not inside some other property element, parsers should use
+                #   the following portion of that value element:
+                if (in_array($node->localName, ["img", "area"])) {
+                    # if the value element is an img or area element, then use the element's alt attribute value.
+                    $candidate = $node->getAttribute("alt");
+                } elseif ($node->localName === "data") {
+                    # if the value element is a data element, then use the element's value attribute value if present, otherwise its inner-text.
+                    if ($node->hasAttribute("value")) {
+                        $candidate = $node->getAttribute("value");
+                    } else {
+                        $candidate = $this->getCleanText($node, $prefix);
+                    }
+                } elseif ($node->localName === "abbr") {
+                    # if the value element is an abbr element, then use the element's title attribute value if present, otherwise its inner-text.
+                    if ($node->hasAttribute("title")) {
+                        $candidate = $node->getAttribute("title");
+                    } else {
+                        $candidate = $this->getCleanText($node, $prefix);
+                    }
+                } elseif ($prefix === "dt" && in_array($node->localName, ["del", "ins", "time"])) {
+                    # if the element is a del, ins, or time element, then use
+                    #   the element's datetime attribute value if present,
+                    #   otherwise its inner-text. [datetime only]
+                    if ($node->hasAttribute("datetime")) {
+                        $candidate = $node->getAttribute("datetime");
+                    } else {
+                        $candidate = $this->getCleanText($node, $prefix);
+                    }
+                } else {
+                    # for any other element, use its inner-text.
+                    $candidate = $this->getCleanText($node, $prefix);
+                }
+                if ($prefix !== "dt") {
+                    $out[] = $candidate;
+                } else {
+                    // TODO: date processing
+                }
+                $skipChildren = true;
+            } else {
+                $skipChildren = false;
+            }
+        }
+        if ($prefix !== "dt") {
+            # if the microformats property expects a simple string, enumerated
+            #   value, or telephone number, then the values extracted from the
+            #   value elements should be concatenated without inserting
+            #   additional characters or white-space.
+            return implode("", $out);
+        } else {
+            # f the microformats property expects a datetime value, see the Date Time Parsing section.
+            // TODO
+            return $out;
+        }
     }
 
     protected function parseImg(\DOMElement $node) {
