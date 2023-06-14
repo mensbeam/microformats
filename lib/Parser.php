@@ -133,8 +133,8 @@ class Parser {
     protected const DATE_TYPE_HOUR = 1 << 1;
     protected const DATE_TYPE_MIN = 1 << 2;
     protected const DATE_TYPE_SEC = 1 << 3;
-    protected const DATE_TYPE_TIME = self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN | self::DATE_TYPE_SEC;
     protected const DATE_TYPE_ZONE = 1 << 4;
+    protected const DATE_TYPE_TIME = self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN | self::DATE_TYPE_SEC;
     protected const DATE_INPUT_FORMATS = [
         # YYYY-MM-DD
         'Y-m-d' => self::DATE_TYPE_DATE,
@@ -174,6 +174,21 @@ class Parser {
         // Hour-only time zones require special processing
         # Z
         '\Z' => self::DATE_TYPE_ZONE,
+    ];
+    protected const DATE_OUTPUT_FORMATS = [
+        self::DATE_TYPE_DATE                                                                     => 'Y-m-d',
+        self::DATE_TYPE_DATE | self::DATE_TYPE_TIME | self::DATE_TYPE_ZONE                       => 'Y-m-d H:i:sO',
+        self::DATE_TYPE_DATE | self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN | self::DATE_TYPE_ZONE => 'Y-m-d H:iO',
+        self::DATE_TYPE_DATE | self::DATE_TYPE_HOUR | self::DATE_TYPE_ZONE                       => 'Y-m-d H:00O',
+        self::DATE_TYPE_DATE | self::DATE_TYPE_TIME                                              => 'Y-m-d H:i:s',
+        self::DATE_TYPE_DATE | self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN                        => 'Y-m-d H:i',
+        self::DATE_TYPE_DATE | self::DATE_TYPE_HOUR                                              => 'Y-m-d H:00',
+        self::DATE_TYPE_TIME | self::DATE_TYPE_ZONE                                              => 'H:i:sO',
+        self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN | self::DATE_TYPE_ZONE                        => 'H:iO',
+        self::DATE_TYPE_HOUR | self::DATE_TYPE_ZONE                                              => 'H:00O',
+        self::DATE_TYPE_TIME                                                                     => 'H:i:s',
+        self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN                                               => 'H:i',
+        self::DATE_TYPE_HOUR                                                                     => 'H:00',
     ];
 
     protected $baseUrl;
@@ -463,6 +478,7 @@ class Parser {
     protected function getValueClassPattern(\DOMElement $node, string $prefix, array $backcompatTypes) {
         $out = [];
         $root = $node;
+        $dateParts = 0;
         $skipChildren = false;
         while ($node = $this->nextElement($node, $root, !$skipChildren)) {
             $classes = $this->parseTokens($node, "class");
@@ -509,11 +525,12 @@ class Parser {
                     $candidate = $this->getCleanText($node, $prefix);
                 }
                 if ($prefix !== "dt") {
+                    $skipChildren = true;
                     $out[] = $candidate;
                 } else {
                     // TODO: date processing
+                    $skipChildren = true;
                 }
-                $skipChildren = true;
             } else {
                 $skipChildren = false;
             }
@@ -525,7 +542,7 @@ class Parser {
             #   additional characters or white-space.
             return implode("", $out);
         } else {
-            # f the microformats property expects a datetime value, see the Date Time Parsing section.
+            # if the microformats property expects a datetime value, see the Date Time Parsing section.
             // TODO
             return $out;
         }
@@ -546,6 +563,72 @@ class Parser {
             # else return the element's src attribute as a normalized absolute URL
             return $this->normalizeUrl($node->getAttribute("src"));
         }
+    }
+
+    protected function parseDate(string $input): ?array {
+        // do a first-pass normalization on the input
+        $input = trim(preg_replace(['/([ap])\.m\.$/', '/\s+/'], ["$1m", " "], strtr($input, "APM", "apm")));
+        // match against all valid date/time format patterns and return the normalized representations and the matched parts
+        foreach (self::DATE_INPUT_FORMATS as $df => $dp) {
+            if ($out = $this->testDate($input, "!$df")) {
+                return [$out->format(self::DATE_OUTPUT_FORMATS[$dp]), $dp];
+            }
+            foreach (self::TIME_INPUT_FORMATS as $tf => $tp) {
+                if ($out = $this->testDate($input, "!$df $tf", "!$df\T$tf")) {
+                    return [$out->format(self::DATE_OUTPUT_FORMATS[$dp | $tp]), $dp | $tp];
+                }
+                foreach (self::ZONE_INPUT_FORMATS as $zf => $zp) {
+                    if ($out = $this->testDate($input, "!$df $tf$zf", "!$df\T$tf$zf")) {
+                        return [$out->format(self::DATE_OUTPUT_FORMATS[$dp | $tp | $zp]), $dp | $tp | $zp];
+                    }
+                    // if no match was found and we're testing a pattern ending in "O" (zone offset without colon), add double-zero to input and try again
+                    if ($zf[strlen($zf) - 1] === "O") {
+                        $padded = $input."00";
+                        if ($out = $this->testDate($padded, "!$df $tf$zf", "!$df\T$tf$zf")) {
+                            return [$out->format(self::DATE_OUTPUT_FORMATS[$dp | $tp | $zp]), $dp | $tp | $zp];
+                        }
+                    }
+                }
+            }
+        }
+        foreach (self::TIME_INPUT_FORMATS as $tf => $tp) {
+            if ($out = $this->testDate($input, "!$tf")) {
+                return [$out->format(self::DATE_OUTPUT_FORMATS[$tp]), $tp];
+            }
+            foreach (self::ZONE_INPUT_FORMATS as $zf => $zp) {
+                if ($out = $this->testDate($input, "!$tf$zf")) {
+                    return [$out->format(self::DATE_OUTPUT_FORMATS[$tp | $zp]), $tp | $zp];
+                }
+                if ($zf[strlen($zf) - 1] === "O") {
+                    $padded = $input."00";
+                    if ($out = $this->testDate($padded, "!$tf$zf")) {
+                        return [$out->format(self::DATE_OUTPUT_FORMATS[$tp | $zp]), $tp | $zp];
+                    }
+                }
+            }
+        }
+        foreach (self::ZONE_INPUT_FORMATS as $zf => $zp) {
+            if ($out = $this->testDate($input, "!$zf")) {
+                return [$out->format(self::DATE_OUTPUT_FORMATS[$zp]), $zp];
+            }
+            if ($zf[strlen($zf) - 1] === "O") {
+                $padded = $input."00";
+                if ($out = $this->testDate($padded, "!$zf")) {
+                    return [$out->format(self::DATE_OUTPUT_FORMATS[$zp]), $zp];
+                }
+            }
+        }
+        return null;
+    }
+
+    protected function testDate(string $input, string ...$format): ?\DateTimeImmutable {
+        foreach ($format as $f) {
+            $out = \DateTimeImmutable::createFromFormat($f, $input, new \DateTimeZone("UTC"));
+            if ($out && $out->format($f) === $input) {
+                return $out;
+            }
+        }
+        return null;
     }
 
     protected function normalizeUrl(string $url): string {
