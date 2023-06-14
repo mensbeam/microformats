@@ -10,6 +10,7 @@ namespace MensBeam\Microformats;
 use MensBeam\HTML\Parser\Serializer;
 
 class Parser {
+    /** @var array The list of class names which are backward-compatibility microformat markers */
     protected const BACKCOMPAT_ROOTS = [
         'adr'               => "h-adr",
         'vcard'             => "h-card",
@@ -23,7 +24,8 @@ class Parser {
         'hreview'           => "h-review",
         'hreview-aggregate' => "h-review-aggregate",
     ];
-    protected const BACKCOMPAT_PROPERTIES = [
+    /** @var array The list of class names which are backward-compatibility property markers. Each value is in turn an array listing the root (in v2 format) for which the property applies, the value of which is an indexed array containing the v2 prefix, v2 equivalent name, and possibly three other members: an array with additional classes to add to the element's effective class list, the name of acontainer property, and whether processing of the property should be deferred till the microformat has been otherwise processed */
+    protected const BACKCOMPAT_CLASSES = [
         'additional-name'   => ['h-card' => ["p", "additional-name"]],
         'adr'               => ['h-card' => ["p", "adr"]],
         'affiliation'       => ['h-resume' => ["p", "affiliation", ["vcard"]]],
@@ -43,12 +45,13 @@ class Parser {
         'education'         => ['h-resume' => ["p", "education", ["vevent"]]],
         'email'             => ['h-card' => ["u", "email"]],
         'entry-content'     => ['h-entry' => ["e", "content"]],
+        'entry-date'        => ['h-entry' => ["dt", "published", [], null, true]], // also requires special processing
         'entry-summary'     => ['h-entry' => ["p", "summary"]],
         'entry-title'       => ['h-entry' => ["p", "name"]],
         'experience'        => ['h-resume' => ["p", "experience", ["vevent"]]],
         'extended-address'  => ['h-adr' => ["p", "extended-address"], 'h-card' => ["p", "extended-address"]],
         'family-name'       => ['h-card' => ["p", "family-name"]],
-        'fn'                => ['h-card' => ["p", "name"], 'h-product' => ["p", "name"], 'h-recipe' => ["p", "name"]],
+        'fn'                => ['h-card' => ["p", "name"], 'h-product' => ["p", "name"], 'h-recipe' => ["p", "name"], 'h-review' => ["p", "name", [], "item"], , 'h-review-aggregate' => ["p", "name", [], "item"]],
         'geo'               => ['h-card' => ["p", "geo"], 'h-event' => ["p", "geo"]],
         'given-name'        => ['h-card' => ["p", "given-name"]],
         'honorific-prefix'  => ['h-card' => ["p", "honorific-prefix"]],
@@ -69,7 +72,7 @@ class Parser {
         'organization-name' => ['h-card' => ["p", "organization-name"]],
         'organization-unit' => ['h-card' => ["p", "organization-unit"]],
         'org'               => ['h-card' => ["p", "org"]],
-        'photo'             => ['h-card' => ["u", "photo"], 'h-product' => ["u", "photo"], 'h-recipe' => ["u", "photo"]],
+        'photo'             => ['h-card' => ["u", "photo"], 'h-product' => ["u", "photo"], 'h-recipe' => ["u", "photo"], 'h-review' => ["u", "photo", [], "item"], , 'h-review-aggregate' => ["u", "photo", [], "item"]],
         'postal-code'       => ['h-adr' => ["p", "postal-code"], 'h-card' => ["p", "postal-code"]],
         'post-office-box'   => ['h-adr' => ["p", "post-office-box"], 'h-card' => ["p", "post-office-box"]],
         'price'             => ['h-product' => ["p", "price"]],
@@ -81,6 +84,8 @@ class Parser {
         'review'            => ['h-product' => ["p", "review", ["hreview"]]],
         'role'              => ['h-card' => ["p", "role"]],
         'skill'             => ['h-resume' => ["p", "skill"]],
+        'site-description'  => ['h-feed' => ["p", "summary"]],
+        'site-title'        => ['h-feed' => ["p", "name"]],
         'street-address'    => ['h-adr' => ["p", "street-address"], 'h-card' => ["p", "street-address"]],
         'summary'           => ['h-event' => ["p", "name"], 'h-recipe' => ["p", "summary"], 'h-resume' => ["p", "summary"], 'h-review' => ["p", "name"], 'h-review-aggregate' => ["p", "name"]],
         'tel'               => ['h-card' => ["p", "tel"]],
@@ -88,11 +93,17 @@ class Parser {
         'tz'                => ['h-card' => ["p", "tz"]],
         'uid'               => ['h-card' => ["u", "uid"]],
         'updated'           => ['h-entry' => ["dt", "updated"]],
-        'url'               => ['h-card' => ["u", "url"], 'h-product' => ["u", "url"]],
-        'url'               => ['h-event' => ["u", "url"]],
+        'url'               => ['h-card' => ["u", "url"], 'h-event' => ["u", "url"], 'h-product' => ["u", "url"], 'h-review' => ["u", "url", [], "item"], , 'h-review-aggregate' => ["u", "url", [], "item"]],
         'votes'             => ['h-review-aggregate' => ["p", "votes"]],
         'worst'             => ['h-review' => ["p", "worst"], 'h-review-aggregate' => ["p", "worst"]],
         'yield'             => ['h-recipe' => ["p", "yield"]],
+    ];
+    /** @var array The list of link relations which are backward-compatibility property markers. The format is the same as for backcompat classes */
+    protected const BACKCOMPAT_RELATIONS = [
+        // h-review and h-review-agregate also include "self bookmark", but this requires special processing
+        'bookmark' => ['h-entry' => ["u", "url"]],
+        'tag'      => ['h-entry' => ["p", "category", [], null, true], 'h-feed' => ["p", "category"], 'h-review' => ["p", "category"], , 'h-review-aggregate' => ["p", "category"]],
+        'author'   => ['h-entry' => ["u", "author", [], null, true]],
     ];
     protected const URL_ATTRS = [
         ''           => ["itemid", "itemprop", "itemtype"],
@@ -140,7 +151,7 @@ class Parser {
         while ($node) {
             # parse element class for root class name(s) "h-*" and if none, backcompat root classes
             # if found, start parsing a new microformat
-            $classes = $this->parseClasses($node);
+            $classes = $this->parseTokens($node, "class");
             if ($types = $this->matchRootsMf2($classes)) {
                 $out[] = $this->parseMicroformat($node, $types, false);
             } elseif ($types = $this->matchRootsBackcompat($classes)) {
@@ -158,8 +169,8 @@ class Parser {
         return $out;
     }
 
-    protected function parseClasses(\DOMElement $node): array {
-        $attr = trim($node->getAttribute("class"), " \r\n\t\f");
+    protected function parseTokens(\DOMElement $node, string $attr): array {
+        $attr = trim($node->getAttribute($attr), " \r\n\t\f");
         if ($attr !== "") {
             return array_unique(preg_split("/[ \r\n\t\f]+/sS", $attr));
         } else {
@@ -206,40 +217,64 @@ class Parser {
         if (strlen($id = $root->getAttribute("id"))) {
             $out['id'] = $id;
         }
+        // keep track of deferred properties ("use Y if X is not defined")
+        $deferred = [];
         # parse child elements (document order) by:
         while ($node = $this->nextElement($node ?? $root, $root, !($isRoot = $isRoot ?? false))) {
             $isRoot = false;
-            $classes = $this->parseClasses($node);
+            $classes = $this->parseTokens($node, "class");
             if ($backcompat) {
                 # if parsing a backcompat root, parse child element class name(s) for backcompat properties
-                $properties = $this->parsePropertiesBackcompat($node, $classes, $types);
+                $properties = $this->matchPropertiesBackcompat($classes, $types, $node);
             } else {
                 # else parse a child element class for property class name(s) "p-*,u-*,dt-*,e-*"
-                $properties = $this->parsePropertiesMf2($node, $classes);
+                $properties = $this->matchPropertiesMf2($classes);
             }
             # if such class(es) are found, it is a property element
             # add properties found to current microformat's properties: { } structure
-            foreach ($properties as $k => $v) {
-                if (!isset($out['properties'][$k])) {
-                    $out['properties'][$k] = [];
+            foreach ($properties as $p) {
+                [$prefix, $key, $extraRoots, $container, $defer] = array_pad($p, 5, null);
+                if ($defer) {
+                    // defer evaluation of the property if it's supposed to be a fallback for another instance of the property
+                    $deferred[] = [$node, $p];
+                } elseif ($container) {
+                    // if a container property is defined as part of backcompat processing, we insert into that; there can only ever be one instance of it
+                    if (!isset($out['properties'][$container])) {
+                        $out['properties'][$container] = [[$key => []]];
+                    } elseif (!isset($out['properties'][$container][0][$key])) {
+                        $out['properties'][$container][0][$key] = [];
+                    }
+                    $out['properties'][$container][0][$key][] = $this->parseProperty($node, $prefix, $backcompat);
+                } else {
+                    if (!isset($out['properties'][$key])) {
+                        $out['properties'][$key] = [];
+                    }
+                    $out['properties'][$key][] = $this->parseProperty($node, $prefix, $backcompat);
                 }
-                array_push($out['properties'][$k], ...$v);
+                // now add any extra roots to the element's class list; this only ever occurs during backcompat processing
+                foreach ($extraRoots ?? [] as $r) {
+                    if (!in_array($r, $classes)) {
+                        $classes[] = $r;
+                    }
+                }
             }
             # parse a child element for microformats (recurse)
-            $child = null;
             if ($types = $this->matchRootsMf2($classes)) {
                 $child = $this->parseMicroformat($node, $types, false);
             } elseif ($types = $this->matchRootsBackcompat($classes)) {
                 $child = $this->parseMicroformat($node, $types, true);
+            } else {
+                $child = null;
             }
             if ($child) {
                 $isRoot = true;
             }
         }
+        // TODO: Process deferred properties
         return $out;
     }
 
-    protected function parsePropertiesMf2(\DOMElement $node, array $classes): array {
+    protected function matchPropertiesMf2(array $classes): array {
         $out = [];
         foreach ($classes as $c) {
             # The "*" for root (and property) class names consists of an
@@ -247,50 +282,49 @@ class Parser {
             #   a-z characters i.e. [0-9a-z]+, followed by '-'), then one
             #   or more '-' separated lowercase a-z words.
             if (!preg_match('/^(p|u|dt|e)((?:-[a-z0-9]+)?(?:-[a-z]+)+)$/S', $c, $match)) {
-                continue;
+                $out[] = [
+                    $match[1], // the prefix
+                    substr($match[2], 1), // the property name
+                ];
             }
-            $prefix = $match[1];
-            $key = substr($match[2], 1);
-            if (!isset($out[$key])) {
-                $out[$key] = [];
-            }
-            $out[$key][] = $this->parseProperty($node, $prefix);
         }
         return $out;
     }
 
-    protected function parsePropertiesBackcompat(\DOMElement $node, array &$classes, array $types): array {
+    protected function matchPropertiesBackcompat(array $classes, array $types, \DOMElement $node): array {
         $out = [];
-        foreach ($classes as $c) {
-            foreach ($types as $t) {
-                $map = static::BACKCOMPAT_PROPERTIES[$c][$t] ?? null;
-                if (!$map) {
-                    // TODO : handle special mapped properties
-                    continue;
-                }
-                $prefix = $map[0];
-                $key = $map[1];
-                $roots = $map[2] ?? [];
-                if (!isset($out[$key])) {
-                    $out[$key] = [];
-                }
-                $out[$key][] = $this->parseProperty($node, $prefix);
-                foreach ($roots as $r) {
-                    if (!in_array($r, $classes)) {
-                        $classes[] = $r;
+        foreach ($types as $t) {
+            // check for backcompat classes
+            foreach ($classes as $c) {
+                if ($map = static::BACKCOMPAT_CLASSES[$c][$t] ?? null) {
+                    if ($c === "entry-date" && ($node->localName !== "time" || !$node->hasAttribute("datetime"))) {
+                        // entry-date is only valid on time elements with a machine-readable datetime
+                        continue;
                     }
+                    $out[] = $map;
                 }
+            }
+            // check for backcompat relations
+            $relations = $this->parseTokens($node, "rel");
+            foreach ($relations as $r) {
+                if ($map = static::BACKCOMPAT_CLASSES[$r][$t] ?? null) {
+                    $out[] = $map;
+                }
+            }
+            // check for "self bookmark" relations, if applicable
+            if (in_array($t, ["h-review", "h-review-aggregate"]) && sizeof(array_intersect(["self", "bookmark"], $relations)) === 2) {
+                $out[] = ["u", "url"];
             }
         }
         // TODO: handle link relations
         return $out;
     }
 
-    protected function parseProperty(\DOMElement $node, string $prefix) {
+    protected function parseProperty(\DOMElement $node, string $prefix, bool $backcompat) {
         switch ($prefix) {
             case "p":
                 # To parse an element for a p-x property value (whether explicit p-* or backcompat equivalent):
-                if ($text = $this->getValueClassPattern($node)) {
+                if ($text = $this->getValueClassPattern($node, $prefix)) {
                     # Parse the element for the Value Class Pattern. If a value is found, return it.
                     return $text;
                 } elseif (in_array($node->localName, ["abbr", "link"]) && $node->hasAttribute("title")) {
@@ -323,7 +357,7 @@ class Parser {
                 } elseif ($node->localName === "object" && $node->hasAttribute("data")) {
                     # else if object.u-x[data], then get the data attribute
                     $url = $node->getAttribute("data");
-                } elseif ($url = $this->getValueClassPattern($node)) {
+                } elseif ($url = $this->getValueClassPattern($node, $prefix)) {
                     # else parse the element for the Value Class Pattern. If a value is found, get it
                     // Nothing to do in this branch
                 } elseif ($node->localName === "abbr" && $node->hasAttribute("title")) {
@@ -344,7 +378,7 @@ class Parser {
                 return $this->normalizeUrl($url);
             case "dt":
                 # To parse an element for a dt-x property value (whether explicit dt-* or backcompat equivalent):
-                if ($date = $this->getValueClassPattern($node)) {
+                if ($date = $this->getValueClassPattern($node, $prefix)) {
                     # parse the element for the Value Class Pattern, including the date and time parsing rules. If a value is found, then return it.
                     return $date;
                 } elseif (in_array($node->localName, ["time", "ins", "del"]) && $node->hasAttribute("datetime")) {
@@ -380,7 +414,9 @@ class Parser {
         }
     }
 
-    protected function getValueClassPattern(\DOMElement $node) {
+    protected function getValueClassPattern(\DOMElement $node, string $prefix, ) {
+        // TODO: stub
+        return null;
     }
 
     protected function parseImg(\DOMElement $node) {
@@ -401,7 +437,7 @@ class Parser {
     }
 
     protected function normalizeUrl(string $url): string {
-        // Stub
+        // TODO: Stub
         return $url;
     }
 
