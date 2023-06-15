@@ -142,20 +142,8 @@ class Parser {
         'Y-z'   => self::DATE_TYPE_DATE,
     ];
     protected const TIME_INPUT_FORMATS = [
-        # HH:MM:SS-XX:YY HH:MM:SS+XX:YY
-        'H:i:sP'  => self::DATE_TYPE_TIME | self::DATE_TYPE_ZONE,
-        # HH:MM:SS-XXYY HH:MM:SS+XXYY
-        'H:i:sO'  => self::DATE_TYPE_TIME | self::DATE_TYPE_ZONE,
-        # HH:MM:SSZ
-        'H:i:s\Z' => self::DATE_TYPE_TIME | self::DATE_TYPE_ZONE,
         # HH:MM:SS
         'H:i:s'   => self::DATE_TYPE_TIME,
-        # HH:MM-XX:YY HH:MM+XX:YY
-        'H:iP'    => self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN | self::DATE_TYPE_ZONE,
-        # HH:MM-XXYY HH:MM+XXYY
-        'H:iO'    => self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN | self::DATE_TYPE_ZONE,
-        # HH:MMZ
-        'H:i\Z'   => self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN | self::DATE_TYPE_ZONE,
         # HH:MM
         'H:i'     => self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN,
         # HH:MM:SSam HH:MM:SSpm
@@ -164,6 +152,10 @@ class Parser {
         'h:ia'    => self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN,
         # HHam HHpm
         'ha'      => self::DATE_TYPE_HOUR,
+        // 12-hour clock without leading zeroes; this is not part of the spec, but probably occurs
+        'g:i:sa'  => self::DATE_TYPE_TIME,
+        'g:ia'    => self::DATE_TYPE_HOUR | self::DATE_TYPE_MIN,
+        'ga'      => self::DATE_TYPE_HOUR,
     ];
     protected const ZONE_INPUT_FORMATS = [
         # -XX:YY +XX:YY
@@ -566,9 +558,10 @@ class Parser {
     }
 
     protected function parseDate(string $input): ?array {
-        // do a first-pass normalization on the input
+        // do a first-pass normalization on the input; this normalizes am/pm and trims whitespace
         $input = trim(preg_replace(['/([ap])\.m\.$/', '/\s+/'], ["$1m", " "], strtr($input, "APM", "apm")));
         // match against all valid date/time format patterns and return the normalized representations and the matched parts
+        // we try with space and with T between date and time, as well as with and without space before time zone
         foreach (self::DATE_INPUT_FORMATS as $df => $dp) {
             if ($out = $this->testDate($input, "!$df")) {
                 return [$out->format(self::DATE_OUTPUT_FORMATS[$dp]), $dp];
@@ -578,13 +571,13 @@ class Parser {
                     return [$out->format(self::DATE_OUTPUT_FORMATS[$dp | $tp]), $dp | $tp];
                 }
                 foreach (self::ZONE_INPUT_FORMATS as $zf => $zp) {
-                    if ($out = $this->testDate($input, "!$df $tf$zf", "!$df\T$tf$zf")) {
+                    if ($out = $this->testDate($input, "!$df $tf$zf", "!$df\T$tf$zf","!$df $tf $zf", "!$df\T$tf $zf")) {
                         return [$out->format(self::DATE_OUTPUT_FORMATS[$dp | $tp | $zp]), $dp | $tp | $zp];
                     }
                     // if no match was found and we're testing a pattern ending in "O" (zone offset without colon), add double-zero to input and try again
                     if ($zf[strlen($zf) - 1] === "O") {
                         $padded = $input."00";
-                        if ($out = $this->testDate($padded, "!$df $tf$zf", "!$df\T$tf$zf")) {
+                        if ($out = $this->testDate($padded, "!$df $tf$zf", "!$df\T$tf$zf", "!$df $tf $zf", "!$df\T$tf $zf")) {
                             return [$out->format(self::DATE_OUTPUT_FORMATS[$dp | $tp | $zp]), $dp | $tp | $zp];
                         }
                     }
@@ -596,12 +589,12 @@ class Parser {
                 return [$out->format(self::DATE_OUTPUT_FORMATS[$tp]), $tp];
             }
             foreach (self::ZONE_INPUT_FORMATS as $zf => $zp) {
-                if ($out = $this->testDate($input, "!$tf$zf")) {
+                if ($out = $this->testDate($input, "!$tf$zf", "!$tf $zf")) {
                     return [$out->format(self::DATE_OUTPUT_FORMATS[$tp | $zp]), $tp | $zp];
                 }
                 if ($zf[strlen($zf) - 1] === "O") {
                     $padded = $input."00";
-                    if ($out = $this->testDate($padded, "!$tf$zf")) {
+                    if ($out = $this->testDate($padded, "!$tf$zf", "!$tf $zf")) {
                         return [$out->format(self::DATE_OUTPUT_FORMATS[$tp | $zp]), $tp | $zp];
                     }
                 }
