@@ -339,6 +339,7 @@ class Parser {
             }
             if ($child) {
                 $isRoot = true;
+                // TODO: integrate children per rules
             }
         }
         // TODO: Process deferred properties
@@ -693,8 +694,12 @@ class Parser {
     }
 
     protected function normalizeUrl(string $url): string {
-        // TODO: Stub
-        return $url;
+        // TODO: Implement better URL parser
+        try {
+            return (string) Url::fromString($url, $this->baseUrl);
+        } catch (\Exception $e) {
+            return $url;
+        }
     }
 
     protected function getCleanText(\DOMElement $node, string $prefix): string {
