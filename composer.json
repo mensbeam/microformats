@@ -16,6 +16,7 @@
         "php": ">=7.1",
         "ext-json": "*",
         "ext-dom": "*",
+        "symfony/polyfill-intl-idn": "1.*",
         "mensbeam/html-parser": "1.*"
     },
     "require-dev": {
