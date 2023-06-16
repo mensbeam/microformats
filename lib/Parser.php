@@ -194,6 +194,7 @@ class Parser {
 
     protected $baseUrl;
     protected $docUrl;
+    protected $xpath;
 
     /** Parses a DOMElement for microformats
      * 
@@ -205,6 +206,8 @@ class Parser {
         // Perform HTML base-URL resolution
         $this->docUrl = $baseUrl;
         $this->baseUrl = $this->getBaseUrl($root, $baseUrl);
+        // Initialize an XPath processor
+        $this->xpath = new \DOMXPath($node->ownerDocument);
         # start with an empty JSON "items" array and "rels" & "rel-urls" hashes:
         $out = [
             'items'    => [],
@@ -228,10 +231,70 @@ class Parser {
             // continue to the next element, passing over children (they have already been examined)
             $node = $this->nextElement($node, $root, false);
         }
+        # parse all hyperlink (<a> <area> <link>) elements for rel microformats, adding to the JSON rels & rel-urls hashes accordingly
+        foreach ($this->xpath->query(".//a[rel][href]|.//area[rel][href]|.//link[rel][href]", $root) as $link) {
+            # To parse a hyperlink element (e.g. a or link) for rel
+            #   microformats: use the following algorithm or an algorithm that
+            #   produces equivalent results:
+            # set url to the value of the "href" attribute of the element,
+            #   normalized to be an absolute URL following the containing
+            #   document's language's rules for resolving relative URLs (e.g.
+            #   in HTML, use the current URL context as determined by the
+            #   page, and first <base> element if any).
+            $url = $this->normalizeUrl($link->getAttribute("href"));
+            # treat the "rel" attribute of the element as a space separate set of rel values
+            $rels = $this->parseTokens($link, "rel");
+            # # for each rel value (rel-value)
+            foreach ($rels as $relValue) {
+                # if there is no key rel-value in the rels hash then create it with an empty array as its value
+                if (!isset($out['rels'][$relValue])) {
+                    $out['rels'][$relValue] = [];
+                }
+                # if url is not in the array of the key rel-value in the rels hash then add url to the array
+                // NOTE: We add unconditionally and will filter for uniqueness later
+                $out['rels'][$relValue][] = $url;
+            }
+            # if there is no key with name url in the top-level "rel-urls"
+            #   hash then add a key with name url there, with an empty hash
+            #   value
+            if (!isset($out['rel-urls'][$url])) {
+                $out['rel-urls'][$url] = [];
+            }
+            # add keys to the hash of the key with name url for each of these
+            #   attributes (if present) and key not already set:
+            #       "hreflang": the value of the "hreflang" attribute
+            #       "media": the value of the "media" attribute
+            #       "title": the value of the "title" attribute
+            #       "type": the value of the "type" attribute
+            #       "text": the text content of the element if any
+            foreach (["hreflang", "media", "title", "type", "text"] as $attr) {
+                if (!isset($out['rel-urls'][$url][$attr]) && $link->hasAttribute($attr)) {
+                    $out['rel-urls'][$url][$attr] = trim($link->getAttribute($attr));
+                }
+            }
+            # if there is no "rels" key in that hash, add it with an empty array value
+            if (!isset($out['rel-urls'][$url]['rels'])) {
+                $out['rel-urls'][$url]['rels'] = [];
+            }
+            # set the value of that "rels" key to an array of all unique items
+            #   in the set of rel values unioned with the current array value
+            #   of the "rels" key, sorted alphabetically.
+            // NOTE: sorting  and uniqueness filtering will be done later
+            array_push($out['rel-urls'][$url]['rels'], ...$rels);
+        }
+        // sort and clean rel microformats
+        foreach ($out['rels'] as $k => $v) {
+            $out['rels'][$k] = array_unique($v);
+        }
+        foreach ($out['url-rels'] as $k => $v) {
+            $out['url-rels'][$k]['rels'] = array_unique($v['rels']);
+            sort($out['url-rels'][$k]['rels']);
+        }
         // clean up temporary instance properties
-        foreach (["docUrl", "baseUrl"] as $prop) {
+        foreach (["xpath", "docUrl", "baseUrl"] as $prop) {
             $this->$prop = null;
         }
+        # return the resulting JSON
         return $out;
     }
 
@@ -357,6 +420,9 @@ class Parser {
             } elseif (!isset($out['properties'][$key])) {
                 $out['properties'][$key] = [$value];
             }
+        }
+        if (!$backcompat) {
+            // TODO: Parse implied properties
         }
         // return the final structure
         return $out;
@@ -722,7 +788,7 @@ class Parser {
     protected function normalizeUrl(string $url, string $baseUrl = null): string {
         // TODO: Implement better URL parser
         try {
-            return (string) Url::fromString($url, $baseUrl ?? $this->baseUrl ?? $this->docUrl);
+            return (string) Url::fromString($url, $baseUrl ?? $this->baseUrl);
         } catch (\Exception $e) {
             return $url;
         }
@@ -752,7 +818,7 @@ class Parser {
     protected function getBaseUrl(\DOMElement $root, string $base): string {
         $set = $root->ownerDocument->getElementsByTagName("base");
         if ($set->length) {
-            return $this->normalizeUrl($set[0]->getAttribute("href"));
+            return $this->normalizeUrl($set[0]->getAttribute("href"), $base);
         }
         return $base;
     }
