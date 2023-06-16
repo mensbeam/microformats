@@ -105,9 +105,10 @@ class Parser {
         'tag'      => ['h-entry' => ["p", "category", [], null, true], 'h-feed' => ["p", "category"], 'h-review' => ["p", "category"], , 'h-review-aggregate' => ["p", "category"]],
         'author'   => ['h-entry' => ["u", "author", [], null, true]],
     ];
-    /** @var array The list of attributes which contain URLs, and their host elements */
+    /** @var array The list of (global) attributes which contain URLs and apply to any element */
+    protected const URL_ATTRS_GLOBAL= ["itemid", "itemprop", "itemtype"];
+    /** @var array The list of (non-global) attributes which contain URLs and their host elements */
     protected const URL_ATTRS = [
-        ''           => ["itemid", "itemprop", "itemtype"],
         'a'          => ["href", "ping"],
         'area'       => ["href", "ping"],
         'audio'      => ["src"],
@@ -192,6 +193,7 @@ class Parser {
     ];
 
     protected $baseUrl;
+    protected $docUrl;
 
     /** Parses a DOMElement for microformats
      * 
@@ -201,7 +203,7 @@ class Parser {
     public function parseNode(\DOMElement $node, string $baseUrl = ""): array {
         $root = $node;
         // Perform HTML base-URL resolution
-        $this->baseUrl = $baseUrl;
+        $this->docUrl = $baseUrl;
         $this->baseUrl = $this->getBaseUrl($root, $baseUrl);
         # start with an empty JSON "items" array and "rels" & "rel-urls" hashes:
         $out = [
@@ -226,8 +228,10 @@ class Parser {
             // continue to the next element, passing over children (they have already been examined)
             $node = $this->nextElement($node, $root, false);
         }
-
-        // TODO: clean up instance properties
+        // clean up temporary instance properties
+        foreach (["docUrl", "baseUrl"] as $prop) {
+            $this->$prop = null;
+        }
         return $out;
     }
 
@@ -298,29 +302,28 @@ class Parser {
             # add properties found to current microformat's properties: { } structure
             foreach ($properties as $p) {
                 [$prefix, $key, $extraRoots, $container, $defer] = array_pad($p, 5, null);
+                // parse the node for the property value
+                $value = $this->parseProperty($node, $prefix, $backcompat ? $types : [], $impliedDate);
+                if ($prefix === "dt") {
+                    // keep track of the last seen date value to serve as an implied date
+                    $impliedDate = $value;
+                }
                 if ($defer) {
-                    // defer evaluation of the property if it's supposed to be a fallback for another instance of the property
-                    $deferred[] = [$node, $p];
+                    // defer addition of the property if it's supposed to be a fallback for another instance of the property
+                    $deferred[] = [$key, $value, $container];
+                } elseif ($container) {
+                    // if a container property is defined as part of backcompat processing, we insert into that; there can only ever be one instance of it
+                    if (!isset($out['properties'][$container])) {
+                        $out['properties'][$container] = [[$key => []]];
+                    } elseif (!isset($out['properties'][$container][0][$key])) {
+                        $out['properties'][$container][0][$key] = [];
+                    }
+                    $out['properties'][$container][0][$key][] = $value;
                 } else {
-                    $prop = $this->parseProperty($node, $prefix, $backcompat ? $types : [], $impliedDate);
-                    if ($prefix === "dt") {
-                        // keep track of the last seen date value to serve as an implied date
-                        $impliedDate = $prop;
+                    if (!isset($out['properties'][$key])) {
+                        $out['properties'][$key] = [];
                     }
-                    if ($container) {
-                        // if a container property is defined as part of backcompat processing, we insert into that; there can only ever be one instance of it
-                        if (!isset($out['properties'][$container])) {
-                            $out['properties'][$container] = [[$key => []]];
-                        } elseif (!isset($out['properties'][$container][0][$key])) {
-                            $out['properties'][$container][0][$key] = [];
-                        }
-                        $out['properties'][$container][0][$key][] = $prop;
-                    } else {
-                        if (!isset($out['properties'][$key])) {
-                            $out['properties'][$key] = [];
-                        }
-                        $out['properties'][$key][] = $prop;
-                    }
+                    $out['properties'][$key][] = $value;
                 }
                 // now add any extra roots to the element's class list; this only ever occurs during backcompat processing
                 foreach ($extraRoots ?? [] as $r) {
@@ -342,7 +345,20 @@ class Parser {
                 // TODO: integrate children per rules
             }
         }
-        // TODO: Process deferred properties
+        // add any deferred properties
+        foreach ($deferred as [$key, $value, $container]) {
+            if ($container && !isset($out['properties'][$container][0][$key])) {
+                if (!isset($out['properties'][$container])) {
+                    $out['properties'][$container] = [[$key => []]];
+                } elseif (!isset($out['properties'][$container][0][$key])) {
+                    $out['properties'][$container][0][$key] = [];
+                }
+                $out['properties'][$container][0][$key][] = $value;
+            } elseif (!isset($out['properties'][$key])) {
+                $out['properties'][$key] = [$value];
+            }
+        }
+        // return the final structure
         return $out;
     }
 
@@ -477,7 +493,17 @@ class Parser {
                 #   fragment-only, e.g. start with '#'.(issue 38)
                 # value: the textContent of the element after [cleaning]
                 $copy = $node->cloneNode(true);
-                // TODO: normalize URLs
+                // normalize URLs in the copy
+                $copyNode = $copy;
+                while ($copyNode) {
+                    foreach (array_merge(self::URL_ATTRS_GLOBAL, self::URL_ATTRS[$copyNode->localName] ?? []) as $attr) {
+                        if ($copyNode->hasAttribute($attr)) {
+                            $copyNode->setAttribute($attr, $this->normalizeUrl($copyNode->getAttribute($attr), ($copyNode->localName === "base" ? $this->docUrl : $this->baseUrl)));
+                        }
+                    }
+                    $copyNode = $this->nextElement($copyNode, $copy, true);
+                }
+                // return the result
                 return [
                     'html' => trim(Serializer::serializeInner($copy)),
                     'value' => $this->getCleanText($node, $prefix),
@@ -693,10 +719,10 @@ class Parser {
         return null;
     }
 
-    protected function normalizeUrl(string $url): string {
+    protected function normalizeUrl(string $url, string $baseUrl = null): string {
         // TODO: Implement better URL parser
         try {
-            return (string) Url::fromString($url, $this->baseUrl);
+            return (string) Url::fromString($url, $baseUrl ?? $this->baseUrl ?? $this->docUrl);
         } catch (\Exception $e) {
             return $url;
         }
