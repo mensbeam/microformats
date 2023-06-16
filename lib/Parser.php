@@ -854,7 +854,7 @@ class Parser {
         return $base;
     }
 
-    /** Finds the next node in tree order after $node, if any
+    /** Finds the next element in tree order after $node, if any
      * 
      * @param \DOMNode $node The context node
      * @param \DOMElement $root The element to consider the contextual root of the tree
@@ -863,11 +863,12 @@ class Parser {
     protected function nextElement(\DOMElement $node, \DOMElement $root, bool $considerChildren): ?\DOMElement {
         if ($considerChildren && $node->localName !== "template" && $node->hasChildNodes()) {
             $next = $node->firstChild;
-            if ($next instanceof \DOMElement) {
-                return $next;
-            }
+        } else {
+            $next = $node->nextSibling;
         }
-        $next = $node->nextSibling;
+        while ($next && !$next instanceof \DOMElement) {
+            $next = $next->nextSibling;
+        }
         while (!$next) {
             $node = $node->parentNode;
             if ($node->isSameNode($root)) {
