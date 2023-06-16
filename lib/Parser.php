@@ -281,6 +281,8 @@ class Parser {
         }
         // keep track of deferred properties ("use Y if X is not defined")
         $deferred = [];
+        // keep track of the implied date
+        $impliedDate = null;
         # parse child elements (document order) by:
         while ($node = $this->nextElement($node ?? $root, $root, !($isRoot = $isRoot ?? false))) {
             $isRoot = false;
@@ -299,19 +301,26 @@ class Parser {
                 if ($defer) {
                     // defer evaluation of the property if it's supposed to be a fallback for another instance of the property
                     $deferred[] = [$node, $p];
-                } elseif ($container) {
-                    // if a container property is defined as part of backcompat processing, we insert into that; there can only ever be one instance of it
-                    if (!isset($out['properties'][$container])) {
-                        $out['properties'][$container] = [[$key => []]];
-                    } elseif (!isset($out['properties'][$container][0][$key])) {
-                        $out['properties'][$container][0][$key] = [];
-                    }
-                    $out['properties'][$container][0][$key][] = $this->parseProperty($node, $prefix, $backcompat ? $types : []);
                 } else {
-                    if (!isset($out['properties'][$key])) {
-                        $out['properties'][$key] = [];
+                    $prop = $this->parseProperty($node, $prefix, $backcompat ? $types : [], $impliedDate);
+                    if ($prefix === "dt") {
+                        // keep track of the last seen date value to serve as an implied date
+                        $impliedDate = $prop;
                     }
-                    $out['properties'][$key][] = $this->parseProperty($node, $prefix, $backcompat ? $types : []);
+                    if ($container) {
+                        // if a container property is defined as part of backcompat processing, we insert into that; there can only ever be one instance of it
+                        if (!isset($out['properties'][$container])) {
+                            $out['properties'][$container] = [[$key => []]];
+                        } elseif (!isset($out['properties'][$container][0][$key])) {
+                            $out['properties'][$container][0][$key] = [];
+                        }
+                        $out['properties'][$container][0][$key][] = $prop;
+                    } else {
+                        if (!isset($out['properties'][$key])) {
+                            $out['properties'][$key] = [];
+                        }
+                        $out['properties'][$key][] = $prop;
+                    }
                 }
                 // now add any extra roots to the element's class list; this only ever occurs during backcompat processing
                 foreach ($extraRoots ?? [] as $r) {
@@ -381,7 +390,7 @@ class Parser {
         return $out;
     }
 
-    protected function parseProperty(\DOMElement $node, string $prefix, array $backcompatTypes) {
+    protected function parseProperty(\DOMElement $node, string $prefix, array $backcompatTypes, ?string $impliedDate) {
         switch ($prefix) {
             case "p":
                 # To parse an element for a p-x property value (whether explicit p-* or backcompat equivalent):
@@ -438,23 +447,25 @@ class Parser {
                 #   element, if any).
                 return $this->normalizeUrl($url);
             case "dt":
+                // NOTE: Because we perform implied date resolution we don't blindly return data from nodes; returning is done below after checks
                 # To parse an element for a dt-x property value (whether explicit dt-* or backcompat equivalent):
-                if ($date = $this->getValueClassPattern($node, $prefix, $backcompatTypes)) {
+                if ($date = $this->getValueClassPattern($node, $prefix, $backcompatTypes, $impliedDate)) {
                     # parse the element for the Value Class Pattern, including the date and time parsing rules. If a value is found, then return it.
                     return $date;
                 } elseif (in_array($node->localName, ["time", "ins", "del"]) && $node->hasAttribute("datetime")) {
                     # if time.dt-x[datetime] or ins.dt-x[datetime] or del.dt-x[datetime], then return the datetime attribute
-                    return $node->getAttribute("datetime");
+                    $date = $node->getAttribute("datetime");
                 } elseif ($node->localName === "abbr" && $node->hasAttribute("title")) {
                     # else if abbr.dt-x[title], then return the title attribute
-                    return $node->getAttribute("title");
+                    $date = $node->getAttribute("title");
                 } elseif (in_array($node->localName, ["data", "input"]) && $node->hasAttribute("value")) {
                     # else if data.dt-x[value] or input.dt-x[value], then return the value attribute
-                    return $node->getAttribute("value");
+                    $date = $node->getAttribute("value");
                 } else {
                     # else return the textContent of the element after removing all leading/trailing spaces and nested <script> & <style> elements.
-                    return $this->getCleanText($node, $prefix);
+                    $date = $this->getCleanText($node, $prefix);
                 }
+                return $this->stitchDate($this->parseDatePart($date), $impliedDate) ?? $date;
             case "e":
                 # To parse an element for a e-x property value (whether explicit "e-*" or backcompat equivalent):
                 # return a dictionary with two keys:
@@ -475,7 +486,7 @@ class Parser {
         }
     }
 
-    protected function getValueClassPattern(\DOMElement $node, string $prefix, array $backcompatTypes) {
+    protected function getValueClassPattern(\DOMElement $node, string $prefix, array $backcompatTypes, ?string $impliedDate = null) {
         $out = [];
         $root = $node;
         $skipChildren = false;
@@ -527,11 +538,20 @@ class Parser {
                     $skipChildren = true;
                     $out[] = $candidate;
                 } else {
-                    // TODO: date processing
-                    $skipChildren = true;
+                    // parse and normalize date parts
+                    $candidate = $this->parseDatePart($candidate);
+                    if ($candidate && !(
+                        # ignore any further "value" elements that specify the date.
+                        (isset($out['date']) && isset($candidate['date']))
+                        # ignore any further "value" elements that specify the time.
+                        || (isset($out['time']) && isset($candidate['time']))
+                        # ignore any further "value" elements that specify the timezone.
+                        || (isset($out['zone']) && isset($candidate['zone']))
+                    )) {
+                        $skipChildren = true;
+                        $out += $candidate;
+                    }
                 }
-            } else {
-                $skipChildren = false;
             }
         }
         if ($prefix !== "dt") {
@@ -542,8 +562,8 @@ class Parser {
             return implode("", $out);
         } else {
             # if the microformats property expects a datetime value, see the Date Time Parsing section.
-            // TODO
-            return $out;
+            // The rules for datetimes are dispersed elsewhere. All that's required here is to stitch parts together
+            return $this->stitchDate($out, $impliedDate);
         }
     }
 
@@ -564,7 +584,7 @@ class Parser {
         }
     }
 
-    protected function parseDatePart(string $input): ?array {
+    protected function parseDatePart(string $input): array {
         // do a first-pass normalization on the input; this normalizes am/pm and normalizes and trims whitespace
         $input = trim(preg_replace(['/([ap])\.m\.$/', '/\s+/'], ["$1m", " "], strtr($input, "APM", "apm")));
         // match against all valid date/time format patterns and returns the matched parts
@@ -643,7 +663,7 @@ class Parser {
                 }
             }
         }
-        return null;
+        return [];
     }
 
     protected function testDate(string $input, string ...$format): ?\DateTimeImmutable {
@@ -651,6 +671,22 @@ class Parser {
             $out = \DateTimeImmutable::createFromFormat($f, $input, new \DateTimeZone("UTC"));
             if ($out && $out->format($f) === $input) {
                 return $out;
+            }
+        }
+        return null;
+    }
+
+    protected function stitchDate(array $parts, ?string $implied): ?string {
+        if (sizeof($parts) === 3) {
+            return $parts['date']." ".$parts.['time'].$parts['zone'];
+        } elseif (sizeof($parts) === 1 && isset($parts['date'])) {
+            return $parts['date'];
+        } else {
+            $implied = $implied ? $this->parseDatePart($implied) : [];
+            if (isset($parts['date']) && isset($parts['time'])) {
+                return $parts['date']." ".$parts.['time'].($implied['zone'] ?? "");
+            } elseif (isset($parts['time']) && isset($implied['date'])) {
+                return $implied['date']." ".$parts.['time'].($parts['zone'] ?? $implied['zone'] ?? "");
             }
         }
         return null;
