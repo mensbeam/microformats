@@ -350,10 +350,20 @@ class Parser {
         $deferred = [];
         // keep track of the implied date
         $impliedDate = null;
+        // keep track of whether there is a p- or e- property on the microformat; this is required for implied property processing
+        $hasP = false;
+        $hasE = false;
         # parse child elements (document order) by:
-        while ($node = $this->nextElement($node ?? $root, $root, !($isRoot = $isRoot ?? false))) {
-            $isRoot = false;
+        while ($node = $this->nextElement($node ?? $root, $root, !($child = $child ?? false))) {
+            $child = null;
             $classes = $this->parseTokens($node, "class");
+            # parse a child element for microformats (recurse)
+            // NOTE: We do this in a different order from the spec because this seems to be what is actually required
+            if ($types = $this->matchRootsMf2($classes)) {
+                $child = $this->parseMicroformat($node, $types, false);
+            } elseif ($types = $this->matchRootsBackcompat($classes)) {
+                $child = $this->parseMicroformat($node, $types, true);
+            }
             if ($backcompat) {
                 # if parsing a backcompat root, parse child element class name(s) for backcompat properties
                 $properties = $this->matchPropertiesBackcompat($classes, $types, $node);
@@ -361,15 +371,48 @@ class Parser {
                 # else parse a child element class for property class name(s) "p-*,u-*,dt-*,e-*"
                 $properties = $this->matchPropertiesMf2($classes);
             }
+            # [if the element is a microformat and it has no properties] add
+            #   found elements that are microformats to the "children" array
+            if ($child && !$properties) {
+                if (!isset($out['children'])) {
+                    $out['children'] = [];
+                }
+                $out['children'][] = $child;
+            }
             # if such class(es) are found, it is a property element
             # add properties found to current microformat's properties: { } structure
             foreach ($properties as $p) {
                 [$prefix, $key, $extraRoots, $container, $defer] = array_pad($p, 5, null);
+                $hasP = $hasP ?: $prefix === "p";
+                $hasE = $hasE ?: $prefix === "e";
                 // parse the node for the property value
                 $value = $this->parseProperty($node, $prefix, $backcompat ? $types : [], $impliedDate);
                 if ($prefix === "dt") {
                     // keep track of the last seen date value to serve as an implied date
                     $impliedDate = $value;
+                }
+                # if that child element itself has a microformat ("h-*" or
+                #   backcompat roots) and is a property element, add it into
+                #   the array of values for that property as a { } structure,
+                #   add to that { } structure:
+                #     value:
+                if ($child) {
+                    if ($prefix === "p" && isset($child['properties']['name'])) {
+                        # if it's a p-* property element, use the first p-name of the h-* child
+                        $childValue = $child['properties']['name'][0];
+                    } elseif ($prefix === "e") {
+                        # else if it's an e-* property element, re-use its { } structure with existing value: inside.
+                        $childValue = $value['value'];
+                    } elseif ($prefix === "u" && isset($child['properties']['url'])) {
+                        # else if it's a u-* property element and the h-* child has a u-url, use the first such u-url
+                        $childValue = $child['properties']['url'][0];
+                    } else {
+                        # else use the parsed property value per p-*,u-*,dt-* parsing respectively
+                        $childValue = $value;
+                    }
+                    $value = $child;
+                    $value['value'] = $childValue;
+                    $childValue = null;
                 }
                 if ($defer) {
                     // defer addition of the property if it's supposed to be a fallback for another instance of the property
@@ -394,18 +437,6 @@ class Parser {
                         $classes[] = $r;
                     }
                 }
-            }
-            # parse a child element for microformats (recurse)
-            if ($types = $this->matchRootsMf2($classes)) {
-                $child = $this->parseMicroformat($node, $types, false);
-            } elseif ($types = $this->matchRootsBackcompat($classes)) {
-                $child = $this->parseMicroformat($node, $types, true);
-            } else {
-                $child = null;
-            }
-            if ($child) {
-                $isRoot = true;
-                // TODO: integrate children per rules
             }
         }
         // add any deferred properties
