@@ -232,7 +232,7 @@ class Parser {
             $node = $this->nextElement($node, $root, false);
         }
         # parse all hyperlink (<a> <area> <link>) elements for rel microformats, adding to the JSON rels & rel-urls hashes accordingly
-        foreach ($this->xpath->query(".//a[rel][href]|.//area[rel][href]|.//link[rel][href]", $root) as $link) {
+        foreach ($this->xpath->query(".//a[@rel][@href]|.//area[@rel][@href]|.//link[@rel][@href]", $root) as $link) {
             # To parse a hyperlink element (e.g. a or link) for rel
             #   microformats: use the following algorithm or an algorithm that
             #   produces equivalent results:
@@ -267,10 +267,13 @@ class Parser {
             #       "title": the value of the "title" attribute
             #       "type": the value of the "type" attribute
             #       "text": the text content of the element if any
-            foreach (["hreflang", "media", "title", "type", "text"] as $attr) {
+            foreach (["hreflang", "media", "title", "type"] as $attr) {
                 if (!isset($out['rel-urls'][$url][$attr]) && $link->hasAttribute($attr)) {
                     $out['rel-urls'][$url][$attr] = trim($link->getAttribute($attr));
                 }
+            }
+            if (strlen($text = $this->getCleanText($link, "p"))) {
+                $out['rel-urls'][$url]['text'] = $text;
             }
             # if there is no "rels" key in that hash, add it with an empty array value
             if (!isset($out['rel-urls'][$url]['rels'])) {
@@ -350,19 +353,22 @@ class Parser {
         $deferred = [];
         // keep track of the implied date
         $impliedDate = null;
-        // keep track of whether there is a p- or e- property on the microformat; this is required for implied property processing
+        // keep track of whether there is a p- or e- property or child on the microformat; this is required for implied property processing
         $hasP = false;
         $hasE = false;
+        $hasChild = false;
         # parse child elements (document order) by:
         while ($node = $this->nextElement($node ?? $root, $root, !($child = $child ?? false))) {
             $child = null;
             $classes = $this->parseTokens($node, "class");
             # parse a child element for microformats (recurse)
             // NOTE: We do this in a different order from the spec because this seems to be what is actually required
-            if ($types = $this->matchRootsMf2($classes)) {
-                $child = $this->parseMicroformat($node, $types, false);
-            } elseif ($types = $this->matchRootsBackcompat($classes)) {
-                $child = $this->parseMicroformat($node, $types, true);
+            if ($childTypes = $this->matchRootsMf2($classes)) {
+                $child = $this->parseMicroformat($node, $childTypes, false);
+                $hasChild = true;
+            } elseif ($childTypes = $this->matchRootsBackcompat($classes)) {
+                $child = $this->parseMicroformat($node, $childTypes, true);
+                $hasChild = true;
             }
             if ($backcompat) {
                 # if parsing a backcompat root, parse child element class name(s) for backcompat properties
