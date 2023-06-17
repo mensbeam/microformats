@@ -526,16 +526,16 @@ class Parser {
                 } elseif ($root->localName === "object" && $root->hasAttribute("data")) {
                     # else if object.h-x[data] then use data for photo
                     $photo = $root->getAttribute("data");
-                } elseif (($set = $this->xpath->query("./img[@src and count(../*) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                } elseif (($set = $this->xpath->query("./img[@src and count(../img) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
                     # else if .h-x>img[src]:only-of-type:not[.h-*] then use the result of "parse an img element for src and alt" (see Sec.1.5) for photo
                     $out['properties']['photo'] = [$this->parseImg($set->item(0))];
-                } elseif (($set = $this->xpath->query("./object[@data and count(../*) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                } elseif (($set = $this->xpath->query("./object[@data and count(../object) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
                     # else if .h-x>object[data]:only-of-type:not[.h-*] then use that object’s data for photo
                     $photo = $set->item(0)->getAttribute("data");
                 } elseif (
                     ($set = $this->xpath->query("./*[count(../*) = 1]", $root))->length
                     && !$this->hasRoots($set->item(0))
-                    && ($set = $this->xpath->query("./img[@src and count(../*) = 1]", $set->item(0)))->length
+                    && ($set = $this->xpath->query("./img[@src and count(../img) = 1]", $set->item(0)))->length
                     && !$this->hasRoots($set->item(0))
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>img[src]:only-of-type:not[.h-*], then use the result of "parse an img element for src and alt" (see Sec.1.5) for photo
@@ -543,7 +543,7 @@ class Parser {
                 } elseif (
                     ($set = $this->xpath->query("./*[count(../*) = 1]", $root))->length
                     && !$this->hasRoots($set->item(0))
-                    && ($set = $this->xpath->query("./object[@data and count(../*) = 1]", $set->item(0)))->length
+                    && ($set = $this->xpath->query("./object[@data and count(../object) = 1]", $set->item(0)))->length
                     && !$this->hasRoots($set->item(0))
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>object[data]:only-of-type:not[.h-*], then use that object’s data for photo
@@ -565,16 +565,16 @@ class Parser {
                 if ($root->hasAttribute("href") && in_array($root->localName, ["a", "area"])) {
                     # if a.h-x[href] or area.h-x[href] then use that [href] for url
                     $url = $root->getAttribute("href");
-                } elseif (($set = $this->xpath->query("./a[@href and count(../*) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                } elseif (($set = $this->xpath->query("./a[@href and count(../a) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
                     # else if .h-x>a[href]:only-of-type:not[.h-*], then use that [href] for url
                     $url = $set->item(0)->getAttribute("href");
-                } elseif (($set = $this->xpath->query("./area[@href and count(../*) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                } elseif (($set = $this->xpath->query("./area[@href and count(../area) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
                     # else if .h-x>area[href]:only-of-type:not[.h-*], then use that [href] for url
                     $url = $set->item(0)->getAttribute("href");
                 } elseif (
                     ($set = $this->xpath->query("./*[count(../*) = 1]", $root))->length
                     && !$this->hasRoots($set->item(0))
-                    && ($set = $this->xpath->query("./a[@href and count(../*) = 1]", $set->item(0)))->length
+                    && ($set = $this->xpath->query("./a[@href and count(../a) = 1]", $set->item(0)))->length
                     && !$this->hasRoots($set->item(0))
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>a[href]:only-of-type:not[.h-*], then use that [href] for url
@@ -582,7 +582,7 @@ class Parser {
                 } elseif (
                     ($set = $this->xpath->query("./*[count(../*) = 1]", $root))->length
                     && !$this->hasRoots($set->item(0))
-                    && ($set = $this->xpath->query("./are[@href and count(../*) = 1]", $set->item(0)))->length
+                    && ($set = $this->xpath->query("./area[@href and count(../area) = 1]", $set->item(0)))->length
                     && !$this->hasRoots($set->item(0))
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>area[href]:only-of-type:not[.h-*], then use that [href] for url

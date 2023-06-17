@@ -56,12 +56,6 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         "microformats-v1/includes/hyperlink",
         "microformats-v1/includes/object",
         "microformats-v1/includes/table",
-        "microformats-v2/h-adr/lettercase",
-        "microformats-v2/h-adr/simpleproperties",
-        "microformats-v2/h-card/baseurl",
-        "microformats-v2/h-card/childimplied",
-        "microformats-v2/h-card/extendeddescription",
-        "microformats-v2/h-card/hcard",
         "microformats-v2/h-card/hyperlinkedphoto",
         "microformats-v2/h-card/impliedname",
         "microformats-v2/h-card/impliedphoto",
@@ -138,12 +132,18 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         if (in_array($path, self::SUPPRESSED)) {
             $this->markTestIncomplete();
         }
-        $dom = new DOMParser;
-        $parser = new Parser;
+        // read data
         $exp = json_decode(file_get_contents(self::BASE.$path.".json"), true);
         $html = file_get_contents(self::BASE.$path.".html");
+        // parse input
+        $dom = new DOMParser;
+        $parser = new Parser;
         $doc = $dom->parseFromString($html, "text/html; charset=UTF-8");
         $act = $parser->parseElement($doc->documentElement);
+        // sort both arrays
+        $this->ksort($exp);
+        $this->ksort($act);
+        // run comparison
         $this->assertSame($exp, $act);
     }
 
@@ -153,6 +153,14 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
             $path =  preg_replace('/\.json$/', '', $path);
             yield [$path];
         }
+    }
+
+    protected function ksort(&$arr) {
+        foreach ($arr as &$v) {
+            if (is_array($v))
+                $this->ksort($v);
+         }
+         ksort($arr);
     }
 
 }
