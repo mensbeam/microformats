@@ -106,7 +106,7 @@ class Parser {
         'author'   => ['h-entry' => ["u", "author", [], null, true]],
     ];
     /** @var array The list of (global) attributes which contain URLs and apply to any element */
-    protected const URL_ATTRS_GLOBAL= ["itemid", "itemprop", "itemtype"];
+    protected const URL_ATTRS_GLOBAL = ["itemid", "itemprop", "itemtype"];
     /** @var array The list of (non-global) attributes which contain URLs and their host elements */
     protected const URL_ATTRS = [
         'a'          => ["href", "ping"],
@@ -197,7 +197,7 @@ class Parser {
     protected $xpath;
 
     /** Parses a DOMElement for microformats
-     * 
+     *
      * @param \DOMElement $node The DOMElement to parse
      * @param string $baseURL The base URL against which to resolve relative URLs in the output
      */
@@ -465,7 +465,7 @@ class Parser {
                 $out['properties'][$key] = [$value];
             }
         }
-        # imply properties for the found microformat 
+        # imply properties for the found microformat
         if (!$backcompat) {
             # if no explicit "name" property, and no other p-* or e-* properties, and no nested microformats,
             if (!isset($out['properties']['name']) && !$hasChild && !$hasP && !$hasE) {
@@ -663,10 +663,9 @@ class Parser {
                 } elseif (in_array($node->localName, ["img", "area"]) && $node->hasAttribute("alt")) {
                     # else if img.p-x[alt] or area.p-x[alt], then return the alt attribute
                     return $node->getAttribute("alt");
-                } else {
-                    # else return the textContent of the element after [cleaning]
-                    return $this->getCleanText($node, $prefix);
                 }
+                # else return the textContent of the element after [cleaning]
+                return $this->getCleanText($node, $prefix);
             case "u":
                 # To parse an element for a u-x property value (whether explicit u-* or backcompat equivalent):
                 if (in_array($node->localName, ["a", "area", "link"]) && $node->hasAttribute("href")) {
@@ -745,7 +744,7 @@ class Parser {
                 }
                 // return the result
                 return [
-                    'html' => trim(Serializer::serializeInner($copy)),
+                    'html'  => trim(Serializer::serializeInner($copy)),
                     'value' => $this->getCleanText($node, $prefix),
                 ];
             default:
@@ -870,7 +869,7 @@ class Parser {
                     ];
                 }
                 foreach (self::ZONE_INPUT_FORMATS as $zf => $zp) {
-                    if ($out = $this->testDate($input, "!$df $tf$zf", "!$df\T$tf$zf","!$df $tf $zf", "!$df\T$tf $zf")) {
+                    if ($out = $this->testDate($input, "!$df $tf$zf", "!$df\T$tf$zf", "!$df $tf $zf", "!$df\T$tf $zf")) {
                         return [
                             'date' => $out->format(self::DATE_OUTPUT_FORMATS[$dp]),
                             'time' => $out->format(self::DATE_OUTPUT_FORMATS[$tp]),
@@ -998,7 +997,7 @@ class Parser {
     }
 
     /** Finds the next element in tree order after $node, if any
-     * 
+     *
      * @param \DOMNode $node The context node
      * @param \DOMElement $root The element to consider the contextual root of the tree
      * @param bool $considerChildren Whether or not child nodes are valid next nodes

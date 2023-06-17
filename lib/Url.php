@@ -4,6 +4,7 @@
  * See LICENSE and AUTHORS files for details */
 
 declare(strict_types=1);
+
 namespace MensBeam\Microformats;
 
 use Psr\Http\Message\UriInterface;
@@ -44,7 +45,7 @@ class Url implements UriInterface {
 (\#.*)?                                 # fragment part
 $>six
 PCRE;
-        protected const STRICT_URI_PATTERN = <<<'PCRE'
+    protected const STRICT_URI_PATTERN = <<<'PCRE'
 <^
 (?:
     (?:
@@ -381,14 +382,14 @@ PCRE;
     protected function setPass(string $value): void {
         $this->pass = $this->percentEncode($value, "userinfo");
     }
-    
+
     protected function setHost(?string $value): void {
         if ($this->scheme === "file" && strtolower($value) === "localhost") {
             $this->host = "";
         } else {
             $this->host = $this->parseHost($value);
         }
-        
+
     }
 
     protected function setPort(string $value): void {
@@ -595,7 +596,7 @@ PCRE;
             $out[] = $ipv4 % 256;
             $ipv4 = floor($ipv4 / 256);
         }
-        return implode(".", array_reverse($out));        
+        return implode(".", array_reverse($out));
     }
 
     protected function parseIPv4Number(string $n): ?int {
