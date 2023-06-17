@@ -361,6 +361,7 @@ class Parser {
         // keep track of whether there is a p- or e- property or child on the microformat; this is required for implied property processing
         $hasP = false;
         $hasE = false;
+        $hasU = false;
         $hasChild = false;
         # parse child elements (document order) by:
         while ($node = $this->nextElement($node ?? $root, $root, !($child = $child ?? false))) {
@@ -396,6 +397,7 @@ class Parser {
                 [$prefix, $key, $extraRoots, $container, $defer] = array_pad($p, 5, null);
                 $hasP = $hasP ?: $prefix === "p";
                 $hasE = $hasE ?: $prefix === "e";
+                $hasU = $hasU ?: $prefix === "u";
                 // parse the node for the property value
                 $value = $this->parseProperty($node, $prefix, $backcompat ? $types : [], $impliedDate);
                 if ($prefix === "dt") {
@@ -466,7 +468,7 @@ class Parser {
         # imply properties for the found microformat 
         if (!$backcompat) {
             # if no explicit "name" property, and no other p-* or e-* properties, and no nested microformats,
-            if (!isset($out['properties']['name']) && !$hasChild && !$hasE && !$hasP) {
+            if (!isset($out['properties']['name']) && !$hasChild && !$hasP && !$hasE) {
                 # then imply by:
                 if ($root->hasAttribute("alt") && in_array($root->localName, ["img", "area"])) {
                     # if img.h-x or area.h-x, then use its alt attribute for name
@@ -491,15 +493,109 @@ class Parser {
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>img:only-child[alt]:not([alt=""]):not[.h-*] then use that img’s alt for name
                     $name = $set->item(0)->getAttribute("alt");
-                } elseif (false) {
+                } elseif (
+                    ($set = $this->xpath->query("./*[count(../*) = 1]", $root))->length
+                    && !$this->hasRoots($set->item(0))
+                    && ($set = $this->xpath->query("./area[@alt and @alt != '' and count(../*) = 1]", $set->item(0)))->length
+                    && !$this->hasRoots($set->item(0))
+                ) {
                     # else if .h-x>:only-child:not[.h-*]>area:only-child[alt]:not([alt=""]):not[.h-*] then use that area’s alt for name
-                } elseif (false) {
+                    $name = $set->item(0)->getAttribute("alt");
+                } elseif (
+                    ($set = $this->xpath->query("./*[count(../*) = 1]", $root))->length
+                    && !$this->hasRoots($set->item(0))
+                    && ($set = $this->xpath->query("./abbr[@title and @title != '' and count(../*) = 1]", $set->item(0)))->length
+                    && !$this->hasRoots($set->item(0))
+                ) {
                     # else if .h-x>:only-child:not[.h-*]>abbr:only-child[title]:not([title=""]):not[.h-*] use that abbr’s title for name
+                    $name = $set->item(0)->getAttribute("title");
                 } else {
                     # else use the textContent of the .h-x for name after [cleaning]
                     $name = $this->getCleanText($root, "p");
                 }
+                # remove all leading/trailing spaces
                 $out['properties']['name'] = trim($name);
+            }
+            # if no explicit "photo" property, and no other explicit u-* (Proposed: change to: u-* or e-*) properties, and no nested microformats,
+            if (!isset($out['properties']['photo']) && !$hasChild && !$hasU && !$hasE) {
+                $photo = null;
+                # then imply by:
+                if ($root->localName === "img" && $root->hasAttribute("src")) {
+                    # if img.h-x[src], then use the result of "parse an img element for src and alt" (see Sec.1.5) for photo
+                    $photo = $root->getAttribute("src");
+                } elseif ($root->localName === "object" && $root->hasAttribute("data")) {
+                    # else if object.h-x[data] then use data for photo
+                    $photo = $root->getAttribute("data");
+                } elseif (($set = $this->xpath->query("./img[@src and count(../*) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                    # else if .h-x>img[src]:only-of-type:not[.h-*] then use the result of "parse an img element for src and alt" (see Sec.1.5) for photo
+                    $out['properties']['photo'] = $this->parseImg($set->item(0));
+                } elseif (($set = $this->xpath->query("./object[@data and count(../*) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                    # else if .h-x>object[data]:only-of-type:not[.h-*] then use that object’s data for photo
+                    $photo = $set->item(0)->getAttribute("data");
+                } elseif (
+                    ($set = $this->xpath->query("./*[count(../*) = 1]", $root))->length
+                    && !$this->hasRoots($set->item(0))
+                    && ($set = $this->xpath->query("./img[@src and count(../*) = 1]", $set->item(0)))->length
+                    && !$this->hasRoots($set->item(0))
+                ) {
+                    # else if .h-x>:only-child:not[.h-*]>img[src]:only-of-type:not[.h-*], then use the result of "parse an img element for src and alt" (see Sec.1.5) for photo
+                    $out['properties']['photo'] = $this->parseImg($set->item(0));
+                } elseif (
+                    ($set = $this->xpath->query("./*[count(../*) = 1]", $root))->length
+                    && !$this->hasRoots($set->item(0))
+                    && ($set = $this->xpath->query("./object[@data and count(../*) = 1]", $set->item(0)))->length
+                    && !$this->hasRoots($set->item(0))
+                ) {
+                    # else if .h-x>:only-child:not[.h-*]>object[data]:only-of-type:not[.h-*], then use that object’s data for photo
+                    $photo = $set->item(0)->getAttribute("data");
+                }
+                if (is_string($photo)) {
+                    # if there is a gotten photo value, return the normalized
+                    #   absolute URL of it, following the containing document's
+                    #   language's rules for resolving relative URLs (e.g. in
+                    #   HTML, use the current URL context as determined by the
+                    #   page, and first <base> element, if any).
+                    $out['properties']['photo'] = $this->normalizeUrl($photo);
+                }
+            }
+            # if no explicit "url" property, and no other explicit u-* (Proposed: change to: u-* or e-*) properties, and no nested microformats,
+            if (!isset($out['properties']['url']) && !$hasChild && !$hasU && !$hasE) {
+                $url = null;
+                # then imply by:
+                if ($root->hasAttribute("href") && in_array($root->localName, ["a", "area"])) {
+                    # if a.h-x[href] or area.h-x[href] then use that [href] for url
+                    $url = $root->getAttribute("href");
+                } elseif (($set = $this->xpath->query("./a[@href and count(../*) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                    # else if .h-x>a[href]:only-of-type:not[.h-*], then use that [href] for url
+                    $url = $set->item(0)->getAttribute("href");
+                } elseif (($set = $this->xpath->query("./area[@href and count(../*) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                    # else if .h-x>area[href]:only-of-type:not[.h-*], then use that [href] for url
+                    $url = $set->item(0)->getAttribute("href");
+                } elseif (
+                    ($set = $this->xpath->query("./*[count(../*) = 1]", $root))->length
+                    && !$this->hasRoots($set->item(0))
+                    && ($set = $this->xpath->query("./a[@href and count(../*) = 1]", $set->item(0)))->length
+                    && !$this->hasRoots($set->item(0))
+                ) {
+                    # else if .h-x>:only-child:not[.h-*]>a[href]:only-of-type:not[.h-*], then use that [href] for url
+                    $url = $set->item(0)->getAttribute("href");
+                } elseif (
+                    ($set = $this->xpath->query("./*[count(../*) = 1]", $root))->length
+                    && !$this->hasRoots($set->item(0))
+                    && ($set = $this->xpath->query("./are[@href and count(../*) = 1]", $set->item(0)))->length
+                    && !$this->hasRoots($set->item(0))
+                ) {
+                    # else if .h-x>:only-child:not[.h-*]>area[href]:only-of-type:not[.h-*], then use that [href] for url
+                    $url = $set->item(0)->getAttribute("href");
+                }
+                if (is_string($url)) {
+                    # if there is a gotten url value, return the normalized
+                    #   absolute URL of it, following the containing document's
+                    #   language's rules for resolving relative URLs (e.g. in
+                    #   HTML, use the current URL context as determined by the
+                    #   page, and first <base> element, if any).
+                    $out['properties']['url'] = $this->normalizeUrl($url);
+                }
             }
         }
         // return the final structure
