@@ -56,7 +56,6 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         "microformats-v1/includes/hyperlink",
         "microformats-v1/includes/object",
         "microformats-v1/includes/table",
-        "microformats-v2/h-adr/geo",
         "microformats-v2/h-adr/geourl",
         "microformats-v2/h-adr/justaname",
         "microformats-v2/h-adr/lettercase",
@@ -141,6 +140,13 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         if (in_array($path, self::SUPPRESSED)) {
             $this->markTestIncomplete();
         }
+        $dom = new DOMParser;
+        $parser = new Parser;
+        $exp = json_decode(file_get_contents(self::BASE.$path.".json"), true);
+        $html = file_get_contents(self::BASE.$path.".html");
+        $doc = $dom->parseFromString($html, "text/html; charset=UTF-8");
+        $act = $parser->parseElement($doc->documentElement);
+        $this->assertSame($exp, $act);
     }
 
     public function provideStandardTests(): \Generator {

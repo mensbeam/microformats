@@ -29,7 +29,7 @@ class Parser {
         'additional-name'   => ['h-card' => ["p", "additional-name"]],
         'adr'               => ['h-card' => ["p", "adr"]],
         'affiliation'       => ['h-resume' => ["p", "affiliation", ["vcard"]]],
-        'author'            => ['h-entry' => ["p", "author" ["vcard"]], 'h-recipe' => ["p", "author", ["vcard"]]],
+        'author'            => ['h-entry' => ["p", "author", ["vcard"]], 'h-recipe' => ["p", "author", ["vcard"]]],
         'bday'              => ['h-card' => ["dt", "bday"]],
         'best'              => ['h-review' => ["p", "best"], 'h-review-aggregate' => ["p", "best"]],
         'brand'             => ['h-product' => ["p", "brand"]],
@@ -201,7 +201,7 @@ class Parser {
      * @param \DOMElement $node The DOMElement to parse
      * @param string $baseURL The base URL against which to resolve relative URLs in the output
      */
-    public function parseNode(\DOMElement $node, string $baseUrl = ""): array {
+    public function parseElement(\DOMElement $node, string $baseUrl = ""): array {
         $root = $node;
         // Perform HTML base-URL resolution
         $this->docUrl = $baseUrl;
@@ -220,9 +220,9 @@ class Parser {
             # if found, start parsing a new microformat
             $classes = $this->parseTokens($node, "class");
             if ($types = $this->matchRootsMf2($classes)) {
-                $out[] = $this->parseMicroformat($node, $types, false);
+                $out['items'][] = $this->parseMicroformat($node, $types, false);
             } elseif ($types = $this->matchRootsBackcompat($classes)) {
-                $out[] = $this->parseMicroformat($node, $types, true);
+                $out['items'][] = $this->parseMicroformat($node, $types, true);
             } else {
                 # if none found, parse child elements for microformats (depth first, doc order)
                 $node = $this->nextElement($node, $root, true);
@@ -609,7 +609,7 @@ class Parser {
             #   optional vendor prefix (series of 1+ number or lowercase
             #   a-z characters i.e. [0-9a-z]+, followed by '-'), then one
             #   or more '-' separated lowercase a-z words.
-            if (!preg_match('/^(p|u|dt|e)((?:-[a-z0-9]+)?(?:-[a-z]+)+)$/S', $c, $match)) {
+            if (preg_match('/^(p|u|dt|e)((?:-[a-z0-9]+)?(?:-[a-z]+)+)$/S', $c, $match)) {
                 $out[] = [
                     $match[1], // the prefix
                     substr($match[2], 1), // the property name
@@ -1004,7 +1004,8 @@ class Parser {
      */
     protected function nextElement(\DOMElement $node, \DOMElement $root, bool $considerChildren): ?\DOMElement {
         if ($considerChildren && $node->localName !== "template" && $node->hasChildNodes()) {
-            $next = $node->firstChild;
+            $node = $node->firstChild;
+            $next = $node;
         } else {
             $next = $node->nextSibling;
         }
