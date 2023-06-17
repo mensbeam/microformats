@@ -51,7 +51,7 @@ class Parser {
         'experience'        => ['h-resume' => ["p", "experience", ["vevent"]]],
         'extended-address'  => ['h-adr' => ["p", "extended-address"], 'h-card' => ["p", "extended-address"]],
         'family-name'       => ['h-card' => ["p", "family-name"]],
-        'fn'                => ['h-card' => ["p", "name"], 'h-product' => ["p", "name"], 'h-recipe' => ["p", "name"], 'h-review' => ["p", "name", [], "item"], , 'h-review-aggregate' => ["p", "name", [], "item"]],
+        'fn'                => ['h-card' => ["p", "name"], 'h-product' => ["p", "name"], 'h-recipe' => ["p", "name"], 'h-review' => ["p", "name", [], "item"], 'h-review-aggregate' => ["p", "name", [], "item"]],
         'geo'               => ['h-card' => ["p", "geo"], 'h-event' => ["p", "geo"]],
         'given-name'        => ['h-card' => ["p", "given-name"]],
         'honorific-prefix'  => ['h-card' => ["p", "honorific-prefix"]],
@@ -72,7 +72,7 @@ class Parser {
         'organization-name' => ['h-card' => ["p", "organization-name"]],
         'organization-unit' => ['h-card' => ["p", "organization-unit"]],
         'org'               => ['h-card' => ["p", "org"]],
-        'photo'             => ['h-card' => ["u", "photo"], 'h-product' => ["u", "photo"], 'h-recipe' => ["u", "photo"], 'h-review' => ["u", "photo", [], "item"], , 'h-review-aggregate' => ["u", "photo", [], "item"]],
+        'photo'             => ['h-card' => ["u", "photo"], 'h-product' => ["u", "photo"], 'h-recipe' => ["u", "photo"], 'h-review' => ["u", "photo", [], "item"], 'h-review-aggregate' => ["u", "photo", [], "item"]],
         'postal-code'       => ['h-adr' => ["p", "postal-code"], 'h-card' => ["p", "postal-code"]],
         'post-office-box'   => ['h-adr' => ["p", "post-office-box"], 'h-card' => ["p", "post-office-box"]],
         'price'             => ['h-product' => ["p", "price"]],
@@ -93,7 +93,7 @@ class Parser {
         'tz'                => ['h-card' => ["p", "tz"]],
         'uid'               => ['h-card' => ["u", "uid"]],
         'updated'           => ['h-entry' => ["dt", "updated"]],
-        'url'               => ['h-card' => ["u", "url"], 'h-event' => ["u", "url"], 'h-product' => ["u", "url"], 'h-review' => ["u", "url", [], "item"], , 'h-review-aggregate' => ["u", "url", [], "item"]],
+        'url'               => ['h-card' => ["u", "url"], 'h-event' => ["u", "url"], 'h-product' => ["u", "url"], 'h-review' => ["u", "url", [], "item"], 'h-review-aggregate' => ["u", "url", [], "item"]],
         'votes'             => ['h-review-aggregate' => ["p", "votes"]],
         'worst'             => ['h-review' => ["p", "worst"], 'h-review-aggregate' => ["p", "worst"]],
         'yield'             => ['h-recipe' => ["p", "yield"]],
@@ -102,7 +102,7 @@ class Parser {
     protected const BACKCOMPAT_RELATIONS = [
         // h-review and h-review-agregate also include "self bookmark", but this requires special processing
         'bookmark' => ['h-entry' => ["u", "url"]],
-        'tag'      => ['h-entry' => ["p", "category", [], null, true], 'h-feed' => ["p", "category"], 'h-review' => ["p", "category"], , 'h-review-aggregate' => ["p", "category"]],
+        'tag'      => ['h-entry' => ["p", "category", [], null, true], 'h-feed' => ["p", "category"], 'h-review' => ["p", "category"], 'h-review-aggregate' => ["p", "category"]],
         'author'   => ['h-entry' => ["u", "author", [], null, true]],
     ];
     /** @var array The list of (global) attributes which contain URLs and apply to any element */
