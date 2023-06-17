@@ -331,6 +331,11 @@ class Parser {
         return $out;
     }
 
+    protected function hasRoots(\DOMElement $node): bool {
+        $classes = $this->parseTokens($node, "class");
+        return (bool) ($this->matchRootsMf2($classes) ?: $this->matchRootsBackcompat($classes));
+    }
+
     protected function parseMicroformat(\DOMElement $root, array $types, bool $backcompat): array {
         # keep track of whether the root class name(s) was from backcompat
         // this is a parameter to this function
@@ -458,8 +463,44 @@ class Parser {
                 $out['properties'][$key] = [$value];
             }
         }
+        # imply properties for the found microformat 
         if (!$backcompat) {
-            // TODO: Parse implied properties
+            # if no explicit "name" property, and no other p-* or e-* properties, and no nested microformats,
+            if (!isset($out['properties']['name']) && !$hasChild && !$hasE && !$hasP) {
+                # then imply by:
+                if ($root->hasAttribute("alt") && in_array($root->localName, ["img", "area"])) {
+                    # if img.h-x or area.h-x, then use its alt attribute for name
+                    $name = $root->getAttribute("alt");
+                } elseif ($root->hasAttribute("title") && $root->localName === "abbr") {
+                    # else if abbr.h-x[title] then use its title attribute for name
+                    $name = $root->getAttribute("title");
+                } elseif (($set = $this->xpath->query("./img[@alt and @alt != '' and count(../*) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                    # else if .h-x>img:only-child[alt]:not([alt=""]):not[.h-*] then use that img’s alt for name
+                    $name = $set->item(0)->getAttribute("alt");
+                } elseif (($set = $this->xpath->query("./area[@alt and @alt != '' and count(../*) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                    # else if .h-x>area:only-child[alt]:not([alt=""]):not[.h-*] then use that area’s alt for name
+                    $name = $set->item(0)->getAttribute("alt");
+                } elseif (($set = $this->xpath->query("./abbr[@title and @title != '' and count(../*) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                    # else if .h-x>abbr:only-child[title]:not([title=""]):not[.h-*] then use that abbr title for name
+                    $name = $set->item(0)->getAttribute("title");
+                } elseif (
+                    ($set = $this->xpath->query("./*[count(../*) = 1]", $root))->length
+                    && !$this->hasRoots($set->item(0))
+                    && ($set = $this->xpath->query("./img[@alt and @alt != '' and count(../*) = 1]", $set->item(0)))->length
+                    && !$this->hasRoots($set->item(0))
+                ) {
+                    # else if .h-x>:only-child:not[.h-*]>img:only-child[alt]:not([alt=""]):not[.h-*] then use that img’s alt for name
+                    $name = $set->item(0)->getAttribute("alt");
+                } elseif (false) {
+                    # else if .h-x>:only-child:not[.h-*]>area:only-child[alt]:not([alt=""]):not[.h-*] then use that area’s alt for name
+                } elseif (false) {
+                    # else if .h-x>:only-child:not[.h-*]>abbr:only-child[title]:not([title=""]):not[.h-*] use that abbr’s title for name
+                } else {
+                    # else use the textContent of the .h-x for name after [cleaning]
+                    $name = $this->getCleanText($root, "p");
+                }
+                $out['properties']['name'] = trim($name);
+            }
         }
         // return the final structure
         return $out;
