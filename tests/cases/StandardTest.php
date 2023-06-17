@@ -56,7 +56,6 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         "microformats-v1/includes/hyperlink",
         "microformats-v1/includes/object",
         "microformats-v1/includes/table",
-        "microformats-v2/h-card/hyperlinkedphoto",
         "microformats-v2/h-card/impliedname",
         "microformats-v2/h-card/impliedphoto",
         "microformats-v2/h-card/impliedurl",
@@ -139,7 +138,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         $dom = new DOMParser;
         $parser = new Parser;
         $doc = $dom->parseFromString($html, "text/html; charset=UTF-8");
-        $act = $parser->parseElement($doc->documentElement);
+        $act = $parser->parseElement($doc->documentElement, "http://example.com/");
         // sort both arrays
         $this->ksort($exp);
         $this->ksort($act);
