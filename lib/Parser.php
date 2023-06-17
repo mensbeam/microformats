@@ -522,7 +522,7 @@ class Parser {
                 # then imply by:
                 if ($root->localName === "img" && $root->hasAttribute("src")) {
                     # if img.h-x[src], then use the result of "parse an img element for src and alt" (see Sec.1.5) for photo
-                    $photo = $root->getAttribute("src");
+                    $out['properties']['photo'] = [$this->parseImg($root)];
                 } elseif ($root->localName === "object" && $root->hasAttribute("data")) {
                     # else if object.h-x[data] then use data for photo
                     $photo = $root->getAttribute("data");
@@ -656,7 +656,7 @@ class Parser {
                     return $text;
                 } elseif (in_array($node->localName, ["abbr", "link"]) && $node->hasAttribute("title")) {
                     # If abbr.p-x[title] or link.p-x[title], return the title attribute.
-                    return $node->getAttribute("href");
+                    return $node->getAttribute("title");
                 } elseif (in_array($node->localName, ["data", "input"]) && $node->hasAttribute("value")) {
                     # else if data.p-x[value] or input.p-x[value], then return the value attribute
                     return $node->getAttribute("value");
@@ -679,7 +679,7 @@ class Parser {
                     $url = $node->getAttribute("src");
                 } elseif ($node->localName === "video" && $node->hasAttribute("poster")) {
                     # else if video.u-x[poster], then get the poster attribute
-                    $url = $node->getAttribute("href");
+                    $url = $node->getAttribute("poster");
                 } elseif ($node->localName === "object" && $node->hasAttribute("data")) {
                     # else if object.u-x[data], then get the data attribute
                     $url = $node->getAttribute("data");
@@ -752,11 +752,11 @@ class Parser {
         }
     }
 
-    protected function getValueClassPattern(\DOMElement $node, string $prefix, array $backcompatTypes, ?string $impliedDate = null) {
+    protected function getValueClassPattern(\DOMElement $root, string $prefix, array $backcompatTypes, ?string $impliedDate = null) {
         $out = [];
-        $root = $node;
         $skipChildren = false;
-        while ($node = $this->nextElement($node, $root, !$skipChildren)) {
+        while ($node = $this->nextElement($node ?? $root, $root, !$skipChildren)) {
+            $skipChildren = false;
             $classes = $this->parseTokens($node, "class");
             if (
                 ($backcompatTypes && ($this->matchRootsBackcompat($classes) || $this->matchPropertiesBackcompat($classes, $backcompatTypes, $node)))
@@ -818,6 +818,8 @@ class Parser {
                         $out += $candidate;
                     }
                 }
+            } elseif ($node->hasAttribute("title") && in_array("value-title", $classes)) {
+                $out[] = trim($node->getAttribute("title"));
             }
         }
         if ($prefix !== "dt") {
@@ -968,23 +970,34 @@ class Parser {
     }
 
     protected function getCleanText(\DOMElement $node, string $prefix): string {
+        #  the textContent of the element after:
         $copy = $node->cloneNode(true);
+        # dropping any nested <script> & <style> elements;
         foreach ($copy->getElementsByTagName("script") as $e) {
             $e->parentNode->removeChild($e);
         }
         foreach ($copy->getElementsByTagName("style") as $e) {
             $e->parentNode->removeChild($e);
         }
+        # replacing any nested <img> elements with their alt attribute, if
+        #   present; otherwise their src attribute, if present, adding a
+        #   space at the beginning and end, resolving the URL if it’s
+        #   relative;
         foreach ($copy->getElementsByTagName("img") as $e) {
             $alt = $e->getAttribute("alt");
-            $src = $e->hasAttribute("src") ? $this->normalizeUrl($e->getAttribute("src")) : "";
+            $src = " ".($e->hasAttribute("src") ? $this->normalizeUrl($e->getAttribute("src")) : "")." ";
             if ($prefix === "u") {
+                // alt sttribute does not apply to u-properties
                 $attr = strlen($src) ? $src : "";
-            } else {
+            } elseif ($prefix === "e") {
                 $attr = strlen($alt) ? $alt : $src;
+            } else {
+                // src attribute does not apply to p-properties
+                $attr = strlen($alt) ? $alt : "";
             }
-            $e->parentNode->replaceChild($e->ownerDocument->createTextNode(" ".$attr." "), $e);
+            $e->parentNode->replaceChild($e->ownerDocument->createTextNode($attr), $e);
         }
+        # removing all leading/trailing spaces
         return trim($copy->textContent);
     }
 
