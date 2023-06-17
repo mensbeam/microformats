@@ -289,9 +289,9 @@ class Parser {
         foreach ($out['rels'] as $k => $v) {
             $out['rels'][$k] = array_unique($v);
         }
-        foreach ($out['url-rels'] as $k => $v) {
-            $out['url-rels'][$k]['rels'] = array_unique($v['rels']);
-            sort($out['url-rels'][$k]['rels']);
+        foreach ($out['rel-urls'] as $k => $v) {
+            $out['rel-urls'][$k]['rels'] = array_unique($v['rels']);
+            sort($out['rel-urls'][$k]['rels']);
         }
         // clean up temporary instance properties
         foreach (["xpath", "docUrl", "baseUrl"] as $prop) {
@@ -514,7 +514,7 @@ class Parser {
                     $name = $this->getCleanText($root, "p");
                 }
                 # remove all leading/trailing spaces
-                $out['properties']['name'] = trim($name);
+                $out['properties']['name'] = [trim($name)];
             }
             # if no explicit "photo" property, and no other explicit u-* (Proposed: change to: u-* or e-*) properties, and no nested microformats,
             if (!isset($out['properties']['photo']) && !$hasChild && !$hasU && !$hasE) {
@@ -528,7 +528,7 @@ class Parser {
                     $photo = $root->getAttribute("data");
                 } elseif (($set = $this->xpath->query("./img[@src and count(../*) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
                     # else if .h-x>img[src]:only-of-type:not[.h-*] then use the result of "parse an img element for src and alt" (see Sec.1.5) for photo
-                    $out['properties']['photo'] = $this->parseImg($set->item(0));
+                    $out['properties']['photo'] = [$this->parseImg($set->item(0))];
                 } elseif (($set = $this->xpath->query("./object[@data and count(../*) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
                     # else if .h-x>object[data]:only-of-type:not[.h-*] then use that object’s data for photo
                     $photo = $set->item(0)->getAttribute("data");
@@ -539,7 +539,7 @@ class Parser {
                     && !$this->hasRoots($set->item(0))
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>img[src]:only-of-type:not[.h-*], then use the result of "parse an img element for src and alt" (see Sec.1.5) for photo
-                    $out['properties']['photo'] = $this->parseImg($set->item(0));
+                    $out['properties']['photo'] = [$this->parseImg($set->item(0))];
                 } elseif (
                     ($set = $this->xpath->query("./*[count(../*) = 1]", $root))->length
                     && !$this->hasRoots($set->item(0))
@@ -555,7 +555,7 @@ class Parser {
                     #   language's rules for resolving relative URLs (e.g. in
                     #   HTML, use the current URL context as determined by the
                     #   page, and first <base> element, if any).
-                    $out['properties']['photo'] = $this->normalizeUrl($photo);
+                    $out['properties']['photo'] = [$this->normalizeUrl($photo)];
                 }
             }
             # if no explicit "url" property, and no other explicit u-* (Proposed: change to: u-* or e-*) properties, and no nested microformats,
@@ -594,7 +594,7 @@ class Parser {
                     #   language's rules for resolving relative URLs (e.g. in
                     #   HTML, use the current URL context as determined by the
                     #   page, and first <base> element, if any).
-                    $out['properties']['url'] = $this->normalizeUrl($url);
+                    $out['properties']['url'] = [$this->normalizeUrl($url)];
                 }
             }
         }

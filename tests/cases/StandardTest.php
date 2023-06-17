@@ -56,8 +56,6 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         "microformats-v1/includes/hyperlink",
         "microformats-v1/includes/object",
         "microformats-v1/includes/table",
-        "microformats-v2/h-adr/geourl",
-        "microformats-v2/h-adr/justaname",
         "microformats-v2/h-adr/lettercase",
         "microformats-v2/h-adr/simpleproperties",
         "microformats-v2/h-card/baseurl",
