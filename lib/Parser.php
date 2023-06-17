@@ -1006,7 +1006,9 @@ class Parser {
         if ($considerChildren && $node->localName !== "template" && $node->hasChildNodes()) {
             $node = $node->firstChild;
             $next = $node;
-        } else {
+        } elseif ($node->isSameNode($root)) {
+            return null;
+         } else {
             $next = $node->nextSibling;
         }
         while ($next && !$next instanceof \DOMElement) {
@@ -1014,7 +1016,7 @@ class Parser {
         }
         while (!$next) {
             $node = $node->parentNode;
-            if ($node->isSameNode($root)) {
+            if (!$node || $node->isSameNode($root)) {
                 return null;
             }
             $next = $node->nextSibling;
