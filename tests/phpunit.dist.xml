@@ -20,5 +20,11 @@
     </include>
 </coverage>
 <testsuites>
+    <testsuite name="Standard">
+        <file>cases/StandardTest.php</file>
+    </testsuite>
+    <testsuite name="URL">
+        <file>cases/Url/UrlTest.php</file>
+    </testsuite>
 </testsuites>
 </phpunit>
