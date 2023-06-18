@@ -620,7 +620,8 @@ class Parser {
                 ];
             }
         }
-        return $out;
+        // filter properties for uniqueness before returning
+        return $this->filterProperties($out);
     }
 
     protected function matchPropertiesBackcompat(array $classes, array $types, \DOMElement $node): array {
@@ -648,7 +649,35 @@ class Parser {
                 $out[] = ["u", "url"];
             }
         }
-        return $out;
+        // filter properties for uniqueness before returning
+        return $this->filterProperties($out);
+    }
+
+    /** Filters a list of properties so that only one property of a given name (irrespective of prefix) remains in the list
+     *
+     * This is more likely to occur during backcompat processing, but can occur with v2 properties if a document is deliberately authored to do this
+     */
+    protected function filterProperties(array $properties): array {
+        $ranks = [
+            "p"  => 1,
+            "dt" => 2,
+            "u"  => 3,
+            "e"  => 4,
+        ];
+        $seen = [];
+        foreach ($properties as $p) {
+            // index 0 is prefix
+            // index 1 is name
+            // index 4 is deferred
+            if (
+                !isset($seen[$p[1]])
+                || $ranks[$p[0]] > $ranks[$seen[$p[1]][0]]
+                || !($p[4] ?? false)
+            ) {
+                $seen[$p[1]] = $p;
+            }
+        }
+        return array_values($seen);
     }
 
     protected function parseProperty(\DOMElement $node, string $prefix, array $backcompatTypes, ?string $impliedDate) {

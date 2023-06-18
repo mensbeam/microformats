@@ -26,7 +26,6 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         "microformats-v1/hproduct/aggregate",
         "microformats-v1/hresume/affiliation",
         "microformats-v1/hresume/education",
-        "microformats-v1/hresume/work",
         "microformats-v1/hreview-aggregate/hcard",
         "microformats-v1/hreview-aggregate/justahyperlink",
         "microformats-v1/hreview-aggregate/vevent",
