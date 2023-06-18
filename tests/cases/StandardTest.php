@@ -14,11 +14,9 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
     protected const BASE = \MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/";
     protected const SUPPRESSED = [
         "microformats-v2/rel/duplicate-rels", // this test has a spurious newline at the beginning of a value
+        "microformats-v1/hcard/name", // this test does not follow rules for structured img parsing
 
-        "microformats-mixed/h-resume/mixedroots",
-        "microformats-v1/hcalendar/attendees",
         "microformats-v1/hcard/multiple",
-        "microformats-v1/hcard/name",
         "microformats-v1/hcard/single",
         "microformats-v1/hproduct/aggregate",
         "microformats-v1/hresume/affiliation",

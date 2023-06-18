@@ -37,6 +37,7 @@ class Parser {
         'additional-name'   => ['h-card' => ["p", "additional-name"]],
         'adr'               => ['h-card' => ["p", "adr"]],
         'affiliation'       => ['h-resume' => ["p", "affiliation", ["vcard"]]],
+        'attendee'          => ['h-event' => ["p", "attendee"]],
         'author'            => ['h-entry' => ["p", "author", ["vcard"]], 'h-recipe' => ["p", "author", ["vcard"]], 'h-feed' => ["p", "author", ["vcard"]]],
         'bday'              => ['h-card' => ["dt", "bday"]],
         'best'              => ['h-review' => ["p", "best"], 'h-review-aggregate' => ["p", "best"]],
