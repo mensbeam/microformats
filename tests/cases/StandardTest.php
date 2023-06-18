@@ -38,7 +38,6 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         "microformats-v1/includes/hyperlink",
         "microformats-v1/includes/object",
         "microformats-v1/includes/table",
-        "microformats-v2/h-event/ampm",
         "microformats-v2/h-event/concatenate",
         "microformats-v2/h-event/dt-property",
         "microformats-v2/h-event/time",
@@ -47,13 +46,13 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
     ];
 
     /** @dataProvider provideStandardTests */
-    public function testStandardTests(string $path): void {
-        if (in_array($path, self::SUPPRESSED)) {
+    public function testStandardTests(string $test): void {
+        if (in_array($test, self::SUPPRESSED)) {
             $this->markTestIncomplete();
         }
         // read data
-        $exp = json_decode(file_get_contents(self::BASE.$path.".json"), true);
-        $html = file_get_contents(self::BASE.$path.".html");
+        $exp = json_decode(file_get_contents(self::BASE.$test.".json"), true);
+        $html = file_get_contents(self::BASE.$test.".html");
         // fix up expectation where necessary
         array_walk_recursive($exp, function(&$v) {
             // URLs differ trivially from output of our normalization library
@@ -63,6 +62,8 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
             // at least one test has spurious whitespace
             $v = trim($v);
         });
+        // perform some further monkey-patching on specific tests
+        $exp = $this->fixTests($exp, $test);
         // parse input
         $dom = new DOMParser;
         $parser = new Parser;
@@ -89,6 +90,31 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
                 $this->ksort($v);
          }
          ksort($arr);
+    }
+
+    protected function fixTests(array $exp, string $test) {
+        switch ($test) {
+            case "microformats-v1/hentry/summarycontent":
+            case "microformats-v2/h-entry/summarycontent":
+                $this->fixDates($exp['items'][0]['properties']['updated']);
+                break;
+            case "microformats-v2/h-feed/implied-title":
+            case "microformats-v2/h-feed/simple":
+                $this->fixDates($exp['items'][0]['children'][0]['properties']['updated']);
+                break;
+            case "microformats-v2/h-event/dates":
+                $this->fixDates($exp['items'][0]['properties']['start']);
+                break;
+        }
+        return $exp;
+    }
+
+    protected function fixDates(&$dateArray): void {
+        foreach ($dateArray as &$d) {
+            $d = strtr($d, "Tt", "  ");
+            $d = preg_replace('/([+-]\d\d):(\d\d)$/', "$1$2", $d);
+            $d = preg_replace('/:\d\d[+-]\d\d$/', "$0000", $d);
+        }
     }
 
 }

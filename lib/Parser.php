@@ -858,20 +858,20 @@ class Parser {
         // match against all valid date/time format patterns and returns the matched parts
         // we try with space and with T between date and time, as well as with and without space before time zone
         foreach (self::DATE_INPUT_FORMATS as $df => $dp) {
-            if ($out = $this->testDate($input, "!$df")) {
+            if ($out = $this->testDate($input, "$df")) {
                 return [
                     'date' => $out->format(self::DATE_OUTPUT_FORMATS[$dp]),
                 ];
             }
             foreach (self::TIME_INPUT_FORMATS as $tf => $tp) {
-                if ($out = $this->testDate($input, "!$df $tf", "!$df\T$tf")) {
+                if ($out = $this->testDate($input, "$df $tf", "$df\T$tf", "$df\\t$tf")) {
                     return [
                         'date' => $out->format(self::DATE_OUTPUT_FORMATS[$dp]),
                         'time' => $out->format(self::DATE_OUTPUT_FORMATS[$tp]),
                     ];
                 }
                 foreach (self::ZONE_INPUT_FORMATS as $zf => $zp) {
-                    if ($out = $this->testDate($input, "!$df $tf$zf", "!$df\T$tf$zf", "!$df $tf $zf", "!$df\T$tf $zf")) {
+                    if ($out = $this->testDate($input, "$df $tf$zf", "$df\T$tf$zf", "$df\\t$tf$zf", "$df $tf $zf", "$df\T$tf $zf", "$df\\t$tf $zf")) {
                         return [
                             'date' => $out->format(self::DATE_OUTPUT_FORMATS[$dp]),
                             'time' => $out->format(self::DATE_OUTPUT_FORMATS[$tp]),
@@ -881,7 +881,7 @@ class Parser {
                     // if no match was found and we're testing a pattern ending in "O" (zone offset without colon), add double-zero to input and try again
                     if ($zf[strlen($zf) - 1] === "O") {
                         $padded = $input."00";
-                        if ($out = $this->testDate($padded, "!$df $tf$zf", "!$df\T$tf$zf", "!$df $tf $zf", "!$df\T$tf $zf")) {
+                        if ($out = $this->testDate($padded, "$df $tf$zf", "$df\T$tf$zf", "$df\\t$tf$zf", "$df $tf $zf", "$df\T$tf $zf", "$df\\t$tf $zf")) {
                             return [
                                 'date' => $out->format(self::DATE_OUTPUT_FORMATS[$dp]),
                                 'time' => $out->format(self::DATE_OUTPUT_FORMATS[$tp]),
@@ -893,13 +893,13 @@ class Parser {
             }
         }
         foreach (self::TIME_INPUT_FORMATS as $tf => $tp) {
-            if ($out = $this->testDate($input, "!$tf")) {
+            if ($out = $this->testDate($input, "$tf")) {
                 return [
                     'time' => $out->format(self::DATE_OUTPUT_FORMATS[$tp]),
                 ];
             }
             foreach (self::ZONE_INPUT_FORMATS as $zf => $zp) {
-                if ($out = $this->testDate($input, "!$tf$zf", "!$tf $zf")) {
+                if ($out = $this->testDate($input, "$tf$zf", "$tf $zf")) {
                     return [
                         'time' => $out->format(self::DATE_OUTPUT_FORMATS[$tp]),
                         'zone' => $out->format(self::DATE_OUTPUT_FORMATS[$zp]),
@@ -907,7 +907,7 @@ class Parser {
                 }
                 if ($zf[strlen($zf) - 1] === "O") {
                     $padded = $input."00";
-                    if ($out = $this->testDate($padded, "!$tf$zf", "!$tf $zf")) {
+                    if ($out = $this->testDate($padded, "$tf$zf", "$tf $zf")) {
                         return [
                             'time' => $out->format(self::DATE_OUTPUT_FORMATS[$tp]),
                             'zone' => $out->format(self::DATE_OUTPUT_FORMATS[$zp]),
@@ -917,14 +917,14 @@ class Parser {
             }
         }
         foreach (self::ZONE_INPUT_FORMATS as $zf => $zp) {
-            if ($out = $this->testDate($input, "!$zf")) {
+            if ($out = $this->testDate($input, "$zf")) {
                 return [
                     'zone' => $out->format(self::DATE_OUTPUT_FORMATS[$zp]),
                 ];
             }
             if ($zf[strlen($zf) - 1] === "O") {
                 $padded = $input."00";
-                if ($out = $this->testDate($padded, "!$zf")) {
+                if ($out = $this->testDate($padded, "$zf")) {
                     return [
                         'zone' => $out->format(self::DATE_OUTPUT_FORMATS[$zp]),
                     ];
@@ -936,7 +936,7 @@ class Parser {
 
     protected function testDate(string $input, string ...$format): ?\DateTimeImmutable {
         foreach ($format as $f) {
-            $out = \DateTimeImmutable::createFromFormat($f, $input, new \DateTimeZone("UTC"));
+            $out = \DateTimeImmutable::createFromFormat("!$f", $input, new \DateTimeZone("UTC"));
             if ($out && $out->format($f) === $input) {
                 return $out;
             }
@@ -946,15 +946,15 @@ class Parser {
 
     protected function stitchDate(array $parts, ?string $implied): ?string {
         if (sizeof($parts) === 3) {
-            return $parts['date']." ".$parts.['time'].$parts['zone'];
+            return $parts['date']." ".$parts['time'].$parts['zone'];
         } elseif (sizeof($parts) === 1 && isset($parts['date'])) {
             return $parts['date'];
         } else {
             $implied = $implied ? $this->parseDatePart($implied) : [];
             if (isset($parts['date']) && isset($parts['time'])) {
-                return $parts['date']." ".$parts.['time'].($implied['zone'] ?? "");
+                return $parts['date']." ".$parts['time'].($implied['zone'] ?? "");
             } elseif (isset($parts['time']) && isset($implied['date'])) {
-                return $implied['date']." ".$parts.['time'].($parts['zone'] ?? $implied['zone'] ?? "");
+                return $implied['date']." ".$parts['time'].($parts['zone'] ?? $implied['zone'] ?? "");
             }
         }
         return null;
