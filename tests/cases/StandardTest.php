@@ -21,8 +21,6 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         "microformats-v1/hcard/name",
         "microformats-v1/hcard/single",
         "microformats-v1/hfeed/simple",
-        "microformats-v1/hnews/all",
-        "microformats-v1/hnews/minimum",
         "microformats-v1/hproduct/aggregate",
         "microformats-v1/hresume/affiliation",
         "microformats-v1/hresume/education",
@@ -98,6 +96,9 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
             case "microformats-v2/h-event/dates":
                 $this->fixDates($exp['items'][0]['properties']['start']);
                 break;
+            case "microformats-v1/hnews/minimum":
+            case "microformats-v1/hnews/all":
+                $this->fixDates($exp['items'][0]['properties']['entry'][0]['properties']['updated']);
         }
         return $exp;
     }

@@ -30,6 +30,7 @@ class Parser {
         'hresume'           => "h-resume",
         'hreview'           => "h-review",
         'hreview-aggregate' => "h-review-aggregate",
+        'hnews'             => "h-news", // this is not a defined v2 dialect, but tests do require it
     ];
     /** @var array The list of class names which are backward-compatibility property markers. Each value is in turn an array listing the root (in v2 format) for which the property applies, the value of which is an indexed array containing the v2 prefix, v2 equivalent name, and possibly three other members: an array with additional classes to add to the element's effective class list, the name of acontainer property, and whether processing of the property should be deferred till the microformat has been otherwise processed */
     protected const BACKCOMPAT_CLASSES = [
@@ -44,6 +45,7 @@ class Parser {
         'contact'           => ['h-resume' => ["p", "contact", ["vcard"]]],
         'count'             => ['h-review-aggregate' => ["p", "count"]],
         'country-name'      => ['h-adr' => ["p", "country-name"], 'h-card' => ["p", "country-name"]],
+        'dateline'          => ['h-news' => ["p", "dateline"]],
         'description'       => ['h-event' => ["p", "description"], 'h-product' => ["p", "description"], 'h-review' => ["e", "description"]],
         'dtend'             => ['h-event' => ["dt", "end"]],
         'dtreviewed'        => ['h-review' => ["dt", "reviewed"]],
@@ -51,6 +53,7 @@ class Parser {
         'duration'          => ['h-event' => ["dt", "duration"], 'h-recipe' => ["dt", "duration"]],
         'education'         => ['h-resume' => ["p", "education", ["vevent"]]],
         'email'             => ['h-card' => ["u", "email"]],
+        'entry'             => ['h-feed' => ["p", "entry"], 'h-news' => ["p", "entry"]],
         'entry-content'     => ['h-entry' => ["e", "content"]],
         'entry-date'        => ['h-entry' => ["dt", "published", [], null, true]], // also requires special processing
         'entry-summary'     => ['h-entry' => ["p", "summary"]],
@@ -59,7 +62,7 @@ class Parser {
         'extended-address'  => ['h-adr' => ["p", "extended-address"], 'h-card' => ["p", "extended-address"]],
         'family-name'       => ['h-card' => ["p", "family-name"]],
         'fn'                => ['h-card' => ["p", "name"], 'h-product' => ["p", "name"], 'h-recipe' => ["p", "name"], 'h-review' => ["p", "name", [], "item"], 'h-review-aggregate' => ["p", "name", [], "item"]],
-        'geo'               => ['h-card' => ["p", "geo"], 'h-event' => ["p", "geo"]],
+        'geo'               => ['h-card' => ["p", "geo"], 'h-event' => ["p", "geo"], 'h-news' => ["p", "geo", ["geo"]]],
         'given-name'        => ['h-card' => ["p", "given-name"]],
         'honorific-prefix'  => ['h-card' => ["p", "honorific-prefix"]],
         'honorific-suffix'  => ['h-card' => ["p", "honorific-suffix"]],
@@ -93,6 +96,7 @@ class Parser {
         'skill'             => ['h-resume' => ["p", "skill"]],
         'site-description'  => ['h-feed' => ["p", "summary"]],
         'site-title'        => ['h-feed' => ["p", "name"]],
+        'source-org'        => ['h-news' => ["p", "source-org"]],
         'street-address'    => ['h-adr' => ["p", "street-address"], 'h-card' => ["p", "street-address"]],
         'summary'           => ['h-event' => ["p", "name"], 'h-recipe' => ["p", "summary"], 'h-resume' => ["p", "summary"], 'h-review' => ["p", "name"], 'h-review-aggregate' => ["p", "name"]],
         'tel'               => ['h-card' => ["p", "tel"]],
@@ -108,9 +112,11 @@ class Parser {
     /** @var array The list of link relations which are backward-compatibility property markers. The format is the same as for backcompat classes */
     protected const BACKCOMPAT_RELATIONS = [
         // h-review and h-review-agregate also include "self bookmark", but this requires special processing
-        'bookmark' => ['h-entry' => ["u", "url"]],
-        'tag'      => ['h-entry' => ["p", "category", [], null, true], 'h-feed' => ["p", "category"], 'h-review' => ["p", "category"], 'h-review-aggregate' => ["p", "category"]],
-        'author'   => ['h-entry' => ["u", "author", [], null, true]],
+        'bookmark'     => ['h-entry' => ["u", "url"]],
+        'tag'          => ['h-entry' => ["p", "category", [], null, true], 'h-feed' => ["p", "category"], 'h-review' => ["p", "category"], 'h-review-aggregate' => ["p", "category"]],
+        'author'       => ['h-entry' => ["u", "author", [], null, true]],
+        'item-license' => ['h-news' => ["u", "license"]],
+        'principles'   => ['h-news' => ["u", "principles"]],
     ];
     /** @var array The list of (global) attributes which contain URLs and apply to any element */
     protected const URL_ATTRS_GLOBAL = ["itemid", "itemprop", "itemtype"];
