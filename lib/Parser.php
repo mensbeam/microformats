@@ -50,7 +50,7 @@ class Parser {
         'count'             => ['h-review-aggregate' => ["p", "count"]],
         'country-name'      => ['h-adr' => ["p", "country-name"], 'h-card' => ["p", "country-name"]],
         'dateline'          => ['h-news' => ["p", "dateline"]],
-        'description'       => ['h-event' => ["p", "description"], 'h-product' => ["p", "description"], 'h-review' => ["e", "description"]],
+        'description'       => ['h-event' => ["p", "description"], 'h-product' => ["p", "description"], 'h-review' => ["e", "content"]],
         'dtend'             => ['h-event' => ["dt", "end"]],
         'dtreviewed'        => ['h-review' => ["dt", "reviewed"]],
         'dtstart'           => ['h-event' => ["dt", "start"]],
@@ -65,7 +65,7 @@ class Parser {
         'experience'        => ['h-resume' => ["p", "experience", ["vevent"]]],
         'extended-address'  => ['h-adr' => ["p", "extended-address"], 'h-card' => ["p", "extended-address"]],
         'family-name'       => ['h-card' => ["p", "family-name"]],
-        'fn'                => ['h-card' => ["p", "name"], 'h-product' => ["p", "name"], 'h-recipe' => ["p", "name"], 'h-review' => ["p", "name", [], "item"], 'h-review-aggregate' => ["p", "name", [], "item"]],
+        'fn'                => ['h-card' => ["p", "name"], 'h-product' => ["p", "name"], 'h-recipe' => ["p", "name"], 'h-review' => ["p", "name", [], "item"], 'h-review-aggregate' => ["p", "name", [], "item"], 'h-item' => ["p", "name"]],
         'geo'               => ['h-card' => ["p", "geo"], 'h-event' => ["p", "geo"], 'h-news' => ["p", "geo"]],
         'given-name'        => ['h-card' => ["p", "given-name"]],
         'honorific-prefix'  => ['h-card' => ["p", "honorific-prefix"]],
@@ -73,6 +73,7 @@ class Parser {
         'identifier'        => ['h-product' => ["u", "identifier"]],
         'ingredient'        => ['h-recipe' => ["p", "ingredient"]],
         'instructions'      => ['h-recipe' => ["e", "instructions"]],
+        'item'              => ['h-review' => ["p", "item"], 'h-review-aggregate' => ["p", "item"]],
         'key'               => ['h-card' => ["u", "key"]],
         'label'             => ['h-card' => ["p", "label"]],
         'latitude'          => ['h-card' => ["p", "latitude"], 'h-event' => ["p", "latitude"], 'h-geo' => ["p", "latitude"]],
@@ -87,7 +88,7 @@ class Parser {
         'organization-name' => ['h-card' => ["p", "organization-name"]],
         'organization-unit' => ['h-card' => ["p", "organization-unit"]],
         'org'               => ['h-card' => ["p", "org"]],
-        'photo'             => ['h-card' => ["u", "photo"], 'h-product' => ["u", "photo"], 'h-recipe' => ["u", "photo"], 'h-review' => ["u", "photo", [], "item"], 'h-review-aggregate' => ["u", "photo", [], "item"], 'h-feed' => ["u", "photo"]],
+        'photo'             => ['h-card' => ["u", "photo"], 'h-product' => ["u", "photo"], 'h-recipe' => ["u", "photo"], 'h-review' => ["u", "photo", [], "item"], 'h-review-aggregate' => ["u", "photo", [], "item"], 'h-feed' => ["u", "photo"], 'h-item' => ["u", "photo"]],
         'postal-code'       => ['h-adr' => ["p", "postal-code"], 'h-card' => ["p", "postal-code"]],
         'post-office-box'   => ['h-adr' => ["p", "post-office-box"], 'h-card' => ["p", "post-office-box"]],
         'price'             => ['h-product' => ["p", "price"]],
@@ -95,7 +96,7 @@ class Parser {
         'rating'            => ['h-review' => ["p", "rating"], 'h-review-aggregate' => ["p", "rating"]],
         'region'            => ['h-adr' => ["p", "region"], 'h-card' => ["p", "region"]],
         'rev'               => ['h-card' => ["dt", "rev"]],
-        'reviewer'          => ['h-review' => ["p", "reviewer"]],
+        'reviewer'          => ['h-review' => ["p", "author"]],
         'review'            => ['h-product' => ["p", "review", ["hreview"]]],
         'role'              => ['h-card' => ["p", "role"]],
         'skill'             => ['h-resume' => ["p", "skill"]],
@@ -111,7 +112,7 @@ class Parser {
         'tz'                => ['h-card' => ["p", "tz"]],
         'uid'               => ['h-card' => ["u", "uid"]],
         'updated'           => ['h-entry' => ["dt", "updated"]],
-        'url'               => ['h-card' => ["u", "url"], 'h-event' => ["u", "url"], 'h-product' => ["u", "url"], 'h-review' => ["u", "url", [], "item"], 'h-review-aggregate' => ["u", "url", [], "item"], 'h-feed' => ["u", "url"]],
+        'url'               => ['h-card' => ["u", "url"], 'h-event' => ["u", "url"], 'h-product' => ["u", "url"], 'h-review' => ["u", "url", [], "item"], 'h-review-aggregate' => ["u", "url", [], "item"], 'h-feed' => ["u", "url"], 'h-item' => ["u", "url"]],
         'votes'             => ['h-review-aggregate' => ["p", "votes"]],
         'worst'             => ['h-review' => ["p", "worst"], 'h-review-aggregate' => ["p", "worst"]],
         'yield'             => ['h-recipe' => ["p", "yield"]],
@@ -346,12 +347,20 @@ class Parser {
         });
     }
 
-    protected function matchRootsBackcompat(array $classes): array {
+    protected function matchRootsBackcompat(array $classes, bool $backcompat = false): array {
         $out = [];
+        $item = false;
         foreach ($classes as $c) {
+            if ($backcompat && $c === "item") {
+                // we only consider "item" a root if there are no other roots
+                $item = true;
+            }
             if ($compat = self::BACKCOMPAT_ROOTS[$c] ?? null) {
                 $out[] = $compat;
             }
+        }
+        if ($item && !$out) {
+            $out[] = "h-item";
         }
         return $out;
     }
@@ -462,7 +471,7 @@ class Parser {
             if ($childTypes = $this->matchRootsMf2($classes)) {
                 $child = $this->parseMicroformat($node, $childTypes, false);
                 $hasChild = true;
-            } elseif ($childTypes = $this->matchRootsBackcompat($classes)) {
+            } elseif ($childTypes = $this->matchRootsBackcompat($classes, $backcompat)) {
                 $child = $this->parseMicroformat($node, $childTypes, true);
                 $hasChild = true;
             }

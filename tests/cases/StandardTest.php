@@ -18,11 +18,6 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         "microformats-v1/hcard/multiple", // this test has multiple violations of defined rules
         "microformats-v1/hresume/affiliation", // this test does not follow rules for structured img parsing
 
-        "microformats-v1/hreview-aggregate/hcard",
-        "microformats-v1/hreview-aggregate/justahyperlink",
-        "microformats-v1/hreview-aggregate/vevent",
-        "microformats-v1/hreview/item",
-        "microformats-v1/hreview/vcard",
         "microformats-v1/includes/hcarditemref",
         "microformats-v1/includes/heventitemref",
         "microformats-v1/includes/hyperlink",
