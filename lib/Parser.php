@@ -32,7 +32,7 @@ class Parser {
         'hreview-aggregate' => "h-review-aggregate",
         'hnews'             => "h-news", // this is not a defined v2 dialect, but tests do require it
     ];
-    /** @var array The list of class names which are backward-compatibility property markers. Each value is in turn an array listing the root (in v2 format) for which the property applies, the value of which is an indexed array containing the v2 prefix, v2 equivalent name, and possibly three other members: an array with additional classes to add to the element's effective class list, the name of acontainer property, and whether processing of the property should be deferred till the microformat has been otherwise processed */
+    /** @var array The list of class names which are backward-compatibility property markers. Each value is in turn an array listing the root (in v2 format) for which the property applies, the value of which is an indexed array containing the v2 prefix, v2 equivalent name, and possibly two other members: an array with additional classes to add to the element's effective class list, and whether processing of the property should be deferred till the microformat has been otherwise processed */
     protected const BACKCOMPAT_CLASSES = [
         'additional-name'   => ['h-card' => ["p", "additional-name"]],
         'adr'               => ['h-card' => ["p", "adr"]],
@@ -59,13 +59,13 @@ class Parser {
         'email'             => ['h-card' => ["u", "email"]],
         'entry'             => ['h-news' => ["p", "entry"]],
         'entry-content'     => ['h-entry' => ["e", "content"]],
-        'entry-date'        => ['h-entry' => ["dt", "published", [], null, true]], // also requires special processing
+        'entry-date'        => ['h-entry' => ["dt", "published", [], true]], // also requires special processing
         'entry-summary'     => ['h-entry' => ["p", "summary"]],
         'entry-title'       => ['h-entry' => ["p", "name"]],
         'experience'        => ['h-resume' => ["p", "experience", ["vevent"]]],
         'extended-address'  => ['h-adr' => ["p", "extended-address"], 'h-card' => ["p", "extended-address"]],
         'family-name'       => ['h-card' => ["p", "family-name"]],
-        'fn'                => ['h-card' => ["p", "name"], 'h-product' => ["p", "name"], 'h-recipe' => ["p", "name"], 'h-review' => ["p", "name", [], "item"], 'h-review-aggregate' => ["p", "name", [], "item"], 'h-item' => ["p", "name"]],
+        'fn'                => ['h-card' => ["p", "name"], 'h-product' => ["p", "name"], 'h-recipe' => ["p", "name"], 'h-review' => ["p", "name"], 'h-review-aggregate' => ["p", "name"], 'h-item' => ["p", "name"]],
         'geo'               => ['h-card' => ["p", "geo"], 'h-event' => ["p", "geo"], 'h-news' => ["p", "geo"]],
         'given-name'        => ['h-card' => ["p", "given-name"]],
         'honorific-prefix'  => ['h-card' => ["p", "honorific-prefix"]],
@@ -88,7 +88,7 @@ class Parser {
         'organization-name' => ['h-card' => ["p", "organization-name"]],
         'organization-unit' => ['h-card' => ["p", "organization-unit"]],
         'org'               => ['h-card' => ["p", "org"]],
-        'photo'             => ['h-card' => ["u", "photo"], 'h-product' => ["u", "photo"], 'h-recipe' => ["u", "photo"], 'h-review' => ["u", "photo", [], "item"], 'h-review-aggregate' => ["u", "photo", [], "item"], 'h-feed' => ["u", "photo"], 'h-item' => ["u", "photo"]],
+        'photo'             => ['h-card' => ["u", "photo"], 'h-product' => ["u", "photo"], 'h-recipe' => ["u", "photo"], 'h-review' => ["u", "photo"], 'h-review-aggregate' => ["u", "photo"], 'h-feed' => ["u", "photo"], 'h-item' => ["u", "photo"]],
         'postal-code'       => ['h-adr' => ["p", "postal-code"], 'h-card' => ["p", "postal-code"]],
         'post-office-box'   => ['h-adr' => ["p", "post-office-box"], 'h-card' => ["p", "post-office-box"]],
         'price'             => ['h-product' => ["p", "price"]],
@@ -112,7 +112,7 @@ class Parser {
         'tz'                => ['h-card' => ["p", "tz"]],
         'uid'               => ['h-card' => ["u", "uid"]],
         'updated'           => ['h-entry' => ["dt", "updated"]],
-        'url'               => ['h-card' => ["u", "url"], 'h-event' => ["u", "url"], 'h-product' => ["u", "url"], 'h-review' => ["u", "url", [], "item"], 'h-review-aggregate' => ["u", "url", [], "item"], 'h-feed' => ["u", "url"], 'h-item' => ["u", "url"]],
+        'url'               => ['h-card' => ["u", "url"], 'h-event' => ["u", "url"], 'h-product' => ["u", "url"], 'h-review' => ["u", "url"], 'h-review-aggregate' => ["u", "url"], 'h-feed' => ["u", "url"], 'h-item' => ["u", "url"]],
         'votes'             => ['h-review-aggregate' => ["p", "votes"]],
         'worst'             => ['h-review' => ["p", "worst"], 'h-review-aggregate' => ["p", "worst"]],
         'yield'             => ['h-recipe' => ["p", "yield"]],
@@ -121,8 +121,8 @@ class Parser {
     protected const BACKCOMPAT_RELATIONS = [
         // h-review and h-review-agregate also include "self bookmark", but this requires special processing
         'bookmark'     => ['h-entry' => ["u", "url"]],
-        'tag'          => ['h-entry' => ["p", "category", [], null, true], 'h-feed' => ["p", "category"], 'h-review' => ["p", "category"], 'h-review-aggregate' => ["p", "category"]],
-        'author'       => ['h-entry' => ["u", "author", [], null, true]],
+        'tag'          => ['h-entry' => ["p", "category", [], true], 'h-feed' => ["p", "category"], 'h-review' => ["p", "category"], 'h-review-aggregate' => ["p", "category"]],
+        'author'       => ['h-entry' => ["u", "author", [], true]],
         'item-license' => ['h-news' => ["u", "license"]],
         'principles'   => ['h-news' => ["u", "principles"]],
     ];
@@ -427,7 +427,7 @@ class Parser {
                 // property with this name has not been seen yet
                 !isset($out[$name])
                 // property prefix is of a higher rank than one already seen and isn't deferrable
-                || (static::PREFIX_RANK[$prefix] > static::PREFIX_RANK[$out[$name][0]] && !($map[4] ?? false))
+                || (static::PREFIX_RANK[$prefix] > static::PREFIX_RANK[$out[$name][0]] && !($map[3] ?? false))
             ) {
                 $out[$name] = $map;
             }
@@ -493,7 +493,7 @@ class Parser {
             # if such class(es) are found, it is a property element
             # add properties found to current microformat's properties: { } structure
             foreach ($properties as $p) {
-                [$prefix, $key, $extraRoots, $container, $defer] = array_pad($p, 5, null);
+                [$prefix, $key, $extraRoots, $defer] = array_pad($p, 5, null);
                 $hasP = $hasP ?: $prefix === "p";
                 $hasE = $hasE ?: $prefix === "e";
                 $hasU = $hasU ?: $prefix === "u";
@@ -528,15 +528,7 @@ class Parser {
                 }
                 if ($defer) {
                     // defer addition of the property if it's supposed to be a fallback for another instance of the property
-                    $deferred[] = [$key, $value, $container];
-                } elseif ($container) {
-                    // if a container property is defined as part of backcompat processing, we insert into that; there can only ever be one instance of it
-                    if (!isset($out['properties'][$container])) {
-                        $out['properties'][$container] = [[$key => []]];
-                    } elseif (!isset($out['properties'][$container][0][$key])) {
-                        $out['properties'][$container][0][$key] = [];
-                    }
-                    $out['properties'][$container][0][$key][] = $value;
+                    $deferred[] = [$key, $value];
                 } else {
                     if (!isset($out['properties'][$key])) {
                         $out['properties'][$key] = [];
@@ -552,15 +544,8 @@ class Parser {
             }
         }
         // add any deferred properties
-        foreach ($deferred as [$key, $value, $container]) {
-            if ($container && !isset($out['properties'][$container][0][$key])) {
-                if (!isset($out['properties'][$container])) {
-                    $out['properties'][$container] = [[$key => []]];
-                } elseif (!isset($out['properties'][$container][0][$key])) {
-                    $out['properties'][$container][0][$key] = [];
-                }
-                $out['properties'][$container][0][$key][] = $value;
-            } elseif (!isset($out['properties'][$key])) {
+        foreach ($deferred as [$key, $value]) {
+            if (!isset($out['properties'][$key])) {
                 $out['properties'][$key] = [$value];
             }
         }
