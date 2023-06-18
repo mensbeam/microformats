@@ -635,7 +635,7 @@ class Parser {
             // check for backcompat relations
             $relations = $this->parseTokens($node, "rel");
             foreach ($relations as $r) {
-                if ($map = static::BACKCOMPAT_CLASSES[$r][$t] ?? null) {
+                if ($map = static::BACKCOMPAT_RELATIONS[$r][$t] ?? null) {
                     $out[] = $map;
                 }
             }
@@ -758,13 +758,15 @@ class Parser {
         while ($node = $this->nextElement($node ?? $root, $root, !$skipChildren)) {
             $skipChildren = false;
             $classes = $this->parseTokens($node, "class");
-            if (
+            if (!array_intersect(["value", "value-title"], $classes) && (
                 ($backcompatTypes && ($this->matchRootsBackcompat($classes) || $this->matchPropertiesBackcompat($classes, $backcompatTypes, $node)))
                 || ($this->matchRootsMf2($classes) || $this->matchPropertiesMf2($classes))
-            ) {
-                // only consider elements which are not themselves properties or roots
+            )) {
+                // only consider elements which are not themselves properties or roots, unless they have a value
                 // NOTE: The specification doesn't mention roots, but these should surely be skipped as well
                 $skipChildren = true;
+            } elseif ($node->hasAttribute("title") && in_array("value-title", $classes)) {
+                $out[] = trim($node->getAttribute("title"));
             } elseif (in_array("value", $classes)) {
                 # Where an element with such a microformat property class name
                 #   has a descendant with class name value (a "value element")
@@ -818,8 +820,6 @@ class Parser {
                         $out += $candidate;
                     }
                 }
-            } elseif ($node->hasAttribute("title") && in_array("value-title", $classes)) {
-                $out[] = trim($node->getAttribute("title"));
             }
         }
         if ($prefix !== "dt") {
