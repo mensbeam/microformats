@@ -13,22 +13,21 @@ use MensBeam\HTML\DOMParser;
 class StandardTest extends \PHPUnit\Framework\TestCase {
     protected const BASE = \MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/";
     protected const SUPPRESSED = [
-        "microformats-v2/rel/duplicate-rels", // this test has a spurious newline at the beginning of a value
-        "microformats-v1/hcard/name", // this test does not follow rules for structured img parsing
-        "microformats-v1/hcard/multiple", // this test has multiple violations of defined rules
-        "microformats-v1/hresume/affiliation", // this test does not follow rules for structured img parsing
-
-        "microformats-v1/includes/hcarditemref",
-        "microformats-v1/includes/heventitemref",
-        "microformats-v1/includes/hyperlink",
-        "microformats-v1/includes/object",
-        "microformats-v1/includes/table",
+        'microformats-v1/hcard/name'             => "this test does not follow rules for structured img parsing",
+        'microformats-v1/hcard/multiple'         => "this test has multiple violations of defined rules",
+        'microformats-v1/hresume/affiliation'    => "this test does not follow rules for structured img parsing",
+        'microformats-v1/includes/hcarditemref'  => "include pattern not implemented",
+        'microformats-v1/includes/heventitemref' => "include pattern not implemented",
+        'microformats-v1/includes/hyperlink'     => "include pattern not implemented",
+        'microformats-v1/includes/object'        => "include pattern not implemented",
+        'microformats-v1/includes/table'         => "include pattern not implemented",
+        'microformats-v2/rel/duplicate-rels'     => "this test has a spurious newline at the beginning of a value",
     ];
 
     /** @dataProvider provideStandardTests */
     public function testStandardTests(string $test): void {
-        if (in_array($test, self::SUPPRESSED)) {
-            $this->markTestIncomplete();
+        if (isset(self::SUPPRESSED[$test])) {
+            $this->markTestIncomplete(self::SUPPRESSED[$test]);
         }
         // read data
         $exp = json_decode(file_get_contents(self::BASE.$test.".json"), true);
