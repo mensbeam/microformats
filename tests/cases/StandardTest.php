@@ -14,7 +14,6 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
     protected const BASE = \MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/";
     protected const SUPPRESSED = [
         "microformats-mixed/h-resume/mixedroots",
-        "microformats-v1/hcalendar/ampm",
         "microformats-v1/hcalendar/attendees",
         "microformats-v1/hcalendar/concatenate",
         "microformats-v1/hcalendar/time",
@@ -38,10 +37,6 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         "microformats-v1/includes/hyperlink",
         "microformats-v1/includes/object",
         "microformats-v1/includes/table",
-        "microformats-v2/h-event/concatenate",
-        "microformats-v2/h-event/dt-property",
-        "microformats-v2/h-review-aggregate/hevent",
-        "microformats-v2/h-review-aggregate/simpleproperties",
     ];
 
     /** @dataProvider provideStandardTests */

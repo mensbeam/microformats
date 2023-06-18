@@ -762,6 +762,7 @@ class Parser {
         while ($node = $this->nextElement($node ?? $root, $root, !$skipChildren)) {
             $skipChildren = false;
             $classes = $this->parseTokens($node, "class");
+            $candidate = null;
             if (!array_intersect(["value", "value-title"], $classes) && (
                 ($backcompatTypes && ($this->matchRootsBackcompat($classes) || $this->matchPropertiesBackcompat($classes, $backcompatTypes, $node)))
                 || ($this->matchRootsMf2($classes) || $this->matchPropertiesMf2($classes))
@@ -769,8 +770,9 @@ class Parser {
                 // only consider elements which are not themselves properties or roots, unless they have a value
                 // NOTE: The specification doesn't mention roots, but these should surely be skipped as well
                 $skipChildren = true;
+                continue;
             } elseif ($node->hasAttribute("title") && in_array("value-title", $classes)) {
-                $out[] = trim($node->getAttribute("title"));
+                $candidate = trim($node->getAttribute("title"));
             } elseif (in_array("value", $classes)) {
                 # Where an element with such a microformat property class name
                 #   has a descendant with class name value (a "value element")
@@ -806,23 +808,23 @@ class Parser {
                     # for any other element, use its inner-text.
                     $candidate = $this->getCleanText($node, $prefix);
                 }
-                if ($prefix !== "dt") {
+            }
+            if ($prefix !== "dt") {
+                $skipChildren = true;
+                $out[] = $candidate;
+            } else {
+                // parse and normalize date parts
+                $candidate = $this->parseDatePart($candidate);
+                if ($candidate && !(
+                    # ignore any further "value" elements that specify the date.
+                    (isset($out['date']) && isset($candidate['date']))
+                    # ignore any further "value" elements that specify the time.
+                    || (isset($out['time']) && isset($candidate['time']))
+                    # ignore any further "value" elements that specify the timezone.
+                    || (isset($out['zone']) && isset($candidate['zone']))
+                )) {
                     $skipChildren = true;
-                    $out[] = $candidate;
-                } else {
-                    // parse and normalize date parts
-                    $candidate = $this->parseDatePart($candidate);
-                    if ($candidate && !(
-                        # ignore any further "value" elements that specify the date.
-                        (isset($out['date']) && isset($candidate['date']))
-                        # ignore any further "value" elements that specify the time.
-                        || (isset($out['time']) && isset($candidate['time']))
-                        # ignore any further "value" elements that specify the timezone.
-                        || (isset($out['zone']) && isset($candidate['zone']))
-                    )) {
-                        $skipChildren = true;
-                        $out += $candidate;
-                    }
+                    $out += $candidate;
                 }
             }
         }
