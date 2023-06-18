@@ -13,10 +13,10 @@ use MensBeam\HTML\DOMParser;
 class StandardTest extends \PHPUnit\Framework\TestCase {
     protected const BASE = \MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/";
     protected const SUPPRESSED = [
+        "microformats-v2/rel/duplicate-rels", // this test has a spurious newline at the beginning of a value
+
         "microformats-mixed/h-resume/mixedroots",
         "microformats-v1/hcalendar/attendees",
-        "microformats-v1/hcalendar/concatenate",
-        "microformats-v1/hcalendar/time",
         "microformats-v1/hcard/multiple",
         "microformats-v1/hcard/name",
         "microformats-v1/hcard/single",
@@ -49,8 +49,6 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
             if (preg_match('#^https?://[^/]+$#', $v)) {
                 $v .= "/";
             }
-            // at least one test has spurious whitespace
-            $v = trim($v);
         });
         // perform some further monkey-patching on specific tests
         $exp = $this->fixTests($exp, $test);

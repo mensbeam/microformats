@@ -180,6 +180,7 @@ class Parser {
         // Hour-only time zones require special processing
         # Z
         '\Z' => self::DATE_TYPE_ZULU,
+        '\z' => self::DATE_TYPE_ZULU,
     ];
     protected const DATE_OUTPUT_FORMATS = [
         self::DATE_TYPE_DATE | self::DATE_TYPE_SEC | self::DATE_TYPE_ZONE  => 'Y-m-d H:i:sO',
