@@ -45,9 +45,6 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         "microformats-v2/h-event/time",
         "microformats-v2/h-review-aggregate/hevent",
         "microformats-v2/h-review-aggregate/simpleproperties",
-        "microformats-v2/mixed/ignoretemplate",
-        "microformats-v2/rel/duplicate-rels",
-        "microformats-v2/rel/varying-text-duplicate-rels",
     ];
 
     /** @dataProvider provideStandardTests */
@@ -64,6 +61,8 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
             if (preg_match('#^https?://[^/]+$#', $v)) {
                 $v .= "/";
             }
+            // at least one test has spurious whitespace
+            $v = trim($v);
         });
         // parse input
         $dom = new DOMParser;
@@ -81,7 +80,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         foreach (new \RegexIterator(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(self::BASE)), '/\.json$/') as $path) {
             $path = str_replace(self::BASE, "", $path->getPathname());
             $path =  preg_replace('/\.json$/', '', $path);
-            yield [$path];
+            yield $path => [$path];
         }
     }
 

@@ -272,7 +272,7 @@ class Parser {
                     $out['rel-urls'][$url][$attr] = trim($link->getAttribute($attr));
                 }
             }
-            if (strlen($text = $this->getCleanText($link, "p"))) {
+            if (!isset($out['rel-urls'][$url]['text']) && strlen($text = $this->getCleanText($link, "p"))) {
                 $out['rel-urls'][$url]['text'] = $text;
             }
             # if there is no "rels" key in that hash, add it with an empty array value
@@ -979,6 +979,10 @@ class Parser {
         foreach ($copy->getElementsByTagName("style") as $e) {
             $e->parentNode->removeChild($e);
         }
+        // also drop templates; their contents would not normally be included in textContent
+        foreach ($copy->getElementsByTagName("template") as $e) {
+            $e->parentNode->removeChild($e);
+        }
         # replacing any nested <img> elements with their alt attribute, if
         #   present; otherwise their src attribute, if present, adding a
         #   space at the beginning and end, resolving the URL if it’s
@@ -1016,7 +1020,7 @@ class Parser {
      * @param bool $considerChildren Whether or not child nodes are valid next nodes
      */
     protected function nextElement(\DOMElement $node, \DOMElement $root, bool $considerChildren): ?\DOMElement {
-        if ($considerChildren && $node->localName !== "template" && $node->hasChildNodes()) {
+        if ($considerChildren && $node->hasChildNodes()) {
             $node = $node->firstChild;
             $next = $node;
         } elseif ($node->isSameNode($root)) {
@@ -1024,7 +1028,7 @@ class Parser {
          } else {
             $next = $node->nextSibling;
         }
-        while ($next && !$next instanceof \DOMElement) {
+        while ($next && (!$next instanceof \DOMElement ||  $next->localName === "template")) {
             $next = $next->nextSibling;
         }
         while (!$next) {
@@ -1033,7 +1037,7 @@ class Parser {
                 return null;
             }
             $next = $node->nextSibling;
-            while ($next and !$next instanceof \DOMElement) {
+            while ($next && (!$next instanceof \DOMElement ||  $next->localName === "template")) {
                 $next = $next->nextSibling;
             }
         }
