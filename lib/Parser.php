@@ -10,6 +10,13 @@ namespace MensBeam\Microformats;
 use MensBeam\HTML\Parser\Serializer;
 
 class Parser {
+    /** @var array A ranking of prefixes (with 0 being least preferred) to break ties when multiple properties of the same name exist on one element */
+    protected const PREFIX_RANK = [
+        "p"  => 1,
+        "dt" => 2,
+        "u"  => 3,
+        "e"  => 4,
+    ];
     /** @var array The list of class names which are backward-compatibility microformat markers */
     protected const BACKCOMPAT_ROOTS = [
         'adr'               => "h-adr",
@@ -340,6 +347,71 @@ class Parser {
         return (bool) ($this->matchRootsMf2($classes) ?: $this->matchRootsBackcompat($classes));
     }
 
+    protected function matchPropertiesMf2(array $classes): array {
+        $out = [];
+        foreach ($classes as $c) {
+            # The "*" for root (and property) class names consists of an
+            #   optional vendor prefix (series of 1+ number or lowercase
+            #   a-z characters i.e. [0-9a-z]+, followed by '-'), then one
+            #   or more '-' separated lowercase a-z words.
+            if (preg_match('/^(p|u|dt|e)((?:-[a-z0-9]+)?(?:-[a-z]+)+)$/S', $c, $match)) {
+                $prefix = $match[1];
+                $name = substr($match[2], 1);
+                if (!isset($out[$name])) {
+                    // property with this name has not been seen yet; add it
+                    $out[$name] = [$prefix, $name];
+                } elseif (static::PREFIX_RANK[$prefix] > static::PREFIX_RANK[$out[$name][0]]) {
+                    // property prefix is of a higher rank than one already seen; use the new prefix
+                    $out[$name][0] = $prefix;
+                }
+            }
+        }
+        return array_values($out);
+    }
+
+    protected function matchPropertiesBackcompat(array $classes, array $types, \DOMElement $node): array {
+        $props = [];
+        $out = [];
+        foreach ($types as $t) {
+            // check for backcompat classes
+            foreach ($classes as $c) {
+                if ($c === "entry-date" && ($node->localName !== "time" || !$node->hasAttribute("datetime"))) {
+                    // entry-date is only valid on time elements with a machine-readable datetime
+                    continue;
+                } elseif ($map = static::BACKCOMPAT_CLASSES[$c][$t] ?? null) {
+                    $props[] = $map;
+                }
+            }
+            // check for backcompat relations, if the node is of the appropriate type
+            if (in_array($node->localName, ["a", "area", "link"])) {
+                $relations = $this->parseTokens($node, "rel");
+                foreach ($relations as $r) {
+                    if ($map = static::BACKCOMPAT_RELATIONS[$r][$t] ?? null) {
+                        $props[] = $map;
+                    }
+                }
+                // check for "self bookmark" relations, if applicable
+                if (in_array($t, ["h-review", "h-review-aggregate"]) && sizeof(array_intersect(["self", "bookmark"], $relations)) === 2) {
+                    $props[] = ["u", "url"];
+                }
+            }
+        }
+        // filter the list of properties for uniqueness by name
+        foreach ($props as $map) {
+            $prefix = $map[0];
+            $name = $map[1];
+            if (
+                // property with this name has not been seen yet
+                !isset($out[$name])
+                // property prefix is of a higher rank than one already seen and isn't deferrable
+                || (static::PREFIX_RANK[$prefix] > static::PREFIX_RANK[$out[$name][0]] && !($map[4] ?? false))
+            ) {
+                $out[$name] = $map;
+            }
+        }
+        return array_values($out);
+    }
+
     protected function parseMicroformat(\DOMElement $root, array $types, bool $backcompat): array {
         # keep track of whether the root class name(s) was from backcompat
         // this is a parameter to this function
@@ -604,80 +676,6 @@ class Parser {
         }
         // return the final structure
         return $out;
-    }
-
-    protected function matchPropertiesMf2(array $classes): array {
-        $out = [];
-        foreach ($classes as $c) {
-            # The "*" for root (and property) class names consists of an
-            #   optional vendor prefix (series of 1+ number or lowercase
-            #   a-z characters i.e. [0-9a-z]+, followed by '-'), then one
-            #   or more '-' separated lowercase a-z words.
-            if (preg_match('/^(p|u|dt|e)((?:-[a-z0-9]+)?(?:-[a-z]+)+)$/S', $c, $match)) {
-                $out[] = [
-                    $match[1], // the prefix
-                    substr($match[2], 1), // the property name
-                ];
-            }
-        }
-        // filter properties for uniqueness before returning
-        return $this->filterProperties($out);
-    }
-
-    protected function matchPropertiesBackcompat(array $classes, array $types, \DOMElement $node): array {
-        $out = [];
-        foreach ($types as $t) {
-            // check for backcompat classes
-            foreach ($classes as $c) {
-                if ($map = static::BACKCOMPAT_CLASSES[$c][$t] ?? null) {
-                    if ($c === "entry-date" && ($node->localName !== "time" || !$node->hasAttribute("datetime"))) {
-                        // entry-date is only valid on time elements with a machine-readable datetime
-                        continue;
-                    }
-                    $out[] = $map;
-                }
-            }
-            // check for backcompat relations
-            $relations = $this->parseTokens($node, "rel");
-            foreach ($relations as $r) {
-                if ($map = static::BACKCOMPAT_RELATIONS[$r][$t] ?? null) {
-                    $out[] = $map;
-                }
-            }
-            // check for "self bookmark" relations, if applicable
-            if (in_array($t, ["h-review", "h-review-aggregate"]) && sizeof(array_intersect(["self", "bookmark"], $relations)) === 2) {
-                $out[] = ["u", "url"];
-            }
-        }
-        // filter properties for uniqueness before returning
-        return $this->filterProperties($out);
-    }
-
-    /** Filters a list of properties so that only one property of a given name (irrespective of prefix) remains in the list
-     *
-     * This is more likely to occur during backcompat processing, but can occur with v2 properties if a document is deliberately authored to do this
-     */
-    protected function filterProperties(array $properties): array {
-        $ranks = [
-            "p"  => 1,
-            "dt" => 2,
-            "u"  => 3,
-            "e"  => 4,
-        ];
-        $seen = [];
-        foreach ($properties as $p) {
-            // index 0 is prefix
-            // index 1 is name
-            // index 4 is deferred
-            if (
-                !isset($seen[$p[1]])
-                || $ranks[$p[0]] > $ranks[$seen[$p[1]][0]]
-                || !($p[4] ?? false)
-            ) {
-                $seen[$p[1]] = $p;
-            }
-        }
-        return array_values($seen);
     }
 
     protected function parseProperty(\DOMElement $node, string $prefix, array $backcompatTypes, ?string $impliedDate) {
