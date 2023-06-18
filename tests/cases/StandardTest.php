@@ -15,9 +15,8 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
     protected const SUPPRESSED = [
         "microformats-v2/rel/duplicate-rels", // this test has a spurious newline at the beginning of a value
         "microformats-v1/hcard/name", // this test does not follow rules for structured img parsing
+        "microformats-v1/hcard/multiple", // this test has multiple violations of defined rules
 
-        "microformats-v1/hcard/multiple",
-        "microformats-v1/hcard/single",
         "microformats-v1/hproduct/aggregate",
         "microformats-v1/hresume/affiliation",
         "microformats-v1/hresume/education",
@@ -97,6 +96,10 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
                 break;
             case "microformats-v1/hfeed/simple":
                 $this->fixDates($exp['items'][0]['children'][0]['properties']['updated']);
+                break;
+            case "microformats-v1/hcard/single":
+                $this->fixDates($exp['items'][0]['properties']['bday']);
+                $this->fixDates($exp['items'][0]['properties']['rev']);
                 break;
         }
         return $exp;
