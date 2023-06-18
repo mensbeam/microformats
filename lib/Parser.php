@@ -40,6 +40,7 @@ class Parser {
         'agent'             => ['h-card' => ["p", "agent"]],
         'attendee'          => ['h-event' => ["p", "attendee"]],
         'author'            => ['h-entry' => ["p", "author", ["vcard"]], 'h-recipe' => ["p", "author", ["vcard"]], 'h-feed' => ["p", "author", ["vcard"]]],
+        'average'           => ['h-review' => ["p", "average"], 'h-review-aggregate' => ["p", "average"]],
         'bday'              => ['h-card' => ["dt", "bday"]],
         'best'              => ['h-review' => ["p", "best"], 'h-review-aggregate' => ["p", "best"]],
         'brand'             => ['h-product' => ["p", "brand"]],
