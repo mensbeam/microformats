@@ -192,6 +192,7 @@ class Parser {
         self::DATE_TYPE_ZULU                                               => '\Z',
     ];
 
+    protected $options;
     protected $baseUrl;
     protected $docUrl;
     protected $xpath;
@@ -201,8 +202,10 @@ class Parser {
      * @param \DOMElement $node The DOMElement to parse
      * @param string $baseURL The base URL against which to resolve relative URLs in the output
      */
-    public function parseElement(\DOMElement $node, string $baseUrl = ""): array {
+    public function parseElement(\DOMElement $node, string $baseUrl = "", ?array $options = null): array {
         $root = $node;
+        // normalize options
+        $this->options = $this->normalizeOptions($options ?? []);
         // Perform HTML base-URL resolution
         $this->docUrl = $baseUrl;
         $this->baseUrl = $this->getBaseUrl($root, $baseUrl);
@@ -294,7 +297,7 @@ class Parser {
             sort($out['rel-urls'][$k]['rels']);
         }
         // clean up temporary instance properties
-        foreach (["xpath", "docUrl", "baseUrl"] as $prop) {
+        foreach (["options", "xpath", "docUrl", "baseUrl"] as $prop) {
             $this->$prop = null;
         }
         # return the resulting JSON
@@ -316,6 +319,7 @@ class Parser {
             #   optional vendor prefix (series of 1+ number or lowercase
             #   a-z characters i.e. [0-9a-z]+, followed by '-'), then one
             #   or more '-' separated lowercase a-z words.
+            // PROPOSAL: https://github.com/microformats/microformats2-parsing/issues/59
             // exclude Tailwind classes https://tailwindcss.com/docs/height
             return preg_match('/^h(?:-[a-z0-9]+)?(?:-[a-z]+)+$/S', $c) && !preg_match('/^h-(?:px|auto|full|screen|min|max|fit)$/S', $c);
         });
@@ -951,6 +955,11 @@ class Parser {
             return $parts['date'];
         } else {
             $implied = $implied ? $this->parseDatePart($implied) : [];
+            // PROPOSAL: https://github.com/microformats/microformats2-parsing/issues/4
+            // only imply time zone if so configured
+            if (!$this->options['impliedTz']) {
+                $implied['zone'] = null;
+            }
             if (isset($parts['date']) && isset($parts['time'])) {
                 return $parts['date']." ".$parts['time'].($implied['zone'] ?? "");
             } elseif (isset($parts['time']) && isset($implied['date'])) {
@@ -1042,5 +1051,11 @@ class Parser {
             }
         }
         return $next;
+    }
+
+    protected function normalizeOptions(array $options) {
+        return [
+            'impliedTz' => (bool) ($options['impliedTz'] ?? false),
+        ];
     }
 }

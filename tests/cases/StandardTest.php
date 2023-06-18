@@ -40,7 +40,6 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         "microformats-v1/includes/table",
         "microformats-v2/h-event/concatenate",
         "microformats-v2/h-event/dt-property",
-        "microformats-v2/h-event/time",
         "microformats-v2/h-review-aggregate/hevent",
         "microformats-v2/h-review-aggregate/simpleproperties",
     ];
