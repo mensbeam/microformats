@@ -712,7 +712,12 @@ class Parser {
                     $url = $node->getAttribute("href");
                 } elseif ($node->localName === "img" && $node->hasAttribute("src")) {
                     # else if img.u-x[src] return the result of "parse an img element for src and alt" (see Sec.1.5)
-                    return $this->parseImg($node);
+                    // NOTE: this seems not to apply to backcompat processing
+                    if (!$backcompatTypes) {
+                        return $this->parseImg($node);
+                    } else {
+                        $url= $node->getAttribute("src");
+                    }
                 } elseif (in_array($node->localName, ["audio", "video", "source", "iframe"]) && $node->hasAttribute("src")) {
                     # else if audio.u-x[src] or video.u-x[src] or source.u-x[src] or iframe.u-x[src], then get the src attribute
                     $url = $node->getAttribute("src");

@@ -13,9 +13,7 @@ use MensBeam\HTML\DOMParser;
 class StandardTest extends \PHPUnit\Framework\TestCase {
     protected const BASE = \MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/";
     protected const SUPPRESSED = [
-        'microformats-v1/hcard/name'             => "this test does not follow rules for structured img parsing",
-        'microformats-v1/hcard/multiple'         => "this test has multiple violations of defined rules",
-        'microformats-v1/hresume/affiliation'    => "this test does not follow rules for structured img parsing",
+        'microformats-v1/hcard/multiple'         => "whether vcard keys are p- or u- is unclear",
         'microformats-v1/includes/hcarditemref'  => "include pattern not implemented",
         'microformats-v1/includes/heventitemref' => "include pattern not implemented",
         'microformats-v1/includes/hyperlink'     => "include pattern not implemented",
