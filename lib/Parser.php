@@ -120,6 +120,7 @@ class Parser {
     /** @var array The list of link relations which are backward-compatibility property markers. The format is the same as for backcompat classes */
     protected const BACKCOMPAT_RELATIONS = [
         // h-review and h-review-agregate also include "self bookmark", but this requires special processing
+        // the tag relation also requires special processing
         'bookmark'     => ['h-entry' => ["u", "url"]],
         'tag'          => ['h-entry' => ["p", "category", [], true], 'h-feed' => ["p", "category"], 'h-review' => ["p", "category"], 'h-review-aggregate' => ["p", "category"]],
         'author'       => ['h-entry' => ["u", "author", [], true]],
@@ -392,7 +393,7 @@ class Parser {
         return array_values($out);
     }
 
-    protected function matchPropertiesBackcompat(array $classes, array $types, \DOMElement $node): array {
+    protected function matchPropertiesBackcompat(array &$classes, array $types, \DOMElement $node): array {
         $props = [];
         $out = [];
         foreach ($types as $t) {
@@ -420,9 +421,11 @@ class Parser {
             }
         }
         // filter the list of properties for uniqueness by name
+        // while we're at it we'll also add extra roots where needed
         foreach ($props as $map) {
             $prefix = $map[0];
             $name = $map[1];
+            $extraRoots = $map[2] ?? [];
             if (
                 // property with this name has not been seen yet
                 !isset($out[$name])
@@ -430,6 +433,11 @@ class Parser {
                 || (static::PREFIX_RANK[$prefix] > static::PREFIX_RANK[$out[$name][0]] && !($map[3] ?? false))
             ) {
                 $out[$name] = $map;
+                foreach ($extraRoots as $r) {
+                    if (!in_array($r, $classes)) {
+                        $classes[] = $r;
+                    }
+                }
             }
         }
         return array_values($out);
@@ -466,6 +474,13 @@ class Parser {
         while ($node = $this->nextElement($node ?? $root, $root, !($child = $child ?? false))) {
             $child = null;
             $classes = $this->parseTokens($node, "class");
+            if ($backcompat) {
+                # if parsing a backcompat root, parse child element class name(s) for backcompat properties
+                $properties = $this->matchPropertiesBackcompat($classes, $types, $node);
+            } else {
+                # else parse a child element class for property class name(s) "p-*,u-*,dt-*,e-*"
+                $properties = $this->matchPropertiesMf2($classes);
+            }
             # parse a child element for microformats (recurse)
             // NOTE: We do this in a different order from the spec because this seems to be what is actually required
             if ($childTypes = $this->matchRootsMf2($classes)) {
@@ -474,13 +489,6 @@ class Parser {
             } elseif ($childTypes = $this->matchRootsBackcompat($classes, $backcompat)) {
                 $child = $this->parseMicroformat($node, $childTypes, true);
                 $hasChild = true;
-            }
-            if ($backcompat) {
-                # if parsing a backcompat root, parse child element class name(s) for backcompat properties
-                $properties = $this->matchPropertiesBackcompat($classes, $types, $node);
-            } else {
-                # else parse a child element class for property class name(s) "p-*,u-*,dt-*,e-*"
-                $properties = $this->matchPropertiesMf2($classes);
             }
             # [if the element is a microformat and it has no properties] add
             #   found elements that are microformats to the "children" array
@@ -535,18 +543,16 @@ class Parser {
                     }
                     $out['properties'][$key][] = $value;
                 }
-                // now add any extra roots to the element's class list; this only ever occurs during backcompat processing
-                foreach ($extraRoots ?? [] as $r) {
-                    if (!in_array($r, $classes)) {
-                        $classes[] = $r;
-                    }
-                }
             }
         }
         // add any deferred properties
+        $known = array_keys($out['properties']);
         foreach ($deferred as [$key, $value]) {
-            if (!isset($out['properties'][$key])) {
-                $out['properties'][$key] = [$value];
+            if (!in_array($key, $known)) {
+                if (!isset($out['properties'][$key])) {
+                    $out['properties'][$key] = [];
+                }
+                $out['properties'][$key][] = $value;
             }
         }
         # imply properties for the found microformat
@@ -702,6 +708,14 @@ class Parser {
                 } elseif (in_array($node->localName, ["img", "area"]) && $node->hasAttribute("alt")) {
                     # else if img.p-x[alt] or area.p-x[alt], then return the alt attribute
                     return $node->getAttribute("alt");
+                } elseif (in_array($node->localName, ["a", "area", "link"]) && array_intersect($backcompatTypes, array_keys(static::BACKCOMPAT_RELATIONS['tag'])) && preg_match('/\btag\b/', $node->getAttribute("rel"))) {
+                    // we have encountered a tag relation during backcompat processing
+                    // https://microformats.org/wiki/rel-tag#Abstract
+                    // we are required to retrieve the last component of the URL path and use that
+                    if (preg_match('#([^/]*)/?$#', URL::fromString($this->normalizeUrl($node->getAttribute("href")))->getPath(), $match)) {
+                        return $match[1];
+                    }
+                    return "";
                 }
                 # else return the textContent of the element after [cleaning]
                 return $this->getCleanText($node, $prefix);
@@ -804,7 +818,7 @@ class Parser {
             $classes = $this->parseTokens($node, "class");
             $candidate = null;
             if (!array_intersect(["value", "value-title"], $classes) && (
-                ($backcompatTypes && ($this->matchRootsBackcompat($classes) || $this->matchPropertiesBackcompat($classes, $backcompatTypes, $node)))
+                ($backcompatTypes && ($this->matchPropertiesBackcompat($classes, $backcompatTypes, $node) || $this->matchRootsBackcompat($classes)))
                 || ($this->matchRootsMf2($classes) || $this->matchPropertiesMf2($classes))
             )) {
                 // only consider elements which are not themselves properties or roots, unless they have a value
@@ -1053,7 +1067,8 @@ class Parser {
             $e->parentNode->replaceChild($e->ownerDocument->createTextNode($attr), $e);
         }
         # removing all leading/trailing spaces
-        return trim($copy->textContent);
+        // NOTE: Also remove extraneous spaces within the text; this aligns with most mature implementations
+        return preg_replace('/\s{2,}/s', " ", trim($copy->textContent));
     }
 
     protected function getBaseUrl(\DOMElement $root, string $base): string {

@@ -1,0 +1,136 @@
+{
+    "items": [
+        {
+            "type": [
+                "h-entry"
+            ],
+            "properties": {
+                "name": [
+                    "April recap \u2013 TXJS & Front-Trends"
+                ],
+                "published": [
+                    "2013-05-14T11:54:06+0000"
+                ],
+                "category": [
+                    "speaking",
+                    "web-dev",
+                    "conferences",
+                    "front-trends",
+                    "fronttrends",
+                    "speaking",
+                    "txjs"
+                ],
+                "url": [
+                    "http://fberriman.com/2013/05/14/april-recap-txjs-front-trends/",
+                    "http://fberriman.com/2013/05/14/april-recap-txjs-front-trends/"
+                ],
+                "content": [
+                    {
+                        "html": "<p>April was pretty decent.  I got to attend two very good conferences <strong>and</strong> I got to speak at them.</p>",
+                        "value": "April was pretty decent. I got to attend two very good conferences and I got to speak at them."
+                    }
+                ],
+                "author": [
+                    {
+                        "type": [
+                            "h-card"
+                        ],
+                        "properties": {
+                            "name": [
+                                "Frances"
+                            ],
+                            "url": [
+                                "http://fberriman.com/author/admin/"
+                            ]
+                        },
+                        "value": "Frances"
+                    }
+                ]
+            },
+            "id": "post-976"
+        }
+    ],
+    "rels": {
+        "bookmark": [
+            "http://fberriman.com/2013/05/14/april-recap-txjs-front-trends/"
+        ],
+        "category": [
+            "http://fberriman.com/category/speaking/",
+            "http://fberriman.com/category/web-dev/"
+        ],
+        "tag": [
+            "http://fberriman.com/category/speaking/",
+            "http://fberriman.com/category/web-dev/",
+            "http://fberriman.com/tag/conferences/",
+            "http://fberriman.com/tag/front-trends/",
+            "http://fberriman.com/tag/fronttrends/",
+            "http://fberriman.com/tag/speaking/",
+            "http://fberriman.com/tag/txjs/"
+        ],
+        "author": [
+            "http://fberriman.com/author/admin/"
+        ]
+    },
+    "rel-urls": {
+        "http://fberriman.com/2013/05/14/april-recap-txjs-front-trends/": {
+            "title": "Permalink to April recap \u2013 TXJS & Front-Trends",
+            "text": "April recap \u2013 TXJS & Front-Trends",
+            "rels": [
+                "bookmark"
+            ]
+        },
+        "http://fberriman.com/category/speaking/": {
+            "title": "View all posts in Speaking",
+            "text": "Speaking",
+            "rels": [
+                "category",
+                "tag"
+            ]
+        },
+        "http://fberriman.com/category/web-dev/": {
+            "title": "View all posts in Web Dev",
+            "text": "Web Dev",
+            "rels": [
+                "category",
+                "tag"
+            ]
+        },
+        "http://fberriman.com/tag/conferences/": {
+            "text": "conferences",
+            "rels": [
+                "tag"
+            ]
+        },
+        "http://fberriman.com/tag/front-trends/": {
+            "text": "front-trends",
+            "rels": [
+                "tag"
+            ]
+        },
+        "http://fberriman.com/tag/fronttrends/": {
+            "text": "fronttrends",
+            "rels": [
+                "tag"
+            ]
+        },
+        "http://fberriman.com/tag/speaking/": {
+            "text": "Speaking",
+            "rels": [
+                "tag"
+            ]
+        },
+        "http://fberriman.com/tag/txjs/": {
+            "text": "txjs",
+            "rels": [
+                "tag"
+            ]
+        },
+        "http://fberriman.com/author/admin/": {
+            "title": "View all posts by Frances",
+            "text": "Frances",
+            "rels": [
+                "author"
+            ]
+        }
+    }
+}

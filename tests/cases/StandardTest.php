@@ -11,7 +11,6 @@ use MensBeam\HTML\DOMParser;
 
 /** @covers MensBeam\Microformats\Parser */
 class StandardTest extends \PHPUnit\Framework\TestCase {
-    protected const BASE = \MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/";
     protected const SUPPRESSED = [
         'microformats-v1/hcard/multiple'         => "whether vcard keys are p- or u- is unclear",
         'microformats-v1/includes/hcarditemref'  => "include pattern not implemented",
@@ -23,13 +22,13 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
     ];
 
     /** @dataProvider provideStandardTests */
-    public function testStandardTests(string $test): void {
-        if (isset(self::SUPPRESSED[$test])) {
-            $this->markTestIncomplete(self::SUPPRESSED[$test]);
+    public function testStandardTests(string $name, string $path): void {
+        if (isset(self::SUPPRESSED[$name])) {
+            $this->markTestIncomplete(self::SUPPRESSED[$name]);
         }
         // read data
-        $exp = json_decode(file_get_contents(self::BASE.$test.".json"), true);
-        $html = file_get_contents(self::BASE.$test.".html");
+        $exp = json_decode(file_get_contents($path.".json"), true);
+        $html = file_get_contents($path.".html");
         // fix up expectation where necessary
         array_walk_recursive($exp, function(&$v) {
             // URLs differ trivially from output of our normalization library
@@ -38,7 +37,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
             }
         });
         // perform some further monkey-patching on specific tests
-        $exp = $this->fixTests($exp, $test);
+        $exp = $this->fixTests($exp, $name);
         // parse input
         $dom = new DOMParser;
         $parser = new Parser;
@@ -48,14 +47,31 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         $this->ksort($exp);
         $this->ksort($act);
         // run comparison
+        if (!$exp) {
+            echo json_encode($act, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE);
+            exit;
+        }
         $this->assertSame($exp, $act);
     }
 
     public function provideStandardTests(): \Generator {
-        foreach (new \RegexIterator(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(self::BASE)), '/\.json$/') as $path) {
-            $path = str_replace(self::BASE, "", $path->getPathname());
-            $path =  preg_replace('/\.json$/', '', $path);
-            yield $path => [$path];
+        return $this->provideTestList(\MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/");
+    }
+
+    protected function provideTestList(): \Generator {
+        $tests = [
+            //\MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/", // standard tests
+            \MensBeam\Microformats\BASE."tests/cases/json/", // additional tests
+        ];
+        foreach ($tests as $base) {
+            $base = strtr($base, "\\", "/");
+            foreach (new \RegexIterator(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($base )), '/\.json$/') as $file) {
+                $path = $file->getPathname();
+                $path =  preg_replace('/\.json$/', '', $path);
+                $name = strtr($path, "\\", "/");
+                $name = str_replace(strtr($base, "\\", "/"), "", $name);
+                yield $name => [$name, $path];
+            }
         }
     }
 
@@ -91,6 +107,8 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
                 $this->fixDates($exp['items'][0]['properties']['bday']);
                 $this->fixDates($exp['items'][0]['properties']['rev']);
                 break;
+            case "phpmf2/hentry/fberriman":
+                $this->fixDates($exp['items'][0]['properties']['published']);
         }
         return $exp;
     }
