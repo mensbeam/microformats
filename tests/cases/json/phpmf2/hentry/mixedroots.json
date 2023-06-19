@@ -1,0 +1,550 @@
+{
+    "items": [
+        {
+            "type": [
+                "h-as-article",
+                "h-entry"
+            ],
+            "properties": {
+                "name": [
+                    "Wir brauchen Metadaten f\u00fcr Telefonnummern"
+                ],
+                "url": [
+                    "http://notizblog.org/2014/02/20/wir-brauchen-metadaten-fuer-telefonnummern/",
+                    "http://notizblog.org/2014/02/20/wir-brauchen-metadaten-fuer-telefonnummern/",
+                    "http://notizblog.org/b/25m",
+                    "http://notizblog.org/2014/02/20/wir-brauchen-metadaten-fuer-telefonnummern/"
+                ],
+                "uid": [
+                    "http://notizblog.org/2014/02/20/wir-brauchen-metadaten-fuer-telefonnummern/"
+                ],
+                "updated": [
+                    "2014-02-20T10:30:40+00:00"
+                ],
+                "published": [
+                    "2014-02-20T10:30:40+00:00"
+                ],
+                "content": [
+                    {
+                        "html": "<p><a href=\"http://netzwertig.com/2014/02/19/zuckerberg-bekommt-wieder-was-er-will-facebook-uebernimmt-whatsapp-fuer-bis-zu-19-milliarden-dollar/\">Facebook kauft WhatsApp</a> und ich hab nur wenig M\u00f6glichkeiten meine Konsequenzen daraus zu ziehen. Leider sind alle aktuell popul\u00e4ren \u201cChat\u201d Systeme direkt an die App gekoppelt und ich \u201cmuss\u201d zwangsl\u00e4ufig die App benutzen die mein Freundeskreis bevorzugt.</p>\n    <p><a href=\"http://www.whatsapp.com/\">WhatsApp</a> benutzt intern das <a href=\"http://de.wikipedia.org/wiki/WhatsApp#cite_note-10\">XMPP-Protokoll</a> und arbeitet dadurch ja theoretisch dezentral und auch <a href=\"https://telegram.org\">Telegram</a> hat beispielsweise <a href=\"https://core.telegram.org/mtproto\">eine Art offenes Protokoll</a> gebaut\u2026 Das Problem: Woher wissen auf welchem Server der Andere angemeldet ist.</p>\n    <p>Seit WhatsApp die Identifizierung \u00fcber die Telefonnummer (statt einer z.B. E-Mail Adresse) eingef\u00fchrt hat, sind viele anderen diesem Beispiel gefolgt und es gibt nichts Verwerfliches daran. Jeder der eine solche App nutzt hat zwangsl\u00e4ufig ein Telefon, was bedeutet dass er auch eine Telefonnummer hat und die Wahrscheinlichkeit dass in seinem (Telefon-)Adressbuch mehr Telefonnummern als E-Mail Adressen stehen ist auch sehr hoch. Prinzipiell also eine gute Idee! Leider kann man aber anhand einer Telefonnummer nicht auf einen Server (mal abgesehen vom Telekommunikations-unternehmen) schlie\u00dfen und das bedeutet, dass das Verfahren leider auch nur zentral funktionieren kann. Nutze ich WhatsApp, kann man mich nur \u00fcber die WhatsApp-Server erreichen, f\u00fcr Telegram l\u00e4uft die Kommunikation nur \u00fcber die Telegram-Server usw.</p>\n    <p>Um mit XMPP oder anderen Protokollen wirklich dezentral arbeiten zu k\u00f6nnen, m\u00fcsste man \u00fcber die Telefonnummer erfahren k\u00f6nnen welchen Chat-Server der Andere benutzt. Vielleicht \u00fcber so eine Art <a href=\"http://notizblog.org/2008/07/27/email-address-to-url-transformation/\"><em>Tel to Id</em></a> \u2013 Service oder \u00fcber andere Protokolle wie z.B. SMS. Damit k\u00f6nnte sich jeder selbst den Client seines Vertrauens aussuchen und alles w\u00e4re <del datetime=\"2014-02-20T08:59:56+00:00\">gut</del> <ins datetime=\"2014-02-20T08:59:56+00:00\">besser</ins> <img src=\"http://notizblog.org/wp-includes/images/smilies/icon_wink.gif\" alt=\";)\" class=\"wp-smiley\"> </p>\n    \n    <div class=\"social-buttons\">\n      <a class=\"FlattrButton\" style=\"display:none;\" data-flattr-button=\"compact\" data-flattr-uid=\"pfefferle\" data-flattr-category=\"text\" data-flattr-language=\"de_DE\" href=\"http://notizblog.org/2014/02/20/wir-brauchen-metadaten-fuer-telefonnummern/\" rel=\"donation payment\"></a>\n    \n      <div class=\"g-plusone\" data-size=\"medium\" data-lang=\"de-DE\" data-href=\"http://notizblog.org/2014/02/20/wir-brauchen-metadaten-fuer-telefonnummern/\"></div>\n    </div>",
+                        "value": "Facebook kauft WhatsApp und ich hab nur wenig M\u00f6glichkeiten meine Konsequenzen daraus zu ziehen. Leider sind alle aktuell popul\u00e4ren \u201cChat\u201d Systeme direkt an die App gekoppelt und ich \u201cmuss\u201d zwangsl\u00e4ufig die App benutzen die mein Freundeskreis bevorzugt.\nWhatsApp benutzt intern das XMPP-Protokoll und arbeitet dadurch ja theoretisch dezentral und auch Telegram hat beispielsweise eine Art offenes Protokoll gebaut\u2026 Das Problem: Woher wissen auf welchem Server der Andere angemeldet ist.\nSeit WhatsApp die Identifizierung \u00fcber die Telefonnummer (statt einer z.B. E-Mail Adresse) eingef\u00fchrt hat, sind viele anderen diesem Beispiel gefolgt und es gibt nichts Verwerfliches daran. Jeder der eine solche App nutzt hat zwangsl\u00e4ufig ein Telefon, was bedeutet dass er auch eine Telefonnummer hat und die Wahrscheinlichkeit dass in seinem (Telefon-)Adressbuch mehr Telefonnummern als E-Mail Adressen stehen ist auch sehr hoch. Prinzipiell also eine gute Idee! Leider kann man aber anhand einer Telefonnummer nicht auf einen Server (mal abgesehen vom Telekommunikations-unternehmen) schlie\u00dfen und das bedeutet, dass das Verfahren leider auch nur zentral funktionieren kann. Nutze ich WhatsApp, kann man mich nur \u00fcber die WhatsApp-Server erreichen, f\u00fcr Telegram l\u00e4uft die Kommunikation nur \u00fcber die Telegram-Server usw.\nUm mit XMPP oder anderen Protokollen wirklich dezentral arbeiten zu k\u00f6nnen, m\u00fcsste man \u00fcber die Telefonnummer erfahren k\u00f6nnen welchen Chat-Server der Andere benutzt. Vielleicht \u00fcber so eine Art Tel to Id \u2013 Service oder \u00fcber andere Protokolle wie z.B. SMS. Damit k\u00f6nnte sich jeder selbst den Client seines Vertrauens aussuchen und alles w\u00e4re gut besser ;)"
+                    }
+                ],
+                "author": [
+                    {
+                        "type": [
+                            "h-card"
+                        ],
+                        "properties": {
+                            "name": [
+                                "Matthias Pfefferle"
+                            ],
+                            "photo": [
+                                {
+                                    "value": "http://1.gravatar.com/avatar/b36983a5651df2c413e264ad4d5cc1a1?s=40&d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D40&r=G",
+                                    "alt": ""
+                                }
+                            ],
+                            "url": [
+                                "http://notizblog.org/author/matthias-pfefferle/"
+                            ],
+                            "uid": [
+                                "http://notizblog.org/author/matthias-pfefferle/"
+                            ]
+                        },
+                        "value": "Matthias Pfefferle"
+                    }
+                ],
+                "comment": [
+                    {
+                        "type": [
+                            "h-as-comment",
+                            "h-entry"
+                        ],
+                        "properties": {
+                            "summary": [
+                                "ENUM (RFC6116) macht genau das. Ist zwar f\u00fcr SIP gedacht, passt aber auch auf diese Anforderung."
+                            ],
+                            "name": [
+                                "ENUM (RFC6116) macht genau das. Ist zwar f\u00fcr SIP gedacht, passt aber auch auf diese Anforderung."
+                            ],
+                            "updated": [
+                                "http://20. Februar 2014 bei 10:36"
+                            ],
+                            "published": [
+                                "http://20. Februar 2014 bei 10:36"
+                            ],
+                            "content": [
+                                {
+                                    "html": "<p>ENUM (<a href=\"https://tools.ietf.org/html/rfc6116\">RFC6116</a>) macht genau das. Ist zwar f\u00fcr SIP gedacht, passt aber auch auf diese Anforderung.</p>",
+                                    "value": "ENUM (RFC6116) macht genau das. Ist zwar f\u00fcr SIP gedacht, passt aber auch auf diese Anforderung."
+                                }
+                            ],
+                            "author": [
+                                {
+                                    "type": [
+                                        "h-card"
+                                    ],
+                                    "properties": {
+                                        "name": [
+                                            "Dentaku"
+                                        ],
+                                        "photo": [
+                                            {
+                                                "value": "http://1.gravatar.com/avatar/1d6a0566df7760e7d1507810b71a363e?s=50&d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D50&r=G",
+                                                "alt": ""
+                                            }
+                                        ],
+                                        "url": [
+                                            "http://dentaku.wazong.de"
+                                        ]
+                                    },
+                                    "value": "Dentaku"
+                                }
+                            ],
+                            "comment": [
+                                {
+                                    "type": [
+                                        "h-as-comment",
+                                        "h-entry"
+                                    ],
+                                    "properties": {
+                                        "summary": [
+                                            "Das war ne schnelle Antwort :)\nVielen Dank f\u00fcr den Tipp mit ENUM (noch nie davon geh\u00f6rt) und den Link\u2026 werde mich sp\u00e4ter mal durch das RFC k\u00e4mpfen\u2026"
+                                        ],
+                                        "name": [
+                                            "Das war ne schnelle Antwort :)\nVielen Dank f\u00fcr den Tipp mit ENUM (noch nie davon geh\u00f6rt) und den Link\u2026 werde mich sp\u00e4ter mal durch das RFC k\u00e4mpfen\u2026"
+                                        ],
+                                        "updated": [
+                                            "http://20. Februar 2014 bei 10:41"
+                                        ],
+                                        "published": [
+                                            "http://20. Februar 2014 bei 10:41"
+                                        ],
+                                        "content": [
+                                            {
+                                                "html": "<p>Das war ne schnelle Antwort <img src=\"http://notizblog.org/wp-includes/images/smilies/icon_smile.gif\" alt=\":)\" class=\"wp-smiley\"> </p>\n    <p>Vielen Dank f\u00fcr den Tipp mit ENUM (noch nie davon geh\u00f6rt) und den Link\u2026 werde mich sp\u00e4ter mal durch das RFC k\u00e4mpfen\u2026</p>",
+                                                "value": "Das war ne schnelle Antwort :)\nVielen Dank f\u00fcr den Tipp mit ENUM (noch nie davon geh\u00f6rt) und den Link\u2026 werde mich sp\u00e4ter mal durch das RFC k\u00e4mpfen\u2026"
+                                            }
+                                        ],
+                                        "author": [
+                                            {
+                                                "type": [
+                                                    "h-card"
+                                                ],
+                                                "properties": {
+                                                    "name": [
+                                                        "Matthias Pfefferle"
+                                                    ],
+                                                    "photo": [
+                                                        {
+                                                            "value": "http://1.gravatar.com/avatar/b36983a5651df2c413e264ad4d5cc1a1?s=50&d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D50&r=G",
+                                                            "alt": ""
+                                                        }
+                                                    ],
+                                                    "url": [
+                                                        "http://notizblog.org"
+                                                    ]
+                                                },
+                                                "value": "Matthias Pfefferle"
+                                            }
+                                        ]
+                                    },
+                                    "id": "li-comment-466780",
+                                    "value": "Das war ne schnelle Antwort :)\nVielen Dank f\u00fcr den Tipp mit ENUM (noch nie davon geh\u00f6rt) und den Link\u2026 werde mich sp\u00e4ter mal durch das RFC k\u00e4mpfen\u2026"
+                                }
+                            ]
+                        },
+                        "id": "li-comment-466758",
+                        "value": "ENUM (RFC6116) macht genau das. Ist zwar f\u00fcr SIP gedacht, passt aber auch auf diese Anforderung."
+                    },
+                    {
+                        "type": [
+                            "h-as-comment",
+                            "h-entry"
+                        ],
+                        "properties": {
+                            "summary": [
+                                "Wollte auch gerade ENUM sagen. Dabei wird die Telefonnummer in einen DNS-Namen konvertiert. Wenn du damit spielen willst, kannst du dir unter http://www.portunity.de/access/produkte/telefonie/enum-domains.html kostenlos eine deutsche Nummer in ENUM eintragen lassen."
+                            ],
+                            "name": [
+                                "Wollte auch gerade ENUM sagen. Dabei wird die Telefonnummer in einen DNS-Namen konvertiert. Wenn du damit spielen willst, kannst du dir unter http://www.portunity.de/access/produkte/telefonie/enum-domains.html kostenlos eine deutsche Nummer in ENUM eintragen lassen."
+                            ],
+                            "updated": [
+                                "http://20. Februar 2014 bei 11:4"
+                            ],
+                            "published": [
+                                "http://20. Februar 2014 bei 11:4"
+                            ],
+                            "content": [
+                                {
+                                    "html": "<p>Wollte auch gerade ENUM sagen. Dabei wird die Telefonnummer in einen DNS-Namen konvertiert. Wenn du damit spielen willst, kannst du dir unter <a href=\"http://www.portunity.de/access/produkte/telefonie/enum-domains.html\">http://www.portunity.de/access/produkte/telefonie/enum-domains.html</a> kostenlos eine deutsche Nummer in ENUM eintragen lassen.</p>",
+                                    "value": "Wollte auch gerade ENUM sagen. Dabei wird die Telefonnummer in einen DNS-Namen konvertiert. Wenn du damit spielen willst, kannst du dir unter http://www.portunity.de/access/produkte/telefonie/enum-domains.html kostenlos eine deutsche Nummer in ENUM eintragen lassen."
+                                }
+                            ],
+                            "author": [
+                                {
+                                    "type": [
+                                        "h-card"
+                                    ],
+                                    "properties": {
+                                        "name": [
+                                            "Lukas Rosenstock"
+                                        ],
+                                        "photo": [
+                                            {
+                                                "value": "http://0.gravatar.com/avatar/2d4d94afbc593569446625c02e7a2f73?s=50&d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D50&r=G",
+                                                "alt": ""
+                                            }
+                                        ],
+                                        "url": [
+                                            "http://lukasrosenstock.net/"
+                                        ]
+                                    },
+                                    "value": "Lukas Rosenstock"
+                                }
+                            ],
+                            "comment": [
+                                {
+                                    "type": [
+                                        "h-as-comment",
+                                        "h-entry"
+                                    ],
+                                    "properties": {
+                                        "summary": [
+                                            "Krass dass das so vollkommen an mit vorbei gegangen ist\u2026 Gibt es da produktive Anwendungen die ENUM zum Beispiel f\u00fcr Chats o.\u00c4. verwenden?\n\u2026ich sollte echt mehr bloggen!"
+                                        ],
+                                        "name": [
+                                            "Krass dass das so vollkommen an mit vorbei gegangen ist\u2026 Gibt es da produktive Anwendungen die ENUM zum Beispiel f\u00fcr Chats o.\u00c4. verwenden?\n\u2026ich sollte echt mehr bloggen!"
+                                        ],
+                                        "updated": [
+                                            "http://20. Februar 2014 bei 11:18"
+                                        ],
+                                        "published": [
+                                            "http://20. Februar 2014 bei 11:18"
+                                        ],
+                                        "content": [
+                                            {
+                                                "html": "<p>Krass dass das so vollkommen an mit vorbei gegangen ist\u2026 Gibt es da produktive Anwendungen die ENUM zum Beispiel f\u00fcr Chats o.\u00c4. verwenden?</p>\n    <p>\u2026ich sollte echt mehr bloggen!</p>",
+                                                "value": "Krass dass das so vollkommen an mit vorbei gegangen ist\u2026 Gibt es da produktive Anwendungen die ENUM zum Beispiel f\u00fcr Chats o.\u00c4. verwenden?\n\u2026ich sollte echt mehr bloggen!"
+                                            }
+                                        ],
+                                        "author": [
+                                            {
+                                                "type": [
+                                                    "h-card"
+                                                ],
+                                                "properties": {
+                                                    "name": [
+                                                        "Matthias Pfefferle"
+                                                    ],
+                                                    "photo": [
+                                                        {
+                                                            "value": "http://1.gravatar.com/avatar/b36983a5651df2c413e264ad4d5cc1a1?s=50&d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D50&r=G",
+                                                            "alt": ""
+                                                        }
+                                                    ],
+                                                    "url": [
+                                                        "http://notizblog.org"
+                                                    ]
+                                                },
+                                                "value": "Matthias Pfefferle"
+                                            }
+                                        ],
+                                        "comment": [
+                                            {
+                                                "type": [
+                                                    "h-as-comment",
+                                                    "h-entry"
+                                                ],
+                                                "properties": {
+                                                    "summary": [
+                                                        "ENUM wurde bisher nur als M\u00f6glichkeit zur Umgehung der Carrier/Kostenersparnis gesehen, dementsprechend nat\u00fcrlich von Carriern und nahestehenden Hard-/Softwareherstellern nicht unterst\u00fctzt. Somit kommt es nicht in den Mainstream. Ich sehe es zur Zeit (leider) als reines \u201cNerd-Tool\u201d, genau wie Diaspora, OpenID, IndieWeb \u2026\nAber der Gedanke eines \u201cdezentralen WhatsApp\u201d auf ENUM-Basis kam mir auch schon. Interessantes Projekt, aber auch nicht massentauglich wegen Huhn&Ei-Problemen."
+                                                    ],
+                                                    "name": [
+                                                        "ENUM wurde bisher nur als M\u00f6glichkeit zur Umgehung der Carrier/Kostenersparnis gesehen, dementsprechend nat\u00fcrlich von Carriern und nahestehenden Hard-/Softwareherstellern nicht unterst\u00fctzt. Somit kommt es nicht in den Mainstream. Ich sehe es zur Zeit (leider) als reines \u201cNerd-Tool\u201d, genau wie Diaspora, OpenID, IndieWeb \u2026\nAber der Gedanke eines \u201cdezentralen WhatsApp\u201d auf ENUM-Basis kam mir auch schon. Interessantes Projekt, aber auch nicht massentauglich wegen Huhn&Ei-Problemen."
+                                                    ],
+                                                    "updated": [
+                                                        "http://20. Februar 2014 bei 12:1"
+                                                    ],
+                                                    "published": [
+                                                        "http://20. Februar 2014 bei 12:1"
+                                                    ],
+                                                    "content": [
+                                                        {
+                                                            "html": "<p>ENUM wurde bisher nur als M\u00f6glichkeit zur Umgehung der Carrier/Kostenersparnis gesehen, dementsprechend nat\u00fcrlich von Carriern und nahestehenden Hard-/Softwareherstellern nicht unterst\u00fctzt. Somit kommt es nicht in den Mainstream. Ich sehe es zur Zeit (leider) als reines \u201cNerd-Tool\u201d, genau wie Diaspora, OpenID, IndieWeb \u2026<br>\n    Aber der Gedanke eines \u201cdezentralen WhatsApp\u201d auf ENUM-Basis kam mir auch schon. Interessantes Projekt, aber auch nicht massentauglich wegen Huhn&amp;Ei-Problemen.</p>",
+                                                            "value": "ENUM wurde bisher nur als M\u00f6glichkeit zur Umgehung der Carrier/Kostenersparnis gesehen, dementsprechend nat\u00fcrlich von Carriern und nahestehenden Hard-/Softwareherstellern nicht unterst\u00fctzt. Somit kommt es nicht in den Mainstream. Ich sehe es zur Zeit (leider) als reines \u201cNerd-Tool\u201d, genau wie Diaspora, OpenID, IndieWeb \u2026\nAber der Gedanke eines \u201cdezentralen WhatsApp\u201d auf ENUM-Basis kam mir auch schon. Interessantes Projekt, aber auch nicht massentauglich wegen Huhn&Ei-Problemen."
+                                                        }
+                                                    ],
+                                                    "author": [
+                                                        {
+                                                            "type": [
+                                                                "h-card"
+                                                            ],
+                                                            "properties": {
+                                                                "name": [
+                                                                    "Lukas Rosenstock"
+                                                                ],
+                                                                "photo": [
+                                                                    {
+                                                                        "value": "http://0.gravatar.com/avatar/2d4d94afbc593569446625c02e7a2f73?s=50&d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D50&r=G",
+                                                                        "alt": ""
+                                                                    }
+                                                                ],
+                                                                "url": [
+                                                                    "http://lukasrosenstock.net/"
+                                                                ]
+                                                            },
+                                                            "value": "Lukas Rosenstock"
+                                                        }
+                                                    ],
+                                                    "comment": [
+                                                        {
+                                                            "type": [
+                                                                "h-as-comment",
+                                                                "h-entry"
+                                                            ],
+                                                            "properties": {
+                                                                "summary": [
+                                                                    "Hmmm\u2026 Eine Unterst\u00fctzung von Seiten aller Carrier w\u00e4re nat\u00fcrlich wirklich notwendig um massentaugliche Produkte zu bauen\u2026\nW\u00e4re gro\u00dfartig wenn jede Nummer automatisch ne URI bek\u00e4me und unter dieser URI ne Art \u201cRegistry\u201d zu finden w\u00e4re, die auch von Apps erweitert werden kann. So ne Art WebFinger f\u00fcr Telefonnummern quasi\u2026"
+                                                                ],
+                                                                "name": [
+                                                                    "Hmmm\u2026 Eine Unterst\u00fctzung von Seiten aller Carrier w\u00e4re nat\u00fcrlich wirklich notwendig um massentaugliche Produkte zu bauen\u2026\nW\u00e4re gro\u00dfartig wenn jede Nummer automatisch ne URI bek\u00e4me und unter dieser URI ne Art \u201cRegistry\u201d zu finden w\u00e4re, die auch von Apps erweitert werden kann. So ne Art WebFinger f\u00fcr Telefonnummern quasi\u2026"
+                                                                ],
+                                                                "updated": [
+                                                                    "http://20. Februar 2014 bei 13:22"
+                                                                ],
+                                                                "published": [
+                                                                    "http://20. Februar 2014 bei 13:22"
+                                                                ],
+                                                                "content": [
+                                                                    {
+                                                                        "html": "<p>Hmmm\u2026 Eine Unterst\u00fctzung von Seiten aller Carrier w\u00e4re nat\u00fcrlich wirklich notwendig um massentaugliche Produkte zu bauen\u2026</p>\n    <p>W\u00e4re gro\u00dfartig wenn jede Nummer automatisch ne URI bek\u00e4me und unter dieser URI ne Art \u201cRegistry\u201d zu finden w\u00e4re, die auch von Apps erweitert werden kann. So ne Art WebFinger f\u00fcr Telefonnummern quasi\u2026</p>",
+                                                                        "value": "Hmmm\u2026 Eine Unterst\u00fctzung von Seiten aller Carrier w\u00e4re nat\u00fcrlich wirklich notwendig um massentaugliche Produkte zu bauen\u2026\nW\u00e4re gro\u00dfartig wenn jede Nummer automatisch ne URI bek\u00e4me und unter dieser URI ne Art \u201cRegistry\u201d zu finden w\u00e4re, die auch von Apps erweitert werden kann. So ne Art WebFinger f\u00fcr Telefonnummern quasi\u2026"
+                                                                    }
+                                                                ],
+                                                                "author": [
+                                                                    {
+                                                                        "type": [
+                                                                            "h-card"
+                                                                        ],
+                                                                        "properties": {
+                                                                            "name": [
+                                                                                "Matthias Pfefferle"
+                                                                            ],
+                                                                            "photo": [
+                                                                                {
+                                                                                    "value": "http://1.gravatar.com/avatar/b36983a5651df2c413e264ad4d5cc1a1?s=50&d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D50&r=G",
+                                                                                    "alt": ""
+                                                                                }
+                                                                            ],
+                                                                            "url": [
+                                                                                "http://notizblog.org"
+                                                                            ]
+                                                                        },
+                                                                        "value": "Matthias Pfefferle"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "id": "li-comment-467346",
+                                                            "value": "Hmmm\u2026 Eine Unterst\u00fctzung von Seiten aller Carrier w\u00e4re nat\u00fcrlich wirklich notwendig um massentaugliche Produkte zu bauen\u2026\nW\u00e4re gro\u00dfartig wenn jede Nummer automatisch ne URI bek\u00e4me und unter dieser URI ne Art \u201cRegistry\u201d zu finden w\u00e4re, die auch von Apps erweitert werden kann. So ne Art WebFinger f\u00fcr Telefonnummern quasi\u2026"
+                                                        }
+                                                    ]
+                                                },
+                                                "id": "li-comment-467106",
+                                                "value": "ENUM wurde bisher nur als M\u00f6glichkeit zur Umgehung der Carrier/Kostenersparnis gesehen, dementsprechend nat\u00fcrlich von Carriern und nahestehenden Hard-/Softwareherstellern nicht unterst\u00fctzt. Somit kommt es nicht in den Mainstream. Ich sehe es zur Zeit (leider) als reines \u201cNerd-Tool\u201d, genau wie Diaspora, OpenID, IndieWeb \u2026\nAber der Gedanke eines \u201cdezentralen WhatsApp\u201d auf ENUM-Basis kam mir auch schon. Interessantes Projekt, aber auch nicht massentauglich wegen Huhn&Ei-Problemen."
+                                            }
+                                        ]
+                                    },
+                                    "id": "li-comment-466932",
+                                    "value": "Krass dass das so vollkommen an mit vorbei gegangen ist\u2026 Gibt es da produktive Anwendungen die ENUM zum Beispiel f\u00fcr Chats o.\u00c4. verwenden?\n\u2026ich sollte echt mehr bloggen!"
+                                }
+                            ]
+                        },
+                        "id": "li-comment-466867",
+                        "value": "Wollte auch gerade ENUM sagen. Dabei wird die Telefonnummer in einen DNS-Namen konvertiert. Wenn du damit spielen willst, kannst du dir unter http://www.portunity.de/access/produkte/telefonie/enum-domains.html kostenlos eine deutsche Nummer in ENUM eintragen lassen."
+                    },
+                    {
+                        "type": [
+                            "h-as-comment",
+                            "h-entry"
+                        ],
+                        "properties": {
+                            "summary": [
+                                "Diese Interoperabilit\u00e4t nennt sich gemeinhin \u201cFederation\u201d: http://en.wikipedia.org/wiki/Federation_(information_technology)\nWhatsApp verwendet kein XMPP. XMPP ist f\u00fcr Mobiles der absolute Horror, denn es basiert auf TCP und damit braucht der Client eine stehende TCP-Verbindung, was massiv auf den Akku geht. Au\u00dferdem kommt es permanent zu reconnects, wenn sich laufend die IP-Adresse des Clients \u00e4ndert.\nAus diesem Grund will man ein verbindungsloses Push-System dahinter haben.\nGoogle und Facebook verwenden XMPP, Facebook hat sich aber noch nie an s2s (Server to Server) Verbindungen beteiligt, Google hat es vor ca 1 Jahr abgeschaltet, damit kann man sich zB. von eigenen XMPP-Servern und damit eigenen XMPP-Accounts nicht mehr mit Google-Usern unterhalten, sonern muss den Google Account verwenden.\nIch habe zB. sowohl meine Facebook als auch Google-Account in meinem pidgin konfiguriert.\nTextSecure (clients momentan nur f\u00fcr Android) ist momentan das IMHO beste System in diesem Bereich:\n- open source\n- harte crypto\n- multi device (man kann einen Account auf meheren Devices nutzen)\n- bald f\u00fcr iOS und Desktop\nund: es unterst\u00fctzt Federation, man kann sich also seinen eigenen Server hinstellen und es dar\u00fcber machen.\nSiehe: https://whispersystems.org/blog/the-new-textsecure/\nIch muss nat\u00fcrlich immer noch den Account des anderen Teilnehmers kennen \u2026"
+                            ],
+                            "name": [
+                                "Diese Interoperabilit\u00e4t nennt sich gemeinhin \u201cFederation\u201d: http://en.wikipedia.org/wiki/Federation_(information_technology)\nWhatsApp verwendet kein XMPP. XMPP ist f\u00fcr Mobiles der absolute Horror, denn es basiert auf TCP und damit braucht der Client eine stehende TCP-Verbindung, was massiv auf den Akku geht. Au\u00dferdem kommt es permanent zu reconnects, wenn sich laufend die IP-Adresse des Clients \u00e4ndert.\nAus diesem Grund will man ein verbindungsloses Push-System dahinter haben.\nGoogle und Facebook verwenden XMPP, Facebook hat sich aber noch nie an s2s (Server to Server) Verbindungen beteiligt, Google hat es vor ca 1 Jahr abgeschaltet, damit kann man sich zB. von eigenen XMPP-Servern und damit eigenen XMPP-Accounts nicht mehr mit Google-Usern unterhalten, sonern muss den Google Account verwenden.\nIch habe zB. sowohl meine Facebook als auch Google-Account in meinem pidgin konfiguriert.\nTextSecure (clients momentan nur f\u00fcr Android) ist momentan das IMHO beste System in diesem Bereich:\n- open source\n- harte crypto\n- multi device (man kann einen Account auf meheren Devices nutzen)\n- bald f\u00fcr iOS und Desktop\nund: es unterst\u00fctzt Federation, man kann sich also seinen eigenen Server hinstellen und es dar\u00fcber machen.\nSiehe: https://whispersystems.org/blog/the-new-textsecure/\nIch muss nat\u00fcrlich immer noch den Account des anderen Teilnehmers kennen \u2026"
+                            ],
+                            "updated": [
+                                "http://8. M\u00e4rz 2014 bei 21:45"
+                            ],
+                            "published": [
+                                "http://8. M\u00e4rz 2014 bei 21:45"
+                            ],
+                            "content": [
+                                {
+                                    "html": "<p>Diese Interoperabilit\u00e4t nennt sich gemeinhin \u201cFederation\u201d: <a href=\"http://en.wikipedia.org/wiki/Federation_(information_technology)\">http://en.wikipedia.org/wiki/Federation_(information_technology)</a></p>\n    <p>WhatsApp verwendet kein XMPP. XMPP ist f\u00fcr Mobiles der absolute Horror, denn es basiert auf TCP und damit braucht der Client eine stehende TCP-Verbindung, was massiv auf den Akku geht. Au\u00dferdem kommt es permanent zu reconnects, wenn sich laufend die IP-Adresse des Clients \u00e4ndert.<br>\n    Aus diesem Grund will man ein verbindungsloses Push-System dahinter haben.</p>\n    <p>Google und Facebook verwenden XMPP, Facebook hat sich aber noch nie an s2s (Server to Server) Verbindungen beteiligt, Google hat es vor ca 1 Jahr abgeschaltet, damit kann man sich zB. von eigenen XMPP-Servern und damit eigenen XMPP-Accounts nicht mehr mit Google-Usern unterhalten, sonern muss den Google Account verwenden.<br>\n    Ich habe zB. sowohl meine Facebook als auch Google-Account in meinem pidgin konfiguriert.</p>\n    <p>TextSecure (clients momentan nur f\u00fcr Android) ist momentan das IMHO beste System in diesem Bereich:<br>\n    - open source<br>\n    - harte crypto<br>\n    - multi device (man kann einen Account auf meheren Devices nutzen)<br>\n    - bald f\u00fcr iOS und Desktop<br>\n    und: es unterst\u00fctzt Federation, man kann sich also seinen eigenen Server hinstellen und es dar\u00fcber machen.<br>\n    Siehe: <a href=\"https://whispersystems.org/blog/the-new-textsecure/\">https://whispersystems.org/blog/the-new-textsecure/</a></p>\n    <p>Ich muss nat\u00fcrlich immer noch den Account des anderen Teilnehmers kennen \u2026</p>",
+                                    "value": "Diese Interoperabilit\u00e4t nennt sich gemeinhin \u201cFederation\u201d: http://en.wikipedia.org/wiki/Federation_(information_technology)\nWhatsApp verwendet kein XMPP. XMPP ist f\u00fcr Mobiles der absolute Horror, denn es basiert auf TCP und damit braucht der Client eine stehende TCP-Verbindung, was massiv auf den Akku geht. Au\u00dferdem kommt es permanent zu reconnects, wenn sich laufend die IP-Adresse des Clients \u00e4ndert.\nAus diesem Grund will man ein verbindungsloses Push-System dahinter haben.\nGoogle und Facebook verwenden XMPP, Facebook hat sich aber noch nie an s2s (Server to Server) Verbindungen beteiligt, Google hat es vor ca 1 Jahr abgeschaltet, damit kann man sich zB. von eigenen XMPP-Servern und damit eigenen XMPP-Accounts nicht mehr mit Google-Usern unterhalten, sonern muss den Google Account verwenden.\nIch habe zB. sowohl meine Facebook als auch Google-Account in meinem pidgin konfiguriert.\nTextSecure (clients momentan nur f\u00fcr Android) ist momentan das IMHO beste System in diesem Bereich:\n- open source\n- harte crypto\n- multi device (man kann einen Account auf meheren Devices nutzen)\n- bald f\u00fcr iOS und Desktop\nund: es unterst\u00fctzt Federation, man kann sich also seinen eigenen Server hinstellen und es dar\u00fcber machen.\nSiehe: https://whispersystems.org/blog/the-new-textsecure/\nIch muss nat\u00fcrlich immer noch den Account des anderen Teilnehmers kennen \u2026"
+                                }
+                            ],
+                            "author": [
+                                {
+                                    "type": [
+                                        "h-card"
+                                    ],
+                                    "properties": {
+                                        "name": [
+                                            "Markus Stumpf"
+                                        ],
+                                        "photo": [
+                                            {
+                                                "value": "http://1.gravatar.com/avatar/f7a7b6a59e64d4b8c4a3ded1f85a9879?s=50&d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D50&r=G",
+                                                "alt": ""
+                                            }
+                                        ],
+                                        "url": [
+                                            "http://www.maexoticde/"
+                                        ]
+                                    },
+                                    "value": "Markus Stumpf"
+                                }
+                            ]
+                        },
+                        "id": "li-comment-505365",
+                        "value": "Diese Interoperabilit\u00e4t nennt sich gemeinhin \u201cFederation\u201d: http://en.wikipedia.org/wiki/Federation_(information_technology)\nWhatsApp verwendet kein XMPP. XMPP ist f\u00fcr Mobiles der absolute Horror, denn es basiert auf TCP und damit braucht der Client eine stehende TCP-Verbindung, was massiv auf den Akku geht. Au\u00dferdem kommt es permanent zu reconnects, wenn sich laufend die IP-Adresse des Clients \u00e4ndert.\nAus diesem Grund will man ein verbindungsloses Push-System dahinter haben.\nGoogle und Facebook verwenden XMPP, Facebook hat sich aber noch nie an s2s (Server to Server) Verbindungen beteiligt, Google hat es vor ca 1 Jahr abgeschaltet, damit kann man sich zB. von eigenen XMPP-Servern und damit eigenen XMPP-Accounts nicht mehr mit Google-Usern unterhalten, sonern muss den Google Account verwenden.\nIch habe zB. sowohl meine Facebook als auch Google-Account in meinem pidgin konfiguriert.\nTextSecure (clients momentan nur f\u00fcr Android) ist momentan das IMHO beste System in diesem Bereich:\n- open source\n- harte crypto\n- multi device (man kann einen Account auf meheren Devices nutzen)\n- bald f\u00fcr iOS und Desktop\nund: es unterst\u00fctzt Federation, man kann sich also seinen eigenen Server hinstellen und es dar\u00fcber machen.\nSiehe: https://whispersystems.org/blog/the-new-textsecure/\nIch muss nat\u00fcrlich immer noch den Account des anderen Teilnehmers kennen \u2026"
+                    }
+                ]
+            }
+        }
+    ],
+    "rels": {
+        "bookmark": [
+            "http://notizblog.org/2014/02/20/wir-brauchen-metadaten-fuer-telefonnummern/"
+        ],
+        "author": [
+            "http://notizblog.org/author/matthias-pfefferle/"
+        ],
+        "donation": [
+            "http://notizblog.org/2014/02/20/wir-brauchen-metadaten-fuer-telefonnummern/"
+        ],
+        "payment": [
+            "http://notizblog.org/2014/02/20/wir-brauchen-metadaten-fuer-telefonnummern/"
+        ],
+        "category": [
+            "http://notizblog.org/category/web/"
+        ],
+        "tag": [
+            "http://notizblog.org/category/web/",
+            "http://notizblog.org/tag/dezentral/",
+            "http://notizblog.org/tag/email-to-id/",
+            "http://notizblog.org/tag/facebook/",
+            "http://notizblog.org/tag/whatsapp/",
+            "http://notizblog.org/tag/xmpp/"
+        ],
+        "prev": [
+            "http://notizblog.org/2014/02/13/amber-case-ueber-privacy-und-das-indieweb/"
+        ],
+        "external": [
+            "http://dentaku.wazong.de",
+            "http://notizblog.org",
+            "http://lukasrosenstock.net/",
+            "http://www.maexoticde/"
+        ],
+        "nofollow": [
+            "http://example.com/2014/02/20/wir-brauchen-metadaten-fuer-telefonnummern/#respond"
+        ]
+    },
+    "rel-urls": {
+        "http://notizblog.org/2014/02/20/wir-brauchen-metadaten-fuer-telefonnummern/": {
+            "title": "Permalink to Wir brauchen Metadaten f\u00fcr Telefonnummern",
+            "text": "Wir brauchen Metadaten f\u00fcr Telefonnummern",
+            "rels": [
+                "bookmark",
+                "donation",
+                "payment"
+            ]
+        },
+        "http://notizblog.org/author/matthias-pfefferle/": {
+            "title": "Alle Beitr\u00e4ge von Matthias Pfefferle ansehen",
+            "text": "Matthias Pfefferle",
+            "rels": [
+                "author"
+            ]
+        },
+        "http://notizblog.org/category/web/": {
+            "title": "Alle Beitr\u00e4ge in Open Web ansehen",
+            "text": "Open Web",
+            "rels": [
+                "category",
+                "tag"
+            ]
+        },
+        "http://notizblog.org/tag/dezentral/": {
+            "text": "dezentral",
+            "rels": [
+                "tag"
+            ]
+        },
+        "http://notizblog.org/tag/email-to-id/": {
+            "text": "Email to ID",
+            "rels": [
+                "tag"
+            ]
+        },
+        "http://notizblog.org/tag/facebook/": {
+            "text": "Facebook",
+            "rels": [
+                "tag"
+            ]
+        },
+        "http://notizblog.org/tag/whatsapp/": {
+            "text": "WhatsApp",
+            "rels": [
+                "tag"
+            ]
+        },
+        "http://notizblog.org/tag/xmpp/": {
+            "text": "XMPP",
+            "rels": [
+                "tag"
+            ]
+        },
+        "http://notizblog.org/2014/02/13/amber-case-ueber-privacy-und-das-indieweb/": {
+            "text": "\u2190 Amber Case \u00fcber Privacy und das IndieWeb",
+            "rels": [
+                "prev"
+            ]
+        },
+        "http://dentaku.wazong.de": {
+            "text": "Dentaku",
+            "rels": [
+                "external"
+            ]
+        },
+        "http://notizblog.org": {
+            "text": "Matthias Pfefferle",
+            "rels": [
+                "external"
+            ]
+        },
+        "http://lukasrosenstock.net/": {
+            "text": "Lukas Rosenstock",
+            "rels": [
+                "external"
+            ]
+        },
+        "http://www.maexoticde/": {
+            "text": "Markus Stumpf",
+            "rels": [
+                "external"
+            ]
+        },
+        "http://example.com/2014/02/20/wir-brauchen-metadaten-fuer-telefonnummern/#respond": {
+            "text": "Antworten abbrechen",
+            "rels": [
+                "nofollow"
+            ]
+        }
+    }
+}

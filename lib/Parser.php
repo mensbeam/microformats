@@ -1068,7 +1068,7 @@ class Parser {
         }
         # removing all leading/trailing spaces
         // NOTE: Also remove extraneous spaces within the text; this aligns with most mature implementations
-        return preg_replace('/\s{2,}/s', " ", trim($copy->textContent));
+        return preg_replace(['/ {2,}/s', '/^\s+|\s+$/m'], [" ", ""], trim($copy->textContent));
     }
 
     protected function getBaseUrl(\DOMElement $root, string $base): string {
