@@ -1,0 +1,31 @@
+{
+    "items": [
+        {
+            "type": [
+                "h-event"
+            ],
+            "properties": {
+                "name": [
+                    "XYZ Project Review"
+                ],
+                "description": [
+                    "Project XYZ Review Meeting"
+                ],
+                "url": [
+                    "http://example.com/xyz-meeting"
+                ],
+                "location": [
+                  "1CP Conference Room 4350"
+                ],
+                "start": [
+                    "1998-03-12 08:30-0500"
+                ],
+                "end": [
+                    "1998-03-12 09:30-0500"
+                ]
+            }
+        }
+    ],
+    "rels": {},
+    "rel-urls": {}
+}

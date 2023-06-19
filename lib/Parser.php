@@ -78,7 +78,7 @@ class Parser {
         'label'             => ['h-card' => ["p", "label"]],
         'latitude'          => ['h-card' => ["p", "latitude"], 'h-event' => ["p", "latitude"], 'h-geo' => ["p", "latitude"]],
         'locality'          => ['h-adr' => ["p", "locality"], 'h-card' => ["p", "locality"]],
-        'location'          => ['h-event' => ["p", "location", ["adr", "vcard"]]],
+        'location'          => ['h-event' => ["p", "location"]],
         'logo'              => ['h-card' => ["u", "logo"]],
         'longitude'         => ['h-card' => ["p", "longitude"], 'h-event' => ["p", "longitude"], 'h-geo' => ["p", "longitude"]],
         'mailer'            => ['h-card' => ["p", "mailer"]],
