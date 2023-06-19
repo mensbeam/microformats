@@ -1,0 +1,172 @@
+{
+    "items": [
+        {
+            "type": [
+                "h-entry"
+            ],
+            "properties": {
+                "name": [
+                    "Jumping Rope for Weight Loss"
+                ],
+                "url": [
+                    "http://example.com/2014/11/24/jump-rope"
+                ],
+                "content": [
+                    {
+                        "html": "Some Content",
+                        "value": "Some Content"
+                    }
+                ],
+                "author": [
+                    {
+                        "type": [
+                            "h-card"
+                        ],
+                        "properties": {},
+                        "value": "Lee Adama"
+                    }
+                ]
+            }
+        },
+        {
+            "type": [
+                "h-entry"
+            ],
+            "properties": {
+                "name": [
+                    "Abstract Art in Graffiti"
+                ],
+                "url": [
+                    "http://example.com/2014/11/23/graffiti"
+                ],
+                "content": [
+                    {
+                        "html": "More Content",
+                        "value": "More Content"
+                    }
+                ],
+                "author": [
+                    {
+                        "type": [
+                            "h-card"
+                        ],
+                        "properties": {},
+                        "value": "Kara Thrace"
+                    }
+                ]
+            }
+        },
+        {
+            "type": [
+                "h-entry"
+            ],
+            "properties": {
+                "name": [
+                    "Dreams of Earth"
+                ],
+                "url": [
+                    "http://example.com/2014/11/21/earth"
+                ],
+                "content": [
+                    {
+                        "html": "Additional Content",
+                        "value": "Additional Content"
+                    }
+                ],
+                "author": [
+                    {
+                        "type": [
+                            "h-card"
+                        ],
+                        "properties": {},
+                        "value": "President Roslyn"
+                    }
+                ]
+            }
+        },
+        {
+            "type": [
+                "h-entry"
+            ],
+            "properties": {
+                "name": [
+                    "Organized Labor in Mining Colonies"
+                ],
+                "url": [
+                    "http://example.com/2014/11/19/labor"
+                ],
+                "content": [
+                    {
+                        "html": "More Content",
+                        "value": "More Content"
+                    }
+                ],
+                "author": [
+                    {
+                        "type": [
+                            "h-card"
+                        ],
+                        "properties": {},
+                        "value": "Chief Tyrrol"
+                    }
+                ]
+            }
+        }
+    ],
+    "rels": {
+        "bookmark": [
+            "http://example.com/about",
+            "http://example.com/",
+            "http://example.com/2014/11/24/jump-rope",
+            "http://example.com/2014/11/23/graffiti",
+            "http://example.com/2014/11/21/earth",
+            "http://example.com/2014/11/19/labor"
+        ],
+        "something": [
+            "http://example.com/2014/11/21/earth",
+            "http://example.com/2014/11/19/labor"
+        ],
+        "somethingelse": [
+            "http://example.com/2014/11/19/labor"
+        ]
+    },
+    "rel-urls": {
+        "http://example.com/about": {
+            "rels": [
+                "bookmark"
+            ]
+        },
+        "http://example.com/": {
+            "rels": [
+                "bookmark"
+            ]
+        },
+        "http://example.com/2014/11/24/jump-rope": {
+            "text": "Jumping Rope for Weight Loss",
+            "rels": [
+                "bookmark"
+            ]
+        },
+        "http://example.com/2014/11/23/graffiti": {
+            "text": "Abstract Art in Graffiti",
+            "rels": [
+                "bookmark"
+            ]
+        },
+        "http://example.com/2014/11/21/earth": {
+            "text": "Dreams of Earth",
+            "rels": [
+                "bookmark",
+                "something"
+            ]
+        },
+        "http://example.com/2014/11/19/labor": {
+            "text": "Organized Labor in Mining Colonies",
+            "rels": [
+                "bookmark",
+                "something",
+                "somethingelse"
+            ]
+        }
+    }
+}
