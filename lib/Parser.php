@@ -1037,6 +1037,71 @@ class Parser {
     }
 
     protected function getCleanText(\DOMElement $node, string $prefix): string {
+        if ($this->options['basicTrim']) {
+            return $this->getCleanTextBasic($node, $prefix);
+        } else {
+            return $this->getCleanTextThorough($node, $prefix);
+        }
+    }
+
+    protected function getCleanTextThorough(\DOMElement $node, string $prefix): string {
+        # Element to string
+        # To get the string value for an Element input:
+        # Let output be an empty list
+        $output = [];
+        # Let children be the children of input in tree order
+        # For each child in children:
+        foreach ($node->childNodes as $n) {
+            if ($n instanceof \DOMText) {
+                # If child is a Text node:
+                # Let value be the textContent of child
+                $value = $n->textContent;
+                # Replace any U+0009 TAB, U+000A LF, and U+000D CR code points in value with a single U+0020 SPACE code point
+                // NOTE: This ought to include FORM FEED characters
+                $value = strtr($value, "\t\n\r\f", "    ");
+                # Append value to output
+                $output .= $value;
+            } elseif ($n instanceof \DOMElement) {
+                # If child is an Element, switch on its tagName:
+                // NOTE: we switch on localName instead to avoid silly case folding
+                switch ($n->localName) {
+                    case "script":
+                    case "style":
+                    case "template":
+                    # SCRIPT
+                    # STYLE
+                    // TEMPLATE as well
+                        # Continue
+                        continue 2;
+                    
+                # IMG
+                # If child has an alt attribute, then:
+                # Let value be the contents of the alt attribute
+                # Strip leading and trailing ASCII whitespace from value
+                # Else if child has a src attribute, then:
+                # Let value be the contents of the src attribute
+                # Strip leading and trailing ASCII whitespace from value
+                # Set value to the absolute URL created by resolving value following the containing document’s language’s rules
+                # Else continue
+                # Append and prepend a single U+0020 SPACE code point to value
+                # Append value to output
+                # BR
+                # Append a string containing a single U+000A LF code point to output
+                # P
+                # Let value be the result of running this algorithm on child
+                # Prepend a single U+000A LF code point to value
+                # Append value to output
+                # Any other value
+                # Let value be the result of running this algorithm on child
+                # Append value to output
+                }
+        # Else continue
+            }
+        # Return the concatenation of output
+        }
+    }
+
+    protected function getCleanTextBasic(\DOMElement $node, string $prefix): string {
         #  the textContent of the element after:
         $copy = $node->cloneNode(true);
         # dropping any nested <script> & <style> elements;
@@ -1070,8 +1135,6 @@ class Parser {
         }
         # removing all leading/trailing spaces
         return trim($copy->textContent);
-        // NOTE: Also remove extraneous spaces within the text; this aligns with most mature implementations
-        //return preg_replace(['/ {2,}/s', '/^\s+|\s+$/m'], [" ", ""], trim($copy->textContent));
     }
 
     protected function getBaseUrl(\DOMElement $root, string $base): string {
@@ -1116,6 +1179,7 @@ class Parser {
     protected function normalizeOptions(array $options) {
         return [
             'impliedTz' => (bool) ($options['impliedTz'] ?? false),
+            'basicTrim' => (bool) ($options['basicTrim'] ?? false),
         ];
     }
 }

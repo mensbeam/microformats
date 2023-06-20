@@ -61,7 +61,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
     protected function provideTestList(): \Generator {
         $tests = [
             \MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/", // standard tests
-            //\MensBeam\Microformats\BASE."tests/cases/json/", // additional tests
+            \MensBeam\Microformats\BASE."tests/cases/json/", // additional tests
         ];
         foreach ($tests as $base) {
             $base = strtr($base, "\\", "/");
