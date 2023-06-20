@@ -97,7 +97,7 @@ class Parser {
         'region'            => ['h-adr' => ["p", "region"], 'h-card' => ["p", "region"]],
         'rev'               => ['h-card' => ["dt", "rev"]],
         'reviewer'          => ['h-review' => ["p", "author"]],
-        'review'            => ['h-product' => ["p", "review", ["hreview"]]],
+        'review'            => ['h-product' => ["p", "review", ["hreview"]]], // also requires special processing
         'role'              => ['h-card' => ["p", "role"]],
         'skill'             => ['h-resume' => ["p", "skill"]],
         'site-description'  => ['h-feed' => ["p", "summary"]],
@@ -433,8 +433,10 @@ class Parser {
                 || (static::PREFIX_RANK[$prefix] > static::PREFIX_RANK[$out[$name][0]] && !($map[3] ?? false))
             ) {
                 $out[$name] = $map;
+                // add any extra roots, where needed
+                // The "hreview" class is a special case as "hreview-aggregate" is equivalent
                 foreach ($extraRoots as $r) {
-                    if (!in_array($r, $classes)) {
+                    if (!in_array($r, $classes) && !($r === "hreview" && in_array("hreview-aggregate", $classes))) {
                         $classes[] = $r;
                     }
                 }
@@ -1067,8 +1069,9 @@ class Parser {
             $e->parentNode->replaceChild($e->ownerDocument->createTextNode($attr), $e);
         }
         # removing all leading/trailing spaces
+        return trim($copy->textContent);
         // NOTE: Also remove extraneous spaces within the text; this aligns with most mature implementations
-        return preg_replace(['/ {2,}/s', '/^\s+|\s+$/m'], [" ", ""], trim($copy->textContent));
+        //return preg_replace(['/ {2,}/s', '/^\s+|\s+$/m'], [" ", ""], trim($copy->textContent));
     }
 
     protected function getBaseUrl(\DOMElement $root, string $base): string {
