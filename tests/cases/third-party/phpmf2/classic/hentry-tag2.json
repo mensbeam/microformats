@@ -1,0 +1,33 @@
+{
+    "items": [
+        {
+            "type": [
+                "h-entry"
+            ],
+            "properties": {
+                "category": [
+                    "test"
+                ],
+                "content": [
+                    {
+                        "html": "Entry content should not include the generated <code>data</code> element for rel tag backcompat <a href=\"http://example.com/tag/test\" rel=\"tag\">test</a>",
+                        "value": "Entry content should not include the generated data element for rel tag backcompat test"
+                    }
+                ]
+            }
+        }
+    ],
+    "rels": {
+        "tag": [
+            "http://example.com/tag/test"
+        ]
+    },
+    "rel-urls": {
+        "http://example.com/tag/test": {
+            "text": "test",
+            "rels": [
+                "tag"
+            ]
+        }
+    }
+}

@@ -96,7 +96,7 @@ class Parser {
         'rating'            => ['h-review' => ["p", "rating"], 'h-review-aggregate' => ["p", "rating"]],
         'region'            => ['h-adr' => ["p", "region"], 'h-card' => ["p", "region"]],
         'rev'               => ['h-card' => ["dt", "rev"]],
-        'reviewer'          => ['h-review' => ["p", "author"]],
+        'reviewer'          => ['h-review' => ["p", "author", ["vcard"]]],
         'review'            => ['h-product' => ["p", "review", ["hreview"]]], // also requires special processing
         'role'              => ['h-card' => ["p", "role"]],
         'skill'             => ['h-resume' => ["p", "skill"]],
@@ -175,7 +175,7 @@ class Parser {
         'h:ia'    => self::DATE_TYPE_MIN,
         # HHam HHpm
         'ha'      => self::DATE_TYPE_HOUR,
-        // 12-hour clock without hour's leading zero; this is not part of the spec, but probably occurs
+        // 12-hour clock without hour's leading zero; these are not part of the spec, but definitely occur
         'g:i:sa'  => self::DATE_TYPE_SEC,
         'g:ia'    => self::DATE_TYPE_MIN,
         'ga'      => self::DATE_TYPE_HOUR,
@@ -189,6 +189,7 @@ class Parser {
         // Hour-only time zones require special processing
         # Z
         '\Z' => self::DATE_TYPE_ZULU,
+        // Lowercase z is used in tests
         '\z' => self::DATE_TYPE_ZULU,
     ];
     protected const DATE_OUTPUT_FORMATS = [
@@ -715,7 +716,7 @@ class Parser {
                     // https://microformats.org/wiki/rel-tag#Abstract
                     // we are required to retrieve the last component of the URL path and use that
                     if (preg_match('#([^/]*)/?$#', URL::fromString($this->normalizeUrl($node->getAttribute("href")))->getPath(), $match)) {
-                        return $match[1];
+                        return urldecode($match[1]);
                     }
                     return "";
                 }

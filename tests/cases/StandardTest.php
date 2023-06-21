@@ -115,6 +115,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
                 break;
             case "phpmf2/classic/fberriman":
             case "phpmf2/classic/mixedroots2":
+            case "phpmf2/classic/hentry-tag":
                 $this->fixDates($exp['items'][0]['properties']['published']);
                 break;
 

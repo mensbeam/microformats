@@ -1,0 +1,103 @@
+{
+  "items": [
+    {
+      "type": [
+        "h-review"
+      ],
+      "properties": {
+        "name": [
+          "Divine Brunch!",
+          {
+            "value": "Joan Gelfand",
+            "type": [
+              "h-card"
+            ],
+            "properties": {
+            }
+          }
+        ],
+        "reviewed": [
+          "20060219T1919-0800"
+        ],
+        "author": [
+          {
+            "value": "Joan Gelfand",
+            "type": [
+              "h-card"
+            ],
+            "properties": {
+            }
+          }
+        ],
+        "item": [
+          {
+            "value": "Garçon",
+            "type": [
+              "h-card"
+            ],
+            "properties": {
+              "url": [
+                "http://www.garconsf.com"
+              ],
+              "name": [
+                "Garçon"
+              ],
+              "adr": [
+                {
+                  "value": "1101 Valencia Street San Francisco, CA",
+                  "type": [
+                    "h-adr"
+                  ],
+                  "properties": {
+                    "street-address": [
+                      "1101 Valencia Street"
+                    ],
+                    "locality": [
+                      "San Francisco"
+                    ],
+                    "region": [
+                      "CA"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "content": [
+          {
+            "value": "★★★ Best Benedicts! Two perfectly poached eggs and a thin slice of tasty, French ham rest on a circle of warm brioche. Drizzled on top is a light, slightly tangy sauce. Seamless! The sophisticated room and great wine list added to the whole experience - Super!",
+            "html": "<p>\n      <abbr class=\"rating\" title=\"3\">★★★ </abbr>\n    Best Benedicts!\n    Two perfectly poached eggs and a thin slice of tasty, French ham rest on a circle of warm brioche. Drizzled on top is a light, slightly tangy sauce. Seamless! The sophisticated room and great wine list added to the whole experience - Super!</p>"
+          }
+        ],
+        "rating": [
+          "3"
+        ],
+        "category": [
+          "Garcon",
+          "Garçon"
+        ]
+      }
+    }
+  ],
+  "rels": {
+    "tag": [
+      "http://www.technorati.com/tag/Garcon",
+      "http://www.technorati.com/tag/Garçon"
+    ]
+  },
+  "rel-urls": {
+    "http://www.technorati.com/tag/Garcon": {
+      "text": "Garcon",
+      "rels": [
+        "tag"
+      ]
+    },
+    "http://www.technorati.com/tag/Garçon": {
+      "text": "Garçon",
+      "rels": [
+        "tag"
+      ]
+    }
+  }
+}

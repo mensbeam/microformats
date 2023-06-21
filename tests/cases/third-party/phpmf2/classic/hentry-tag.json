@@ -1,0 +1,115 @@
+{
+    "items": [
+        {
+            "type": [
+                "h-entry"
+            ],
+            "properties": {
+                "name": [
+                    "IndieWeb generation 4 and hosted domains"
+                ],
+                "category": [
+                    "technology",
+                    "domains",
+                    "indiewebcamp",
+                    "microblog",
+                    "wordpress"
+                ],
+                "url": [
+                    "http://www.manton.org/2018/03/indieweb-generation-4-and-hosted-domains.html"
+                ],
+                "content": [
+                    {
+                        "html": "<p>Naturally because of the goals of Micro.blog, I see a lot of discussion about \u201cowning your content\u201d. It\u2019s an important part of the mission for Micro.blog to take control back from closed, ad-supported social networks and instead embrace posting on our own blogs again.</p>\n<p>But what does it mean to own our content? Do we have to install WordPress or some home-grown blogging system for it to be considered true content ownership, where we have the source code and direct SFTP access to the server? No. If that\u2019s our definition, then content ownership will be permanently reserved for programmers and technical folks who have hours to spend on server configuration.</p>\n<p><a href=\"https://indieweb.org/generations\">IndieWebCamp has a generations chart</a> to illustrate the path from early adopters to mainstream users. Eli Mellen highlighted it <a href=\"https://eli.li/entry.php?id=20180318015703\">in a recent post</a> about the need to bridge the gap between the technical aspects of IndieWeb tools and more approachable platforms. With Micro.blog specifically, the goal is \u201cgeneration 4\u201d, and I think we\u2019re on track to get there.</p>\n<p>I want blogging to be as easy as tweeting. Anything short of that isn\u2019t good enough for Micro.blog. You\u2019ll notice when you use Twitter that they never ask you to SFTP into twitter.com to configure your account. They don\u2019t ask you to install anything.</p>\n<p>More powerful software that you can endlessly customize will always have its place. It\u2019s good to have a range of options, including open source to tinker with. That\u2019s often where some of the best ideas start. But too often I see people get lost in the weeds of plugins and themes, lured in by the myth that you have to self-host with WordPress to be part of the IndieWeb.</p>\n<p>Owning your content isn\u2019t about portable software. It\u2019s about portable URLs and data. It\u2019s about domain names.</p>\n<p>When you write and post photos at your own domain name, your content can outlive any one blogging platform. This month marked the 16th anniversary of blogging at manton.org, and in that time I\u2019ve switched blogging platforms and hosting providers a few times. The posts and URLs can all be preserved through those changes because it\u2019s my own domain name.</p>\n<p>I was disappointed when Medium announced they were <a href=\"http://web.archive.org/web/20180301231401/https://help.medium.com/hc/en-us/articles/115005579728-Get-started-with-custom-domains\">discontinuing support for custom domain names</a>. I\u2019m linking to the Internet Archive copy because Medium\u2019s help page about this is no longer available. If \u201cno custom domains\u201d is still their policy, it\u2019s a setback for the open web, and dooms Medium to the same dead-end as twitter.com/username URLs.</p>\n<p>If you can\u2019t use your own domain name, you can\u2019t own it. Your content will be forever stuck at those silo URLs, beholden to the whims of the algorithmic timeline and shifting priorities of the executive team.</p>\n<p>For hosted blogs on Micro.blog, we encourage everyone to map a custom domain to their content, and we throw in free SSL and preserve redirects for old posts on imported WordPress content. There\u2019s more we can do.</p>\n<p>I\u2019m working on the next version of the macOS app for Micro.blog now, which features multiple accounts and even multiple blogs under the same account. Here\u2019s a screenshot of the settings screen:</p>\n<p><img src=\"https://manton.org/images/2018/prefs_accounts.png\" width=\"512\" height=\"415\" alt=\"Mac screenshot\" scale=\"0\"></p>\n<p>The goal with Micro.blog is not to be a stop-gap hosting provider, with truly \u201cserious\u201d users eventually moving on to something else (although we make that easy). We want Micro.blog hosting to be the best platform for owning your content and participating in the Micro.blog and IndieWeb communities.</p>",
+                        "value": "Naturally because of the goals of Micro.blog, I see a lot of discussion about \u201cowning your content\u201d. It\u2019s an important part of the mission for Micro.blog to take control back from closed, ad-supported social networks and instead embrace posting on our own blogs again.\nBut what does it mean to own our content? Do we have to install WordPress or some home-grown blogging system for it to be considered true content ownership, where we have the source code and direct SFTP access to the server? No. If that\u2019s our definition, then content ownership will be permanently reserved for programmers and technical folks who have hours to spend on server configuration.\nIndieWebCamp has a generations chart to illustrate the path from early adopters to mainstream users. Eli Mellen highlighted it in a recent post about the need to bridge the gap between the technical aspects of IndieWeb tools and more approachable platforms. With Micro.blog specifically, the goal is \u201cgeneration 4\u201d, and I think we\u2019re on track to get there.\nI want blogging to be as easy as tweeting. Anything short of that isn\u2019t good enough for Micro.blog. You\u2019ll notice when you use Twitter that they never ask you to SFTP into twitter.com to configure your account. They don\u2019t ask you to install anything.\nMore powerful software that you can endlessly customize will always have its place. It\u2019s good to have a range of options, including open source to tinker with. That\u2019s often where some of the best ideas start. But too often I see people get lost in the weeds of plugins and themes, lured in by the myth that you have to self-host with WordPress to be part of the IndieWeb.\nOwning your content isn\u2019t about portable software. It\u2019s about portable URLs and data. It\u2019s about domain names.\nWhen you write and post photos at your own domain name, your content can outlive any one blogging platform. This month marked the 16th anniversary of blogging at manton.org, and in that time I\u2019ve switched blogging platforms and hosting providers a few times. The posts and URLs can all be preserved through those changes because it\u2019s my own domain name.\nI was disappointed when Medium announced they were discontinuing support for custom domain names. I\u2019m linking to the Internet Archive copy because Medium\u2019s help page about this is no longer available. If \u201cno custom domains\u201d is still their policy, it\u2019s a setback for the open web, and dooms Medium to the same dead-end as twitter.com/username URLs.\nIf you can\u2019t use your own domain name, you can\u2019t own it. Your content will be forever stuck at those silo URLs, beholden to the whims of the algorithmic timeline and shifting priorities of the executive team.\nFor hosted blogs on Micro.blog, we encourage everyone to map a custom domain to their content, and we throw in free SSL and preserve redirects for old posts on imported WordPress content. There\u2019s more we can do.\nI\u2019m working on the next version of the macOS app for Micro.blog now, which features multiple accounts and even multiple blogs under the same account. Here\u2019s a screenshot of the settings screen:\nMac screenshot\nThe goal with Micro.blog is not to be a stop-gap hosting provider, with truly \u201cserious\u201d users eventually moving on to something else (although we make that easy). We want Micro.blog hosting to be the best platform for owning your content and participating in the Micro.blog and IndieWeb communities."
+                    }
+                ],
+                "published": [
+                    "2018-03-23T09:24:36+00:00"
+                ],
+                "author": [
+                    {
+                        "type": [
+                            "h-card"
+                        ],
+                        "properties": {
+                            "name": [
+                                "manton"
+                            ],
+                            "url": [
+                                "http://www.manton.org/author/manton"
+                            ]
+                        },
+                        "value": "manton"
+                    }
+                ]
+            },
+            "id": "post-6586"
+        }
+    ],
+    "rels": {
+        "category": [
+            "http://www.manton.org/category/technology"
+        ],
+        "tag": [
+            "http://www.manton.org/category/technology",
+            "http://www.manton.org/tag/domains",
+            "http://www.manton.org/tag/indiewebcamp",
+            "http://www.manton.org/tag/microblog",
+            "http://www.manton.org/tag/wordpress"
+        ],
+        "bookmark": [
+            "http://www.manton.org/2018/03/indieweb-generation-4-and-hosted-domains.html"
+        ],
+        "author": [
+            "http://www.manton.org/author/manton"
+        ]
+    },
+    "rel-urls": {
+        "http://www.manton.org/category/technology": {
+            "text": "Technology",
+            "rels": [
+                "category",
+                "tag"
+            ]
+        },
+        "http://www.manton.org/tag/domains": {
+            "text": "domains",
+            "rels": [
+                "tag"
+            ]
+        },
+        "http://www.manton.org/tag/indiewebcamp": {
+            "text": "indiewebcamp",
+            "rels": [
+                "tag"
+            ]
+        },
+        "http://www.manton.org/tag/microblog": {
+            "text": "microblog",
+            "rels": [
+                "tag"
+            ]
+        },
+        "http://www.manton.org/tag/wordpress": {
+            "text": "wordpress",
+            "rels": [
+                "tag"
+            ]
+        },
+        "http://www.manton.org/2018/03/indieweb-generation-4-and-hosted-domains.html": {
+            "title": "9:24 am",
+            "text": "2018/03/23",
+            "rels": [
+                "bookmark"
+            ]
+        },
+        "http://www.manton.org/author/manton": {
+            "title": "View all posts by manton",
+            "text": "manton",
+            "rels": [
+                "author"
+            ]
+        }
+    }
+}
