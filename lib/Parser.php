@@ -521,19 +521,19 @@ class Parser {
                 if ($child) {
                     if ($prefix === "p" && isset($child['properties']['name'])) {
                         # if it's a p-* property element, use the first p-name of the h-* child
-                        $childValue = $child['properties']['name'][0];
+                        $childValue = ['value' => $child['properties']['name'][0]];
                     } elseif ($prefix === "e") {
                         # else if it's an e-* property element, re-use its { } structure with existing value: inside.
-                        $childValue = $value['value'];
+                        // NOTE: This is misleading; the 'value' and 'html' keys should both be copied over
+                        $childValue = ['value' => $value['value'], 'html' => $value['html']];
                     } elseif ($prefix === "u" && isset($child['properties']['url'])) {
                         # else if it's a u-* property element and the h-* child has a u-url, use the first such u-url
-                        $childValue = $child['properties']['url'][0];
+                        $childValue = ['value' => $child['properties']['url'][0]];
                     } else {
                         # else use the parsed property value per p-*,u-*,dt-* parsing respectively
-                        $childValue = $value;
+                        $childValue = ['value' => $value];
                     }
-                    $value = $child;
-                    $value['value'] = $childValue;
+                    $value = array_merge($childValue, $child);
                     $childValue = null;
                 }
                 if ($defer) {
