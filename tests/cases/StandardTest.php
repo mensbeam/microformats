@@ -8,6 +8,7 @@ namespace MensBeam\Microformats\TestCase;
 
 use MensBeam\Microformats\Parser;
 use MensBeam\HTML\DOMParser;
+use MensBeam\Microformats\Url;
 
 /** @covers MensBeam\Microformats\Parser */
 class StandardTest extends \PHPUnit\Framework\TestCase {
@@ -114,6 +115,24 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
                 break;
             case "phpmf2/hentry/fberriman":
                 $this->fixDates($exp['items'][0]['properties']['published']);
+                break;
+            case "phpmf2/hentry/mixedroots":
+                $this->fixUrls($exp['items'][0]['properties']['comment'][0]['properties']['published']);
+                $this->fixUrls($exp['items'][0]['properties']['comment'][0]['properties']['updated']);
+                $this->fixUrls($exp['items'][0]['properties']['comment'][0]['properties']['comment'][0]['properties']['published']);
+                $this->fixUrls($exp['items'][0]['properties']['comment'][0]['properties']['comment'][0]['properties']['updated']);
+                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['published']);
+                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['updated']);
+                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['comment'][0]['properties']['published']);
+                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['comment'][0]['properties']['updated']);
+                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['comment'][0]['properties']['published']);
+                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['comment'][0]['properties']['updated']);
+                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['comment'][0]['properties']['comment'][0]['properties']['published']);
+                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['comment'][0]['properties']['comment'][0]['properties']['updated']);
+                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['comment'][0]['properties']['comment'][0]['properties']['comment'][0]['properties']['published']);
+                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['comment'][0]['properties']['comment'][0]['properties']['comment'][0]['properties']['updated']);
+                $this->fixUrls($exp['items'][0]['properties']['comment'][2]['properties']['published']);
+                $this->fixUrls($exp['items'][0]['properties']['comment'][2]['properties']['updated']);
         }
         return $exp;
     }
@@ -126,4 +145,9 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         }
     }
 
+    protected function fixUrls(&$urlArray): void {
+        foreach ($urlArray as &$u) {
+            $u = (string) Url::fromString(preg_replace('#/$#', "", substr($u, 7)), "http://example.com/");
+        }
+    }
 }
