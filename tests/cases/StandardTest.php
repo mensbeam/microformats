@@ -65,7 +65,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         // the standard tests
         yield from $this->provideTestList([\MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/"], ['basicTrim' => true]);
         // tests from php-mf2
-        yield from $this->provideTestList([\MensBeam\Microformats\BASE."tests/cases/json/"], null);
+        yield from $this->provideTestList([\MensBeam\Microformats\BASE."tests/cases/third-party/"], null);
     }
 
     protected function provideTestList(array $tests, ?array $options = null): \Generator {
@@ -113,26 +113,11 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
                 $this->fixDates($exp['items'][0]['properties']['bday']);
                 $this->fixDates($exp['items'][0]['properties']['rev']);
                 break;
-            case "phpmf2/hentry/fberriman":
+            case "phpmf2/classic/fberriman":
+            case "phpmf2/classic/mixedroots2":
                 $this->fixDates($exp['items'][0]['properties']['published']);
                 break;
-            case "phpmf2/hentry/mixedroots":
-                $this->fixUrls($exp['items'][0]['properties']['comment'][0]['properties']['published']);
-                $this->fixUrls($exp['items'][0]['properties']['comment'][0]['properties']['updated']);
-                $this->fixUrls($exp['items'][0]['properties']['comment'][0]['properties']['comment'][0]['properties']['published']);
-                $this->fixUrls($exp['items'][0]['properties']['comment'][0]['properties']['comment'][0]['properties']['updated']);
-                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['published']);
-                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['updated']);
-                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['comment'][0]['properties']['published']);
-                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['comment'][0]['properties']['updated']);
-                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['comment'][0]['properties']['published']);
-                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['comment'][0]['properties']['updated']);
-                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['comment'][0]['properties']['comment'][0]['properties']['published']);
-                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['comment'][0]['properties']['comment'][0]['properties']['updated']);
-                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['comment'][0]['properties']['comment'][0]['properties']['comment'][0]['properties']['published']);
-                $this->fixUrls($exp['items'][0]['properties']['comment'][1]['properties']['comment'][0]['properties']['comment'][0]['properties']['comment'][0]['properties']['updated']);
-                $this->fixUrls($exp['items'][0]['properties']['comment'][2]['properties']['published']);
-                $this->fixUrls($exp['items'][0]['properties']['comment'][2]['properties']['updated']);
+
         }
         return $exp;
     }
@@ -142,12 +127,6 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
             $d = strtr($d, "Tt", "  ");
             $d = preg_replace('/([+-]\d\d):(\d\d)$/', "$1$2", $d);
             $d = preg_replace('/:\d\d[+-]\d\d$/', "$0000", $d);
-        }
-    }
-
-    protected function fixUrls(&$urlArray): void {
-        foreach ($urlArray as &$u) {
-            $u = (string) Url::fromString(preg_replace('#/$#', "", substr($u, 7)), "http://example.com/");
         }
     }
 }

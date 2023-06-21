@@ -1,0 +1,21 @@
+{
+    "items": [
+        {
+            "type": [
+                "h-entry"
+            ],
+            "properties": {},
+            "children": [
+                {
+                    "type": [
+                        "h-feed"
+                    ],
+                    "properties": {},
+                    "id": "page"
+                }
+            ]
+        }
+    ],
+    "rels": {},
+    "rel-urls": {}
+}

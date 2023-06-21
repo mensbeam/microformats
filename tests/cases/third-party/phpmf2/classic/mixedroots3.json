@@ -1,0 +1,37 @@
+{
+    "items": [
+     {
+      "type": [
+       "h-card"
+      ],
+      "properties": {
+       "org": [
+        "Cherry Red's"
+       ],
+       "name": [
+        "Cherry Red's"
+       ]
+      },
+      "children": [
+       {
+        "type": [
+         "h-adr"
+        ],
+        "properties": {
+         "street-address": [
+          "88-92 John Bright St"
+         ],
+         "locality": [
+          "Birmingham"
+         ],
+         "country-name": [
+          "UK"
+         ]
+        }
+       }
+      ]
+     }
+    ],
+    "rels": {},
+    "rel-urls": {}
+   }
