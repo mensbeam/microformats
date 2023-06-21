@@ -508,7 +508,7 @@ class Parser {
                 $hasE = $hasE ?: $prefix === "e";
                 $hasU = $hasU ?: $prefix === "u";
                 // parse the node for the property value
-                $value = $this->parseProperty($node, $prefix, $backcompat ? $types : [], $impliedDate);
+                $value = $this->parseProperty($node, $prefix, $backcompat ? $types : [], $impliedDate, (bool) $child);
                 if ($prefix === "dt") {
                     // keep track of the last seen date value to serve as an implied date
                     $impliedDate = $value;
@@ -694,11 +694,11 @@ class Parser {
         return $out;
     }
 
-    protected function parseProperty(\DOMElement $node, string $prefix, array $backcompatTypes, ?string $impliedDate) {
+    protected function parseProperty(\DOMElement $node, string $prefix, array $backcompatTypes, ?string $impliedDate, bool $isChild) {
         switch ($prefix) {
             case "p":
                 # To parse an element for a p-x property value (whether explicit p-* or backcompat equivalent):
-                if ($text = $this->getValueClassPattern($node, $prefix, $backcompatTypes)) {
+                if (!$isChild && $text = $this->getValueClassPattern($node, $prefix, $backcompatTypes)) {
                     # Parse the element for the Value Class Pattern. If a value is found, return it.
                     return $text;
                 } elseif (in_array($node->localName, ["abbr", "link"]) && $node->hasAttribute("title")) {
@@ -743,7 +743,7 @@ class Parser {
                 } elseif ($node->localName === "object" && $node->hasAttribute("data")) {
                     # else if object.u-x[data], then get the data attribute
                     $url = $node->getAttribute("data");
-                } elseif ($url = $this->getValueClassPattern($node, $prefix, $backcompatTypes)) {
+                } elseif (!$isChild && $url = $this->getValueClassPattern($node, $prefix, $backcompatTypes)) {
                     # else parse the element for the Value Class Pattern. If a value is found, get it
                     // Nothing to do in this branch
                 } elseif ($node->localName === "abbr" && $node->hasAttribute("title")) {
@@ -765,7 +765,7 @@ class Parser {
             case "dt":
                 // NOTE: Because we perform implied date resolution we don't blindly return data from nodes; returning is done below after checks
                 # To parse an element for a dt-x property value (whether explicit dt-* or backcompat equivalent):
-                if ($date = $this->getValueClassPattern($node, $prefix, $backcompatTypes, $impliedDate)) {
+                if (!$isChild && $date = $this->getValueClassPattern($node, $prefix, $backcompatTypes, $impliedDate)) {
                     # parse the element for the Value Class Pattern, including the date and time parsing rules. If a value is found, then return it.
                     return $date;
                 } elseif (in_array($node->localName, ["time", "ins", "del"]) && $node->hasAttribute("datetime")) {
@@ -864,6 +864,8 @@ class Parser {
                     # for any other element, use its inner-text.
                     $candidate = $this->getCleanText($node, $prefix);
                 }
+            } else {
+                continue;
             }
             if ($prefix !== "dt") {
                 $skipChildren = true;
@@ -884,16 +886,20 @@ class Parser {
                 }
             }
         }
-        if ($prefix !== "dt") {
-            # if the microformats property expects a simple string, enumerated
-            #   value, or telephone number, then the values extracted from the
-            #   value elements should be concatenated without inserting
-            #   additional characters or white-space.
-            return implode("", $out);
+        if ($out) {
+            if ($prefix !== "dt") {
+                # if the microformats property expects a simple string, enumerated
+                #   value, or telephone number, then the values extracted from the
+                #   value elements should be concatenated without inserting
+                #   additional characters or white-space.
+                return implode("", $out);
+            } else {
+                # if the microformats property expects a datetime value, see the Date Time Parsing section.
+                // The rules for datetimes are dispersed elsewhere. All that's required here is to stitch parts together
+                return $this->stitchDate($out, $impliedDate);
+            }
         } else {
-            # if the microformats property expects a datetime value, see the Date Time Parsing section.
-            // The rules for datetimes are dispersed elsewhere. All that's required here is to stitch parts together
-            return $this->stitchDate($out, $impliedDate);
+            return null;
         }
     }
 

@@ -1,0 +1,49 @@
+{
+    "items": [
+        {
+            "type": [
+                "h-feed"
+            ],
+            "properties": {},
+            "children": [
+                {
+                    "type": [
+                        "h-entry"
+                    ],
+                    "properties": {
+                        "name": [
+                            "Microformats are amazing"
+                        ],
+                        "summary": [
+                            "In which I extoll the virtues of using microformats."
+                        ],
+                        "published": [
+                            "2013-06-13 12:00:00"
+                        ],
+                        "content": [
+                            {
+                                "html": "<p>Blah blah blah</p>",
+                                "value": "Blah blah blah"
+                            }
+                        ],
+                        "author": [
+                            {
+                                "type": [
+                                    "h-card"
+                                ],
+                                "properties": {
+                                    "name": [
+                                        "W. Developer"
+                                    ]
+                                },
+                                "value": "W. Developer"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "rels": {},
+    "rel-urls": {}
+}
