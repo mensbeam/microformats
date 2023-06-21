@@ -22,7 +22,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
     ];
 
     /** @dataProvider provideStandardTests */
-    public function testStandardTests(string $name, string $path): void {
+    public function testStandardTests(string $name, string $path, $options): void {
         if (isset(self::SUPPRESSED[$name])) {
             $this->markTestIncomplete(self::SUPPRESSED[$name]);
         }
@@ -32,17 +32,23 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         // fix up expectation where necessary
         array_walk_recursive($exp, function(&$v) {
             // URLs differ trivially from output of our normalization library
-            if (preg_match('#^https?://[^/]+$#', $v)) {
-                $v .= "/";
-            }
+            $v = preg_replace('#^https?://[^/]+$#', "$0/", $v);
         });
+        // URLs also need fixing as keys in rel-urls
+        foreach ($exp['rel-urls'] as $k => $v) {
+            $fixed = preg_replace('#^https?://[^/]+$#', "$0/", $k);
+            $exp['rel-urls'][$fixed] = $v;
+            if ($fixed !== $k) {
+                unset($exp['rel-urls'][$k]);
+            }
+        }
         // perform some further monkey-patching on specific tests
         $exp = $this->fixTests($exp, $name);
         // parse input
         $dom = new DOMParser;
         $parser = new Parser;
         $doc = $dom->parseFromString($html, "text/html; charset=UTF-8");
-        $act = $parser->parseElement($doc->documentElement, "http://example.com");
+        $act = $parser->parseElement($doc->documentElement, "http://example.com", $options);
         // sort both arrays
         $this->ksort($exp);
         $this->ksort($act);
@@ -55,14 +61,13 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
     }
 
     public function provideStandardTests(): \Generator {
-        return $this->provideTestList(\MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/");
+        // the standard tests
+        yield from $this->provideTestList([\MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/"], ['basicTrim' => true]);
+        // tests from php-mf2
+        yield from $this->provideTestList([\MensBeam\Microformats\BASE."tests/cases/json/"], null);
     }
 
-    protected function provideTestList(): \Generator {
-        $tests = [
-            \MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/", // standard tests
-            \MensBeam\Microformats\BASE."tests/cases/json/", // additional tests
-        ];
+    protected function provideTestList(array $tests, ?array $options = null): \Generator {
         foreach ($tests as $base) {
             $base = strtr($base, "\\", "/");
             foreach (new \RegexIterator(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($base )), '/\.json$/') as $file) {
@@ -70,7 +75,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
                 $path =  preg_replace('/\.json$/', '', $path);
                 $name = strtr($path, "\\", "/");
                 $name = str_replace(strtr($base, "\\", "/"), "", $name);
-                yield $name => [$name, $path];
+                yield $name => [$name, $path, $options];
             }
         }
     }

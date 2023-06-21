@@ -313,7 +313,7 @@ class Parser {
         }
         // sort and clean rel microformats
         foreach ($out['rels'] as $k => $v) {
-            $out['rels'][$k] = array_unique($v);
+            $out['rels'][$k] = array_values(array_unique($v));
         }
         foreach ($out['rel-urls'] as $k => $v) {
             $out['rel-urls'][$k]['rels'] = array_unique($v['rels']);
@@ -1040,7 +1040,19 @@ class Parser {
         if ($this->options['basicTrim']) {
             return $this->getCleanTextBasic($node, $prefix);
         } else {
-            return $this->getCleanTextThorough($node, $prefix);
+            // https://microformats.org/wiki/textcontent-parsing
+            # Plain text of element
+            # To get the plain text for an Element input:
+            # Let output be the result of running [Element to string] on input
+            $output = $this->getCleanTextThorough($node, $prefix);
+            # Remove any sequence of one or more consecutive U+0020 SPACE code points directly before and after an U+000A LF code point from output
+            $output = preg_replace('/^\s+|\s+$/m', "", $output);
+            # Strip leading and trailing ASCII whitespace from output
+            $output = trim($output);
+            # Replace any sequence of one or more consecutive U+0020 SPACE code points in output with a single U+0020 SPACE code point
+            $output = preg_replace('/ {2,}/', " ", $output);
+            # Return output
+            return $output;
         }
     }
 
@@ -1060,7 +1072,7 @@ class Parser {
                 // NOTE: This ought to include FORM FEED characters
                 $value = strtr($value, "\t\n\r\f", "    ");
                 # Append value to output
-                $output .= $value;
+                $output[] = $value;
             } elseif ($n instanceof \DOMElement) {
                 # If child is an Element, switch on its tagName:
                 // NOTE: we switch on localName instead to avoid silly case folding
@@ -1068,37 +1080,59 @@ class Parser {
                     case "script":
                     case "style":
                     case "template":
-                    # SCRIPT
-                    # STYLE
-                    // TEMPLATE as well
+                        # SCRIPT
+                        # STYLE
+                        // TEMPLATE as well
                         # Continue
                         continue 2;
-                    
-                # IMG
-                # If child has an alt attribute, then:
-                # Let value be the contents of the alt attribute
-                # Strip leading and trailing ASCII whitespace from value
-                # Else if child has a src attribute, then:
-                # Let value be the contents of the src attribute
-                # Strip leading and trailing ASCII whitespace from value
-                # Set value to the absolute URL created by resolving value following the containing document’s language’s rules
-                # Else continue
-                # Append and prepend a single U+0020 SPACE code point to value
-                # Append value to output
-                # BR
-                # Append a string containing a single U+000A LF code point to output
-                # P
-                # Let value be the result of running this algorithm on child
-                # Prepend a single U+000A LF code point to value
-                # Append value to output
-                # Any other value
-                # Let value be the result of running this algorithm on child
-                # Append value to output
+                    case "img":
+                        # IMG
+                        if ($n->hasAttribute("alt")) {
+                            # If child has an alt attribute, then:
+                            # Let value be the contents of the alt attribute
+                            # Strip leading and trailing ASCII whitespace from value
+                            $value = trim($n->getAttribute("alt"));
+                        } elseif ($n->hasAttribute("src")) {
+                            # Else if child has a src attribute, then:
+                            # Let value be the contents of the src attribute
+                            # Strip leading and trailing ASCII whitespace from value
+                            $value = trim($n->getAttribute("src"));
+                            # Set value to the absolute URL created by resolving value following the containing document’s language’s rules
+                            $value = $this->normalizeUrl($value);
+                        } else {
+                            # Else continue
+                            continue 2;
+                        }
+                        # Append and prepend a single U+0020 SPACE code point to value
+                        # Append value to output
+                        $output[] = " ".$value." ";
+                        break;
+                    case "br":
+                        # BR
+                        # Append a string containing a single U+000A LF code point to output
+                        $output[] = "\n";
+                        break;
+                    case "p":
+                        # P
+                        # Let value be the result of running this algorithm on child
+                        # Prepend a single U+000A LF code point to value
+                        # Append value to output
+                        $output[] = "\n".$this->getCleanTextThorough($n, $prefix);
+                        break;
+                    default:
+                        # Any other value
+                        # Let value be the result of running this algorithm on child
+                        # Append value to output
+                        $output[] = $this->getCleanTextThorough($n, $prefix);
+                        break;
                 }
-        # Else continue
+            } else {
+                # Else continue
+                continue;
             }
-        # Return the concatenation of output
         }
+        # Return the concatenation of output
+        return implode("", $output);
     }
 
     protected function getCleanTextBasic(\DOMElement $node, string $prefix): string {
