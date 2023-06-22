@@ -464,6 +464,10 @@ class Parser {
         if (strlen($id = $root->getAttribute("id"))) {
             $out['id'] = $id;
         }
+        // if so configured, add language information
+        if ($this->options['lang'] && ($lang = $this->getLang($root))) {
+            $out['lang'] = $lang;
+        }
         // keep track of deferred properties ("use Y if X is not defined")
         $deferred = [];
         // keep track of the implied date
@@ -526,7 +530,7 @@ class Parser {
                     } elseif ($prefix === "e") {
                         # else if it's an e-* property element, re-use its { } structure with existing value: inside.
                         // NOTE: This is misleading; the 'value' and 'html' keys should both be copied over
-                        $childValue = ['value' => $value['value'], 'html' => $value['html']];
+                        $childValue = $value;
                     } elseif ($prefix === "u" && isset($child['properties']['url'])) {
                         # else if it's a u-* property element and the h-* child has a u-url, use the first such u-url
                         $childValue = ['value' => $child['properties']['url'][0]];
@@ -804,10 +808,15 @@ class Parser {
                     $copyNode = $this->nextElement($copyNode, $copy, true);
                 }
                 // return the result
-                return [
+                $out = [
                     'html'  => trim(Serializer::serializeInner($copy)),
                     'value' => $this->getCleanText($node, $prefix),
                 ];
+                // if so configured, add language information
+                if ($this->options['lang'] && ($lang = $this->getLang($node))) {
+                    $out['lang'] = $lang;
+                }
+                return $out;
             default:
                 throw new \Exception("Unimplemented prefix $prefix");
         }
@@ -1186,6 +1195,16 @@ class Parser {
         return $base;
     }
 
+    protected function getLang(\DOMElement $node): ?string {
+        while ($node && !($node instanceof \DOMElement && $node->hasAttribute("lang"))) {
+            $node = $node->parentNode;
+        }
+        if ($node && strlen($lang = trim($node->getAttribute("lang")))) {
+            return $lang;
+        }
+        return null;
+    }
+
     /** Finds the next element in tree order after $node, if any
      *
      * @param \DOMNode $node The context node
@@ -1219,8 +1238,9 @@ class Parser {
 
     protected function normalizeOptions(array $options) {
         return [
-            'impliedTz' => (bool) ($options['impliedTz'] ?? false),
             'basicTrim' => (bool) ($options['basicTrim'] ?? false),
+            'impliedTz' => (bool) ($options['impliedTz'] ?? false),
+            'lang'      => (bool) ($options['lang'] ?? false),
         ];
     }
 }
