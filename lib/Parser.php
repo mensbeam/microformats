@@ -220,6 +220,7 @@ class Parser {
     protected $baseUrl;
     protected $docUrl;
     protected $xpath;
+    protected $roots;
 
     /** Parses a DOMElement for microformats
      *
@@ -242,7 +243,10 @@ class Parser {
             'rel-urls' => [],
         ];
         # parse the root element for class microformats, adding to the JSON items array accordingly
-        while ($node) {
+        // We'll save ourselves a lot of tree walking by using XPath to find first-level root candidates
+        $this->getRootCandidates($node);
+        for ($a = 0; $a < sizeof($this->roots); $a++) {
+            $node = $this->roots[$a];
             # parse element class for root class name(s) "h-*" and if none, backcompat root classes
             # if found, start parsing a new microformat
             $classes = $this->parseTokens($node, "class");
@@ -321,11 +325,21 @@ class Parser {
             sort($out['rel-urls'][$k]['rels']);
         }
         // clean up temporary instance properties
-        foreach (["options", "xpath", "docUrl", "baseUrl"] as $prop) {
+        foreach (["roots", "options", "xpath", "docUrl", "baseUrl"] as $prop) {
             $this->$prop = null;
         }
         # return the resulting JSON
         return $out;
+    }
+
+    protected function getRootCandidates(\DOMElement $node): void {
+        $query = [];
+        $query[] = './/*[contains(concat(" ", normalize-space(@class)), " h-")]';
+        foreach (array_keys(static::BACKCOMPAT_ROOTS) as $root) {
+            $query[] = './/*[contains(concat(" ", normalize-space(@class), " "), " '.$root.' ")]';
+        }
+        $query = implode("|", $query);
+        $this->roots = iterator_to_array($this->xpath->query($query, $node));
     }
 
     protected function parseTokens(\DOMElement $node, string $attr): array {
@@ -499,11 +513,21 @@ class Parser {
             }
             # [if the element is a microformat and it has no properties] add
             #   found elements that are microformats to the "children" array
-            if ($child && !$properties) {
-                if (!isset($out['children'])) {
-                    $out['children'] = [];
+            if ($child) {
+                if (!$properties) {
+                    if (!isset($out['children'])) {
+                        $out['children'] = [];
+                    }
+                    $out['children'][] = $child;
                 }
-                $out['children'][] = $child;
+                // If our root element is in the list of root candiates found by XPath, remove it from that list while we're here
+                foreach ($this->roots as $k => $r) {
+                    if ($node->isSameNode($r)) {
+                        unset($this->roots[$k]);
+                        $this->roots = array_values($this->roots);
+                        break;
+                    }
+                }
             }
             # if such class(es) are found, it is a property element
             # add properties found to current microformat's properties: { } structure
