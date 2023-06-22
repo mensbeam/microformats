@@ -83,18 +83,18 @@
   "rels": {
     "tag": [
       "http://www.technorati.com/tag/Garcon",
-      "http://www.technorati.com/tag/Garçon"
+      "http://www.technorati.com/tag/Gar%C3%A7on"
     ]
   },
   "rel-urls": {
-    "http://www.technorati.com/tag/Garcon": {
-      "text": "Garcon",
+    "http://www.technorati.com/tag/Gar%C3%A7on": {
+      "text": "Garçon",
       "rels": [
         "tag"
       ]
     },
-    "http://www.technorati.com/tag/Garçon": {
-      "text": "Garçon",
+    "http://www.technorati.com/tag/Garcon": {
+      "text": "Garcon",
       "rels": [
         "tag"
       ]
