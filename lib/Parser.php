@@ -10,7 +10,7 @@ namespace MensBeam\Microformats;
 use MensBeam\HTML\Parser\Serializer;
 
 class Parser {
-    /** @var array A ranking of prefixes (with 0 being least preferred) to break ties when multiple properties of the same name exist on one element */
+    /** @var array A ranking of prefixes (with 1 being least preferred) to break ties when multiple properties of the same name exist on one element */
     protected const PREFIX_RANK = [
         "p"  => 1,
         "dt" => 2,
@@ -19,6 +19,7 @@ class Parser {
     ];
     /** @var array The list of class names which are backward-compatibility microformat markers */
     protected const BACKCOMPAT_ROOTS = [
+        // NOTE: "item" also functions as a root, but it is never a first-level root, so it is not listed here and is instead accommodated via special processing
         'adr'               => "h-adr",
         'vcard'             => "h-card",
         'hfeed'             => "h-feed",
@@ -119,8 +120,8 @@ class Parser {
     ];
     /** @var array The list of link relations which are backward-compatibility property markers. The format is the same as for backcompat classes */
     protected const BACKCOMPAT_RELATIONS = [
-        // h-review and h-review-agregate also include "self bookmark", but this requires special processing
-        // the tag relation also requires special processing
+        // h-review and h-review-agregate also include "self bookmark", but this requires special processing to identify
+        // the tag relation also requires special processing to retrieve the correct value
         'bookmark'     => ['h-entry' => ["u", "url"]],
         'tag'          => ['h-entry' => ["p", "category", [], true], 'h-feed' => ["p", "category"], 'h-review' => ["p", "category"], 'h-review-aggregate' => ["p", "category"]],
         'author'       => ['h-entry' => ["u", "author", [], true]],
@@ -134,7 +135,7 @@ class Parser {
         'a'          => ["href", "ping"],
         'area'       => ["href", "ping"],
         'audio'      => ["src"],
-        'base'       => ["href"],
+        'base'       => ["href"], // this requires special processing to not resolve against itself
         'blockquote' => ["cite"],
         'button'     => ["formaction"],
         'del'        => ["cite"],
@@ -216,18 +217,26 @@ class Parser {
         self::DATE_TYPE_ZULU                                               => '\Z',
     ];
 
+    /** @var array The list of options supplied by the user, after normallization */
     protected $options;
+    /** @var string The base URL supplied by the user, resolved against <base href="..."> when appropriate */
     protected $baseUrl;
+    /** @var string The base URL supplied by the user, with no further normalization or transformation */
     protected $docUrl;
+    /** @var \DOMXPath The XPtah processor used for certain aspects of parsing */
     protected $xpath;
+    /** @var array The list of microformat root candidates found by XPath at the start of processing; the array is manipulated during processing to remove child roots so that they are only processed once */
     protected $roots;
 
-    /** Parses a DOMElement for microformats
+    /** Parses an HTML DOMElement for microformats
+     * 
+     * @see https://microformats.org/wiki/microformats2-parsing
      *
      * @param \DOMElement $node The DOMElement to parse
      * @param string $baseURL The base URL against which to resolve relative URLs in the output
+     * @param array $options An associative array of options. Please see the class documentation for more details
      */
-    public function parseElement(\DOMElement $node, string $baseUrl = "", ?array $options = null): array {
+    public function parseHTMLElement(\DOMElement $node, string $baseUrl = "", ?array $options = null): array {
         $root = $node;
         // normalize options
         $this->options = $this->normalizeOptions($options ?? []);
@@ -326,6 +335,14 @@ class Parser {
         return $out;
     }
 
+    /** Searches an element tree for elements which appear to have microformat root classes.
+     *
+     * This is an inexact search, which may include false positives, and for backcompat roots may exclude some descendent roots.
+     * 
+     * The results of this search should only be used as an optimization to pare down the number of elements which must be examined for first-level roots.
+     * 
+     * @param \DOMElement $node The element to start searching from, including itself
+     */
     protected function getRootCandidates(\DOMElement $node): void {
         $query = [];
         $query[] = './/*[contains(concat(" ", normalize-space(@class)), " h-")]';
@@ -336,6 +353,11 @@ class Parser {
         $this->roots = iterator_to_array($this->xpath->query($query, $node));
     }
 
+    /** Splits the attribute of an element into an array of unique whitespace-separated tokens
+     * 
+     * @param \DOMElement $node The subject element
+     * @param string $attr The ttribute to split
+     */
     protected function parseTokens(\DOMElement $node, string $attr): array {
         $attr = trim($node->getAttribute($attr), " \r\n\t\f");
         if ($attr !== "") {
@@ -345,6 +367,12 @@ class Parser {
         }
     }
 
+    /** Filters an array of class names for those which are syntactically microformat v2 roots
+     * 
+     * The list of possible roots is undefined. This merely validates that a class name fits the syntactic rules.
+     * 
+     * @param array $classes The array of class names to filter
+     */
     protected function matchRootsMf2(array $classes): array {
         return array_filter($classes, function($c) {
             # The "*" for root (and property) class names consists of an
@@ -357,27 +385,42 @@ class Parser {
         });
     }
 
-    protected function matchRootsBackcompat(array $classes, bool $backcompat = false): array {
+    /** Filters and array of class names for those which are microformat v1 roots
+     * 
+     * The list of backcompat roots is finite, and likely fixed by 2023.
+     * 
+     * The returned array contains the equivalent v2 microformat root names rather than the original names.
+     * 
+     * @param array $classes The array of class names to filter
+     * @param bool $backcompatParent Whether the classes are being checked in the context of a backcompat parent microformat structure
+     */
+    protected function matchRootsBackcompat(array $classes, bool $backcompatParent = false): array {
         $out = [];
         $item = false;
         foreach ($classes as $c) {
-            if ($backcompat && $c === "item") {
-                // we only consider "item" a root if there are no other roots
+            if ($backcompatParent && $c === "item") {
+                // "item" is only a root if it appears as a child of another
+                //   backcompat root, but see below
                 $item = true;
-            }
-            if ($compat = self::BACKCOMPAT_ROOTS[$c] ?? null) {
+            } elseif ($compat = self::BACKCOMPAT_ROOTS[$c] ?? null) {
                 $out[] = $compat;
             }
         }
         if ($item && !$out) {
+            // we only consider "item" a root if there are no other roots
             $out[] = "h-item";
         }
         return $out;
     }
 
-    protected function hasRoots(\DOMElement $node): bool {
+    /** Asserts whether the node is a microformat root node
+     * 
+     * @param \DOMElement $node The element to examine
+     * @param bool $backcompatParent Whether the element is being checked in the context of a backcompat parent microformat structure
+     */
+    protected function hasRoots(\DOMElement $node, bool $backcompatParent = false): bool {
         $classes = $this->parseTokens($node, "class");
-        return (bool) ($this->matchRootsMf2($classes) ?: $this->matchRootsBackcompat($classes));
+        return (bool) ($this->matchRootsMf2($classes) ?: $this->matchRootsBackcompat($classes, $backcompatParent));
     }
 
     protected function matchPropertiesMf2(array $classes): array {

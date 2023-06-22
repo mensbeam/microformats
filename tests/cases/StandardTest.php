@@ -49,7 +49,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         $dom = new DOMParser;
         $parser = new Parser;
         $doc = $dom->parseFromString($html, "text/html; charset=UTF-8");
-        $act = $parser->parseElement($doc->documentElement, "http://example.com", $options);
+        $act = $parser->parseHTMLElement($doc->documentElement, "http://example.com", $options);
         // sort both arrays
         $this->ksort($exp);
         $this->ksort($act);
