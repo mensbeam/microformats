@@ -254,13 +254,7 @@ class Parser {
                 $out['items'][] = $this->parseMicroformat($node, $types, false);
             } elseif ($types = $this->matchRootsBackcompat($classes)) {
                 $out['items'][] = $this->parseMicroformat($node, $types, true);
-            } else {
-                # if none found, parse child elements for microformats (depth first, doc order)
-                $node = $this->nextElement($node, $root, true);
-                continue;
             }
-            // continue to the next element, passing over children (they have already been examined)
-            $node = $this->nextElement($node, $root, false);
         }
         # parse all hyperlink (<a> <area> <link>) elements for rel microformats, adding to the JSON rels & rel-urls hashes accordingly
         foreach ($this->xpath->query(".//a[@rel][@href]|.//area[@rel][@href]|.//link[@rel][@href]", $root) as $link) {
