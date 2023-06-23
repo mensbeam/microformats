@@ -29,32 +29,36 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         if (isset(self::SUPPRESSED[$name])) {
             $this->markTestIncomplete(self::SUPPRESSED[$name]);
         }
-        // read expectation data
-        $exp = json_decode(file_get_contents($path.".json"), true);
-        // fix up expectation where necessary
-        array_walk_recursive($exp, function(&$v) {
-            // URLs differ trivially from output of our normalization library
-            $v = preg_replace('#^https?://[^/]+$#', "$0/", $v);
-        });
-        // URLs also need fixing as keys in rel-urls
-        foreach ($exp['rel-urls'] as $k => $v) {
-            $fixed = preg_replace('#^https?://[^/]+$#', "$0/", $k);
-            $exp['rel-urls'][$fixed] = $v;
-            if ($fixed !== $k) {
-                unset($exp['rel-urls'][$k]);
-            }
-        }
-        // perform some further monkey-patching on specific tests
-        $exp = $this->fixTests($exp, $name);
         // parse input
         $act = Microformats::fromFile($path.".html", "text/html; charset=UTF-8", "http://example.com/", $options);
+        // read expectation data
+        $exp = json_decode(file_get_contents($path.".json"), true);
+        if ($exp) {
+            // fix up expectation where necessary
+            array_walk_recursive($exp, function(&$v) {
+                // URLs differ trivially from output of our normalization library
+                $v = preg_replace('#^https?://[^/]+$#', "$0/", $v);
+            });
+            // URLs also need fixing as keys in rel-urls
+            foreach ($exp['rel-urls'] as $k => $v) {
+                $fixed = preg_replace('#^https?://[^/]+$#', "$0/", $k);
+                $exp['rel-urls'][$fixed] = $v;
+                if ($fixed !== $k) {
+                    unset($exp['rel-urls'][$k]);
+                }
+            }
+            // perform some further monkey-patching on specific tests
+            $exp = $this->fixTests($exp, $name);
+        } else {
+            // if there are no expectations we're probably developing a new test; print the output as JSON
+            echo Microformats::toJson($act, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE);
+            exit;
+        }
         // sort both arrays
         $this->ksort($exp);
         $this->ksort($act);
         // run comparison
         if (!$exp) {
-            echo json_encode($act, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE);
-            exit;
         }
         $this->assertSame($exp, $act);
     }
@@ -64,6 +68,9 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         yield from $this->provideTestList([\MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/"], ['simpleTrim' => true]);
         // tests from php-mf2
         yield from $this->provideTestList([\MensBeam\Microformats\BASE."tests/cases/third-party/"], []);
+        // tests from our own corpus
+        yield from $this->provideTestList([\MensBeam\Microformats\BASE."tests/cases/mensbeam/default-settings/"], []);
+        yield from $this->provideTestList([\MensBeam\Microformats\BASE."tests/cases/mensbeam/lang-true/"], ['lang' => true]);
     }
 
     protected function provideTestList(array $tests, ?array $options = null): \Generator {

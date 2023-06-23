@@ -1,0 +1,50 @@
+{
+    "items": [
+        {
+            "type": [
+                "h-test"
+            ],
+            "properties": {},
+            "children": [
+                {
+                    "type": [
+                        "h-test"
+                    ],
+                    "properties": {
+                        "name": [
+                            "日本語"
+                        ],
+                        "ook": [
+                            {
+                                "html": "English",
+                                "value": "English",
+                                "lang": "en"
+                            }
+                        ]
+                    },
+                    "lang": "ja"
+                },
+                {
+                    "type": [
+                        "h-test"
+                    ],
+                    "properties": {
+                        "ook": [
+                            {
+                                "html": "français",
+                                "value": "français",
+                                "lang": "fr"
+                            }
+                        ],
+                        "name": [
+                            "ᐃᓄᒃᑎᑐᑦ"
+                        ]
+                    },
+                    "lang": "iu"
+                }
+            ]
+        }
+    ],
+    "rels": {},
+    "rel-urls": {}
+}
