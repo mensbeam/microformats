@@ -554,6 +554,17 @@ class Parser {
         return array_values($out);
     }
 
+    /** Parses an element for microformat information
+     * 
+     * Returns a microformat "item" structure, possibly with child and
+     * descendent amicroformat structures.
+     * 
+     * @see https://microformats.org/wiki/microformats2-parsing#parse_an_element_for_class_microformats
+     * 
+     * @param \DOMElement $root The root element of the microformat
+     * @param array $types The previously determined v2 microformat types of the element
+     * @param bool $backcompat Whether this element is a v1 microformat and backward-compatible processing should be used
+     */
     protected function parseMicroformat(\DOMElement $root, array $types, bool $backcompat): array {
         # keep track of whether the root class name(s) was from backcompat
         // this is a parameter to this function
@@ -817,6 +828,20 @@ class Parser {
         return $out;
     }
 
+    /** Retrieves the value of a single microformat property from an element
+     * 
+     * The value returned is determined from the prefix and the structure of
+     * the element rather than the property name.
+     * 
+     * @see https://microformats.org/wiki/microformats2-parsing#parse_an_element_for_properties
+     * 
+     * @param \DOMElement $node The element to retrieve a value from
+     * @param string $prefix The property prefix (`p`, `dt`, `u`, or `e`)
+     * @param array $backcompatTypes The set of microformat types currently in scope, if performing backcompat processing (and empty array otherwise)
+     * @param string|null $impliedDate A previously-seen date value from which we can imply a date if only a time is present on the element
+     * @param bool $isChild Whether the subject element is itself a child microformat. This affect whether the "Value Class Pattern" applies
+     * @return string|array
+     */
     protected function parseProperty(\DOMElement $node, string $prefix, array $backcompatTypes, ?string $impliedDate, bool $isChild) {
         switch ($prefix) {
             case "p":
@@ -940,6 +965,20 @@ class Parser {
         }
     }
 
+    /** Retrieves a "Value Class Pattern" value from an element
+     * 
+     * The Value Class Pattern is a means of marking only certain spans of text
+     * as relevant information, allowing for naturally-flowing text and
+     * machine-readable information to co-exist.
+     * 
+     * @see https://microformats.org/wiki/value-class-pattern#Basic_Parsing
+     * 
+     * @param \DOMElement $node The subject element
+     * @param string $prefix The property prefix (`p`, `dt`, `u`, or `e`)
+     * @param array $backcompatTypes The set of microformat types currently in scope, if performing backcompat processing (and empty array otherwise)
+     * @param string|null $impliedDate A previously-seen date value from which we can imply a date if only a time is present on the element
+     * @return string|array|null
+     */
     protected function getValueClassPattern(\DOMElement $root, string $prefix, array $backcompatTypes, ?string $impliedDate = null) {
         $out = [];
         $skipChildren = false;
@@ -1031,6 +1070,17 @@ class Parser {
         }
     }
 
+    /** Retrieves structured data from an HTML `img` element
+     * 
+     * If the element has an `alt` attribute an array containing both `alt` and
+     * `src` keys is returned. Otherwise a string with the value of `src` is
+     * returned instead.
+     * 
+     * @see https://microformats.org/wiki/microformats2-parsing#parse_an_img_element_for_src_and_alt
+     * 
+     * @param \DOMElement $node The `img` element to examine
+     * @return array|string
+     */
     protected function parseImg(\DOMElement $node) {
         # To parse an img element for src and alt attributes:
         if ($node->localName === "img" && $node->hasAttribute("alt")) {
@@ -1048,6 +1098,22 @@ class Parser {
         }
     }
 
+    /** Validates whether a string is a date, and returns its parts
+     * 
+     * The return value is an array which can contain zero or more of the
+     * follwing keys:
+     * 
+     * - `date`
+     * - `time`
+     * - `zone`
+     * 
+     * Absence of all keys indicates an invalid string. The three parts may
+     * appear in any combination except `date` and `zone` without `time`.
+     * 
+     * @see https://microformats.org/wiki/value-class-pattern#Date_and_time_parsing
+     * 
+     * @param string $input The string to test for validity
+     */
     protected function parseDatePart(string $input): array {
         // do a first-pass normalization on the input; this normalizes am/pm and normalizes and trims whitespace
         $input = trim(preg_replace(['/([ap])\.m\.$/', '/\s+/'], ["$1m", " "], strtr($input, "APM", "apm")));
@@ -1130,6 +1196,13 @@ class Parser {
         return [];
     }
 
+    /** Tests a string for validity against one or more date-format strings
+     * 
+     * The returned value will be the first valid DateTimeImmutable value, if any.
+     * 
+     * @param string $input The string to validate
+     * @param string $format One or more date formats to validate against
+     */
     protected function testDate(string $input, string ...$format): ?\DateTimeImmutable {
         foreach ($format as $f) {
             $out = \DateTimeImmutable::createFromFormat("!$f", $input, new \DateTimeZone("UTC"));
@@ -1140,6 +1213,11 @@ class Parser {
         return null;
     }
 
+    /** Concatenates date parts together, optionally with an implied date
+     * 
+     * @param array $parts The date parts, `date`, `time`, and `zone`
+     * @param string|null $implied An optional implied date to use if the date is absent from the input
+     */
     protected function stitchDate(array $parts, ?string $implied): ?string {
         if (sizeof($parts) === 3) {
             return $parts['date']." ".$parts['time'].$parts['zone'];
@@ -1161,6 +1239,11 @@ class Parser {
         return null;
     }
 
+    /** Resolves a URL against a base URL and normalizes the result
+     * 
+     * @param string $url The URL to resolve and normalize
+     * @param string|null $baseUrl The base URL to resolve against. If this argument is absent the document base will be used
+     */
     protected function normalizeUrl(string $url, string $baseUrl = null): string {
         // TODO: Implement better URL parser
         try {
@@ -1170,9 +1253,19 @@ class Parser {
         }
     }
 
+    /** Retrieves the trimmed plain-text content of an HTML element
+     * 
+     * Depending on user options the traditional "simple" algorithm may be used
+     * in place of the more recent "thorough" algorithm.
+     * 
+     * @see https://microformats.org/wiki/textcontent-parsing
+     * 
+     * @param \DOMElement $node The element whose text is to be retrieved
+     * @param string $prefix The prefix of the microformat property the text is to be used for. This is only relevant for the "simple" algorithm
+     */
     protected function getCleanText(\DOMElement $node, string $prefix): string {
         if ($this->options['simpleTrim']) {
-            return $this->getCleanTextBasic($node, $prefix);
+            return $this->getCleanTextSimple($node, $prefix);
         } else {
             // https://microformats.org/wiki/textcontent-parsing
             # Plain text of element
@@ -1184,13 +1277,19 @@ class Parser {
             # Strip leading and trailing ASCII whitespace from output
             $output = trim($output);
             # Replace any sequence of one or more consecutive U+0020 SPACE code points in output with a single U+0020 SPACE code point
-            $output = preg_replace('/ {2,}/', " ", $output);
+            $output = preg_replace('/\s{2,}/m', " ", $output);
             # Return output
             return $output;
         }
     }
 
-    protected function getCleanTextThorough(\DOMElement $node, string $prefix): string {
+    /** Part of the algorithm to retrieve the trimmed plain-text content of an HTML element
+     *
+     * @see https://microformats.org/wiki/textcontent-parsing#Element_to_string
+     * 
+     * @param \DOMElement $node The element whose text is to be retrieved
+     */
+    protected function getCleanTextThorough(\DOMElement $node): string {
         # Element to string
         # To get the string value for an Element input:
         # Let output be an empty list
@@ -1251,13 +1350,13 @@ class Parser {
                         # Let value be the result of running this algorithm on child
                         # Prepend a single U+000A LF code point to value
                         # Append value to output
-                        $output[] = "\n".$this->getCleanTextThorough($n, $prefix);
+                        $output[] = "\n".$this->getCleanTextThorough($n);
                         break;
                     default:
                         # Any other value
                         # Let value be the result of running this algorithm on child
                         # Append value to output
-                        $output[] = $this->getCleanTextThorough($n, $prefix);
+                        $output[] = $this->getCleanTextThorough($n);
                         break;
                 }
             } else {
@@ -1269,7 +1368,14 @@ class Parser {
         return implode("", $output);
     }
 
-    protected function getCleanTextBasic(\DOMElement $node, string $prefix): string {
+    /** Part of the algorithm to retrieve the trimmed plain-text content of an HTML element
+     *
+     * This is the traditional "simple" algorithm.
+     * 
+     * @param \DOMElement $node The element whose text is to be retrieved
+     * @param string $prefix The prefix of the microformat property the text is to be used for
+     */
+    protected function getCleanTextSimple(\DOMElement $node, string $prefix): string {
         #  the textContent of the element after:
         $copy = $node->cloneNode(true);
         # dropping any nested <script> & <style> elements;
@@ -1305,6 +1411,12 @@ class Parser {
         return trim($copy->textContent);
     }
 
+    /** Retrieves and resolves the base URL of an HTML document's `<base>`
+     * element, if any
+     * 
+     * @param \DOMElement $root Any element within the document to check
+     * @param string $base The HTTP-level base URL, if available
+     */
     protected function getBaseUrl(\DOMElement $root, string $base): string {
         $set = $root->ownerDocument->getElementsByTagName("base");
         if ($set->length) {
@@ -1313,6 +1425,12 @@ class Parser {
         return $base;
     }
 
+    /** Finds the nearest HTML language information for an element
+     * 
+     * No validation or normalization is performed on the returned information.
+     * 
+     * @param \DOMElement $node The subject element
+     */
     protected function getLang(\DOMElement $node): ?string {
         while ($node && !($node instanceof \DOMElement && $node->hasAttribute("lang"))) {
             $node = $node->parentNode;
@@ -1326,7 +1444,7 @@ class Parser {
     /** Finds the next element in tree order after $node, if any
      *
      * @param \DOMNode $node The context node
-     * @param \DOMElement $root The element to consider the contextual root of the tree
+     * @param \DOMElement $root The element to consider the contextual root of the tree; nodes outside this element will not be examined
      * @param bool $considerChildren Whether or not child nodes are valid next nodes
      */
     protected function nextElement(\DOMElement $node, \DOMElement $root, bool $considerChildren): ?\DOMElement {
@@ -1354,7 +1472,13 @@ class Parser {
         return $next;
     }
 
-    protected function normalizeOptions(array $options) {
+    /** Normalizes an array of options
+     * 
+     * Default values are filled in and unknown options removed
+     * 
+     * @param array $options The options array to normalize
+     */
+    protected function normalizeOptions(array $options): array {
         return [
             'impliedTz'  => (bool) ($options['impliedTz'] ?? false),
             'lang'       => (bool) ($options['lang'] ?? false),
