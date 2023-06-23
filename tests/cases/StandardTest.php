@@ -6,11 +6,13 @@
 declare(strict_types=1);
 namespace MensBeam\Microformats\TestCase;
 
-use MensBeam\Microformats\Parser;
+use MensBeam\Microformats;
 use MensBeam\HTML\DOMParser;
-use MensBeam\Microformats\Url;
 
-/** @covers MensBeam\Microformats\Parser */
+/**
+ * @covers MensBeam\Microformats
+ * @covers MensBeam\Microformats\Parser
+ */
 class StandardTest extends \PHPUnit\Framework\TestCase {
     protected const SUPPRESSED = [
         'microformats-v1/hcard/multiple'         => "whether vcard keys are p- or u- is unclear",
@@ -27,9 +29,8 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         if (isset(self::SUPPRESSED[$name])) {
             $this->markTestIncomplete(self::SUPPRESSED[$name]);
         }
-        // read data
+        // read expectation data
         $exp = json_decode(file_get_contents($path.".json"), true);
-        $html = file_get_contents($path.".html");
         // fix up expectation where necessary
         array_walk_recursive($exp, function(&$v) {
             // URLs differ trivially from output of our normalization library
@@ -46,10 +47,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         // perform some further monkey-patching on specific tests
         $exp = $this->fixTests($exp, $name);
         // parse input
-        $dom = new DOMParser;
-        $parser = new Parser;
-        $doc = $dom->parseFromString($html, "text/html; charset=UTF-8");
-        $act = $parser->parseHTMLElement($doc->documentElement, "http://example.com", $options);
+        $act = Microformats::fromFile($path.".html", "text/html; charset=UTF-8", "http://example.com/", $options);
         // sort both arrays
         $this->ksort($exp);
         $this->ksort($act);
@@ -65,7 +63,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         // the standard tests
         yield from $this->provideTestList([\MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/"], ['simpleTrim' => true]);
         // tests from php-mf2
-        yield from $this->provideTestList([\MensBeam\Microformats\BASE."tests/cases/third-party/"], null);
+        yield from $this->provideTestList([\MensBeam\Microformats\BASE."tests/cases/third-party/"], []);
     }
 
     protected function provideTestList(array $tests, ?array $options = null): \Generator {

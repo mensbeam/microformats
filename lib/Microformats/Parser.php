@@ -19,8 +19,6 @@ use MensBeam\HTML\Parser\Serializer;
  * - `impliedTz` (bool) Whether to allow an implied datetime value to supply an implied timezone to datetimes without a timezone
  * - `lang` (bool) Whether to include language information in microformat and rich-text structures
  * - `simpleTrim` (bool) Whether to use the traditional "simple" whitespace trimming algorithm rather than the default, more aggressive trimming algorithm
- *
- * @internal 
  */
 class Parser {
     /** @var array A ranking of prefixes (with 1 being least preferred) to break ties when multiple properties of the same name exist on one element */
