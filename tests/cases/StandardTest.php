@@ -63,7 +63,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
 
     public function provideStandardTests(): \Generator {
         // the standard tests
-        yield from $this->provideTestList([\MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/"], ['basicTrim' => true]);
+        yield from $this->provideTestList([\MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/"], ['simpleTrim' => true]);
         // tests from php-mf2
         yield from $this->provideTestList([\MensBeam\Microformats\BASE."tests/cases/third-party/"], null);
     }

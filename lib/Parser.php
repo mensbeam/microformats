@@ -9,6 +9,18 @@ namespace MensBeam\Microformats;
 
 use MensBeam\HTML\Parser\Serializer;
 
+/** A generic parser for microformats
+ *
+ * It implements Microformats v2 as well as backwards-compatible processing of
+ * so-called "classic" or "backcompat" Microformats. Some of its functionality
+ * is optional. Where an $options array is a possible parameter, the following
+ * keys are understood:
+ * 
+ * - `simpleTrim` (bool) Whether to use the traditional "simple" whitespace trimming algorithm rather than the default, more aggressive trimming algorithm
+ * - `impliedTz` (bool) Whether to allow an implied datetime value to supply an implied timezone to datetimes without a timezone
+ * - `lang` (bool) Whether to include language information in microformat and rich-text structures
+ *
+ * @internal */
 class Parser {
     /** @var array A ranking of prefixes (with 1 being least preferred) to break ties when multiple properties of the same name exist on one element */
     protected const PREFIX_RANK = [
@@ -423,6 +435,24 @@ class Parser {
         return (bool) ($this->matchRootsMf2($classes) ?: $this->matchRootsBackcompat($classes, $backcompatParent));
     }
 
+    /** Reads an array of classes and returns information on those which are
+     * Microformats v2 properties
+     * 
+     * As with Microformats v2 roots, the list of possible properties is
+     * undefined, and syntax defines validity.
+     * 
+     * The returned information is an indexed array of indexed arrays each
+     * containing the following data:
+     * 
+     * - The prefix (`p`, `dt`, `u`, or `e`)
+     * - The property name with prefix and dash removed (e.g. `author`)
+     * 
+     * The returned array will contain the same property name only once. If
+     * for example the class list contains both `p-url` and `u-url`, the
+     * output will contain only one of the two, based on prefix ranking.
+     * 
+     * @param array $classes The array of class names to examine
+     */
     protected function matchPropertiesMf2(array $classes): array {
         $out = [];
         foreach ($classes as $c) {
@@ -445,6 +475,32 @@ class Parser {
         return array_values($out);
     }
 
+    /** Returns the list of Microformats v1 properties on an element, after
+     * mapping to v2 properties
+     * 
+     * Properties are valid only for certain Microformat dialects (hence the
+     * $types parameter), and some properties are derived from link relations
+     * rather than class names (hence the $node parameter). Additionally some
+     * properties can imply  other root classes. These are appended to the
+     * &$classes reference when not already in the class list.
+     * 
+     * The returned information is an indexed array of indexed arrays each
+     * containing the following data:
+     * 
+     * - The prefix (`p`, `dt`, `u`, or `e`) mapped to the property
+     * - The mapped property name
+     * - Whether the property should be deferred and only added if no
+     * other property of the same name appears in the microformat
+     * 
+     * The returned array will contain the same property name only once. If
+     * for example the class list contains both a `vcard fn` and a 
+     * `vevent summary`, the output will contain only one of the two, based
+     * on prefix ranking.
+     * 
+     * @param &array $classes A reference to an array of the element's classes
+     * @param array $types Anarray of the current microformat's types
+     * @param \DOMElement $node The element to examine
+     */
     protected function matchPropertiesBackcompat(array &$classes, array $types, \DOMElement $node): array {
         $props = [];
         $out = [];
@@ -478,13 +534,14 @@ class Parser {
             $prefix = $map[0];
             $name = $map[1];
             $extraRoots = $map[2] ?? [];
+            $defer = $map[3] ?? false;
             if (
                 // property with this name has not been seen yet
                 !isset($out[$name])
                 // property prefix is of a higher rank than one already seen and isn't deferrable
                 || (static::PREFIX_RANK[$prefix] > static::PREFIX_RANK[$out[$name][0]] && !($map[3] ?? false))
             ) {
-                $out[$name] = $map;
+                $out[$name] = [$prefix, $name, $defer];
                 // add any extra roots, where needed
                 // The "hreview" class is a special case as "hreview-aggregate" is equivalent
                 foreach ($extraRoots as $r) {
@@ -569,7 +626,7 @@ class Parser {
             # if such class(es) are found, it is a property element
             # add properties found to current microformat's properties: { } structure
             foreach ($properties as $p) {
-                [$prefix, $key, $extraRoots, $defer] = array_pad($p, 5, null);
+                [$prefix, $key, $defer] = array_pad($p, 3, null);
                 $hasP = $hasP ?: $prefix === "p";
                 $hasE = $hasE ?: $prefix === "e";
                 $hasU = $hasU ?: $prefix === "u";
@@ -1114,7 +1171,7 @@ class Parser {
     }
 
     protected function getCleanText(\DOMElement $node, string $prefix): string {
-        if ($this->options['basicTrim']) {
+        if ($this->options['simpleTrim']) {
             return $this->getCleanTextBasic($node, $prefix);
         } else {
             // https://microformats.org/wiki/textcontent-parsing
@@ -1299,9 +1356,9 @@ class Parser {
 
     protected function normalizeOptions(array $options) {
         return [
-            'basicTrim' => (bool) ($options['basicTrim'] ?? false),
-            'impliedTz' => (bool) ($options['impliedTz'] ?? false),
-            'lang'      => (bool) ($options['lang'] ?? false),
+            'impliedTz'  => (bool) ($options['impliedTz'] ?? false),
+            'lang'       => (bool) ($options['lang'] ?? false),
+            'simpleTrim' => (bool) ($options['simpleTrim'] ?? false),
         ];
     }
 }
