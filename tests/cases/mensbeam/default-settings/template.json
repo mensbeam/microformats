@@ -69,12 +69,6 @@
                     ""
                 ]
             }
-        },
-        {
-            "type": [
-                "h-test"
-            ],
-            "properties": {}
         }
     ],
     "rels": {},

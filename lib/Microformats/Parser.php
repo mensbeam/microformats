@@ -355,12 +355,12 @@ class Parser {
      * @param \DOMElement $node The element to start searching from, including itself
      */
     protected function getRootCandidates(\DOMElement $node): void {
-        $query = [
-            "self::*[not(ancestor::template)]", 
-            ".//*[contains(concat(' ', normalize-space(@class)), ' h-') and not(ancestor::template)]",
+        // NOTE: Templates being completely ignored is an unwritten rule followed by all implementations
+        $query = [ 
+            "descendant-or-self::*[contains(concat(' ', normalize-space(@class)), ' h-') and not(ancestor-or-self::template)]",
         ];
         foreach (array_keys(static::BACKCOMPAT_ROOTS) as $root) {
-            $query[] = ".//*[contains(concat(' ', normalize-space(@class), ' '), ' $root ') and not(ancestor::template)]";
+            $query[] = "descendant-or-self::*[contains(concat(' ', normalize-space(@class), ' '), ' $root ') and not(ancestor-or-self::template)]";
         }
         $query = implode("|", $query);
         $this->roots = iterator_to_array($this->xpath->query($query, $node));
@@ -1462,6 +1462,7 @@ class Parser {
             $next = $node->nextSibling;
         }
         while ($next && (!$next instanceof \DOMElement ||  $next->localName === "template")) {
+            // NOTE: Templates being completely ignored is an unwritten rule followed by all implementations
             $next = $next->nextSibling;
         }
         while (!$next) {
@@ -1471,6 +1472,7 @@ class Parser {
             }
             $next = $node->nextSibling;
             while ($next && (!$next instanceof \DOMElement ||  $next->localName === "template")) {
+                // NOTE: Templates being completely ignored is an unwritten rule followed by all implementations
                 $next = $next->nextSibling;
             }
         }
