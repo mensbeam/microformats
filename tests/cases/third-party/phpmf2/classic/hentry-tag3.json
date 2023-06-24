@@ -1,0 +1,60 @@
+{
+    "items": [
+        {
+            "type": [
+                "h-entry"
+            ],
+            "properties": {
+                "category": [
+                    "testing",
+                    "microformats"
+                ]
+            }
+        },
+        {
+            "type": [
+                "h-review"
+            ],
+            "properties": {
+                "category": [
+                    "phpmf2",
+                    "mf2py"
+                ]
+            }
+        }
+    ],
+    "rels": {
+        "tag": [
+            "http://example.com/tags/testing/",
+            "http://example.com/tags/microformats",
+            "http://example.com/tags/phpmf2/",
+            "http://example.com/tags/mf2py"
+        ]
+    },
+    "rel-urls": {
+        "http://example.com/tags/testing/": {
+            "text": "Testing",
+            "rels": [
+                "tag"
+            ]
+        },
+        "http://example.com/tags/microformats": {
+            "text": "Microformats",
+            "rels": [
+                "tag"
+            ]
+        },
+        "http://example.com/tags/phpmf2/": {
+            "text": "php-mf2",
+            "rels": [
+                "tag"
+            ]
+        },
+        "http://example.com/tags/mf2py": {
+            "text": "mf2py",
+            "rels": [
+                "tag"
+            ]
+        }
+    }
+}

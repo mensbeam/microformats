@@ -1,0 +1,18 @@
+{
+    "items": [
+        {
+            "type": [
+                "h-entry",
+                "h-event"
+            ],
+            "properties": {
+                "name": [
+                    "h-entry name",
+                    "h-event name"
+                ]
+            }
+        }
+    ],
+    "rels": {},
+    "rel-urls": {}
+}

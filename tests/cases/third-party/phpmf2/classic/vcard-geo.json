@@ -1,0 +1,25 @@
+{
+    "items": [
+        {
+            "type": [
+                "h-card"
+            ],
+            "properties": {
+                "name": [
+                    "John Doe"
+                ],
+                "geo": [
+                    {
+                        "type": [
+                            "h-geo"
+                        ],
+                        "properties": {},
+                        "value": "30.267991;-97.739568"
+                    }
+                ]
+            }
+        }
+    ],
+    "rels": {},
+    "rel-urls": {}
+}
