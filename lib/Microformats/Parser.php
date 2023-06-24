@@ -355,9 +355,12 @@ class Parser {
      * @param \DOMElement $node The element to start searching from, including itself
      */
     protected function getRootCandidates(\DOMElement $node): void {
-        $query = [".", ".//*[contains(concat(' ', normalize-space(@class)), ' h-')]"];
+        $query = [
+            "self::*[not(ancestor::template)]", 
+            ".//*[contains(concat(' ', normalize-space(@class)), ' h-') and not(ancestor::template)]",
+        ];
         foreach (array_keys(static::BACKCOMPAT_ROOTS) as $root) {
-            $query[] = ".//*[contains(concat(' ', normalize-space(@class), ' '), ' $root ')]";
+            $query[] = ".//*[contains(concat(' ', normalize-space(@class), ' '), ' $root ') and not(ancestor::template)]";
         }
         $query = implode("|", $query);
         $this->roots = iterator_to_array($this->xpath->query($query, $node));
@@ -584,6 +587,10 @@ class Parser {
         // if so configured, add language information
         if ($this->options['lang'] && ($lang = $this->getLang($root))) {
             $out['lang'] = $lang;
+        }
+        // stop here if the root is a template, as all children of templates must be ignored
+        if ($root->localName === "template") {
+            return $out;
         }
         // keep track of deferred properties ("use Y if X is not defined")
         $deferred = [];
@@ -1446,7 +1453,7 @@ class Parser {
      * @param bool $considerChildren Whether or not child nodes are valid next nodes
      */
     protected function nextElement(\DOMElement $node, \DOMElement $root, bool $considerChildren): ?\DOMElement {
-        if ($considerChildren && $node->hasChildNodes()) {
+        if ($considerChildren && $node->hasChildNodes() && $node->localName !== "template") {
             $node = $node->firstChild;
             $next = $node;
         } elseif ($node->isSameNode($root)) {

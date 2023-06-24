@@ -1,0 +1,59 @@
+<!--
+    This tests various cases where templates should be discounted from
+    processing. 
+-->
+
+<!-- None of these implied properties should match -->
+<div class="h-test">
+    <template>
+        <img alt="TEMPLATE!">
+    </template>
+</div>
+
+<div class="h-test">
+    <template>
+        <area alt="TEMPLATE!">
+    </template>
+</div>
+
+<div class="h-test">
+    <template>
+        <abbr title="TEMPLATE!"></abbr>
+    </template>
+</div>
+
+<div class="h-test">
+    <template>
+        <img src="TEMPLATE!">
+    </template>
+</div>
+
+<div class="h-test">
+    <template>
+        <object data="TEMPLATE!"></object>
+    </template>
+</div>
+
+<div class="h-test">
+    <template>
+        <a href="TEMPLATE!"></a>
+    </template>
+</div>
+
+<div class="h-test">
+    <template>
+        <area href="TEMPLATE!">
+    </template>
+</div>
+
+<!-- No properties should be found here -->
+<template class="h-test">
+    <div class="p-name">TEMPLATE!</div>
+</template>
+
+<!-- This is not a microformat at all -->
+<template>
+    <div class="h-test">
+        <div class="p-name">TEMPLATE!</div>
+    </div>
+</template>
