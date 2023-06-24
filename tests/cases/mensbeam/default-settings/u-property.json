@@ -1,0 +1,58 @@
+{
+    "rels": {},
+    "rel-urls": {},
+    "items": [
+      {
+        "type": [
+          "h-entry"
+        ],
+        "properties": {
+          "url": [
+            "http://example.com/audio.flac"
+          ],
+          "name": [
+            ""
+          ]
+        }
+      },
+      {
+        "type": [
+          "h-entry"
+        ],
+        "properties": {
+          "url": [
+            "http://example.com/video.mkv"
+          ],
+          "name": [
+            ""
+          ]
+        }
+      },
+      {
+        "type": [
+          "h-entry"
+        ],
+        "properties": {
+          "url": [
+            "http://example.com/video.mkv"
+          ],
+          "name": [
+            ""
+          ]
+        }
+      },
+      {
+        "type": [
+          "h-entry"
+        ],
+        "properties": {
+          "url": [
+            "http://example.com/content.html"
+          ],
+          "name": [
+            ""
+          ]
+        }
+      }
+    ]
+  }

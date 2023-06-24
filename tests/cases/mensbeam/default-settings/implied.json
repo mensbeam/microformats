@@ -1,0 +1,19 @@
+{
+    "items": [
+        {
+            "type": [
+                "h-card"
+            ],
+            "properties": {
+                "name": [
+                    "C'est moi!"
+                ],
+                "url": [
+                    "http://example.com/me.html"
+                ]
+            }
+        }
+    ],
+    "rels": {},
+    "rel-urls": {}
+}

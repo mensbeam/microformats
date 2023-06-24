@@ -875,10 +875,8 @@ class Parser {
                     // we have encountered a tag relation during backcompat processing
                     // https://microformats.org/wiki/rel-tag#Abstract
                     // we are required to retrieve the last component of the URL path and use that
-                    if (preg_match('#([^/]*)/?$#', URL::fromString($this->normalizeUrl($node->getAttribute("href")))->getPath(), $match)) {
-                        return urldecode($match[1]);
-                    }
-                    return "";
+                    preg_match('#([^/]*)/?$#', URL::fromString($this->normalizeUrl($node->getAttribute("href")))->getPath(), $match);
+                    return urldecode($match[1]);
                 }
                 # else return the textContent of the element after [cleaning]
                 return $this->getCleanText($node, $prefix);
@@ -974,7 +972,7 @@ class Parser {
                 }
                 return $out;
             default:
-                throw new \Exception("Unimplemented prefix $prefix");
+                throw new \Exception("Unimplemented prefix $prefix"); // @codeCoverageIgnore
         }
     }
 

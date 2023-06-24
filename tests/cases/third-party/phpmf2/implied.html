@@ -1,0 +1,84 @@
+<!--
+    This collects all of php-mf2's ParseImpliedTest.php into one test.
+-->
+
+<span class="h-card">The Name</span>
+
+<img class="h-card" src="" alt="The Name" />
+
+<div class="h-card"><img src="" alt="The Name" /></div>
+
+<div class="h-card"><span><img src="" alt="The Name" /></span></div>
+
+<img class="h-card" src="http://example.com/img.png" />
+
+<img class="h-card" src="http://example.com/img.png" alt="" />
+
+<img class="h-card" src="http://example.com/img.png" alt="Example" />
+
+<div class="h-card"><img src="http://example.com/img.png" alt="" /></div>
+
+<div class="h-card"><span><img src="http://example.com/img.png" alt="" /></span></div>
+
+<a class="h-card" href="http://example.com/">Some Name</a>
+
+<span class="h-card"><a href="http://example.com/">Some Name</a></span>
+
+<span class="h-card"><a href="http://example.com/" class="p-name">Some Name</a></span>
+
+<span class="h-card"><a href="http://example.com/" class="u-url">Some Name</a></span>
+
+<span class="h-card">Frances Berriman</span>
+<a class="h-card" href="http://benward.me">Ben Ward</a>
+<img class="h-card" alt="Sally Ride"
+	 src="http://upload.wikimedia.org/wikipedia/commons/a/a4/Ride-s.jpg"/>
+<a class="h-card" href="http://tantek.com">
+ <img alt="Tantek Çelik" src="http://ttk.me/logo.jpg"/>
+</a>
+
+<span class="h-card"> Name	
+and more </span><span class="h-card"><span class="p-name"> Name	
+and more </span></span>
+
+<abbr class="h-card" title="Barnaby Walters">BJW</abbr>
+
+<object class="h-card" data="http://example/photo1.jpg">John Doe</object>
+
+<span class="h-card"><a href="http://tantek.com/" class="external text" style="border: 0px none;"><img src="https://pbs.twimg.com/profile_images/423350922408767488/nlA_m2WH.jpeg" style="width:128px;float:right;margin-left:1em"><b><span style="font-size:2em">Tantek Çelik</span></b></a></span>
+
+<!-- php-mf2 gets this one wrong -->
+<div class="h-card"><img src="http://example/photo2.jpg" /> <img src="http://example/photo3.jpg" /> </div>
+
+<div class="h-card"><object data="http://example/photo3.jpg">John Doe</object> <p>Moar text</p></div>
+
+<div class="h-card"><object data="http://example/photo3.jpg">John Doe</object> <object data="http://example/photo4.jpg"></object> </div>
+
+<div class="h-entry"> <img src="http://example/photo2.jpg" class="h-card" /> </div>
+
+<div class="h-entry"> <img src="http://example/photo2.jpg" alt="John Doe" class="h-card" /> </div>
+
+<div class="h-entry"> <object data="http://example/photo3.jpg" class="h-card">John Doe</object> </div>
+
+<!-- php-mf2 gets this one wrong -->
+<div class="h-entry"> <div class="u-comment h-cite"> <img src="/image.jpg"> </div> </div>
+
+<div class="h-entry"> <div class="u-comment h-cite"> <object data="/image2.jpg">John Doe</object> </div> </div>
+
+<div class="h-card"> <a href="https://example.com"><img src="https://example.com/photo.jpg"></a> <span class="p-name"><a href="/User:Example.com">Max Mustermann</a></span> </div>
+
+<div class="h-card"> <a href="https://example.com"><object data="https://example.com/photo.jpg"></object></a> <span class="p-name"><a href="/User:Example.com">Max Mustermann</a></span> </div>
+
+<div class="hentry"> <div class="entry-content"> <p> blah blah blah </p> </div> </div>
+
+<div class="hentry"> <img src="https://example.com/photo.jpg" alt="photo" /> </div>
+
+<div class="hentry"> <a href="https://example.com/this-post" class="entry-title">Title</a> <div class="entry-content"> <p> blah blah blah </p> </div> </div>
+
+<div class="h-entry"> <h1 class="p-name"><a href="https://example.com/this-post">Title</a></h1> <div class="e-content"> <p> blah blah blah </p> </div> <a href="https://example.org/syndicate" class="u-syndication"></a> </div>
+
+<!-- php-mf2 gets this one wrong -->
+<p class="h-card">My Name <img src="http://xyz" /></p>
+
+<div class="h-card"> <span class="p-org">Organization Name</span> <img src="/logo.png" class="u-logo" alt=""> </div>
+
+<div class="h-entry"> <img src="/photo.jpg" alt=""> <div class="p-author h-card"> <span class="p-name">Alice</span> <span class="p-org">Organization Name</span> <img src="/logo.png" class="u-logo" alt=""> </div> </div>
