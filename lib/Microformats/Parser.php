@@ -191,7 +191,9 @@ class Parser {
         'h:ia'    => self::DATE_TYPE_MIN,
         # HHam HHpm
         'ha'      => self::DATE_TYPE_HOUR,
-        // 12-hour clock without hour's leading zero; these are not part of the spec, but definitely occur
+        // time without hour's leading zero; these are not part of the spec, but definitely occur
+        'G:i:s'   => self::DATE_TYPE_SEC,
+        'G:i'     => self::DATE_TYPE_MIN,
         'g:i:sa'  => self::DATE_TYPE_SEC,
         'g:ia'    => self::DATE_TYPE_MIN,
         'ga'      => self::DATE_TYPE_HOUR,
@@ -1006,7 +1008,7 @@ class Parser {
                 $skipChildren = true;
                 continue;
             } elseif ($node->hasAttribute("title") && in_array("value-title", $classes)) {
-                $candidate = trim($node->getAttribute("title"));
+                $candidate = $node->getAttribute("title");
             } elseif (in_array("value", $classes)) {
                 # Where an element with such a microformat property class name
                 #   has a descendant with class name value (a "value element")

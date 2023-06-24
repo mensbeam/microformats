@@ -125,7 +125,10 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
             case "third-party/phpmf2/classic/hentry-tag":
                 $this->fixDates($exp['items'][0]['properties']['published']);
                 break;
-
+            case "third-party/phpmf2/vcp":
+                $this->fixDates($exp['items'][5]['properties']['published']);
+                $exp['items'][7]['properties']['published'][0] = "2013-02-01 06:01";
+                break;
         }
         return $exp;
     }
