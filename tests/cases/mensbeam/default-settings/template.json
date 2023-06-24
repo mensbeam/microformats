@@ -69,6 +69,26 @@
                     ""
                 ]
             }
+        },
+        {
+            "type": [
+                "h-test"
+            ],
+            "properties": {
+                "name": [
+                    "TEST"
+                ]
+            }
+        },
+        {
+            "type": [
+                "h-test"
+            ],
+            "properties": {
+                "name": [
+                    "I am the King!"
+                ]
+            }
         }
     ],
     "rels": {},

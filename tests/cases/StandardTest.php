@@ -65,24 +65,26 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
 
     public function provideStandardTests(): \Generator {
         // the standard tests
-        yield from $this->provideTestList([\MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/"], ['simpleTrim' => true]);
+        yield from $this->provideTestList(\MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/", ['simpleTrim' => true]);
         // tests from php-mf2
-        yield from $this->provideTestList([\MensBeam\Microformats\BASE."tests/cases/third-party/"], []);
+        yield from $this->provideTestList(\MensBeam\Microformats\BASE."tests/cases/third-party/", []);
         // tests from our own corpus
-        yield from $this->provideTestList([\MensBeam\Microformats\BASE."tests/cases/mensbeam/default-settings/"], []);
-        yield from $this->provideTestList([\MensBeam\Microformats\BASE."tests/cases/mensbeam/lang-true/"], ['lang' => true]);
+        yield from $this->provideTestList(\MensBeam\Microformats\BASE."tests/cases/mensbeam/default-settings/", []);
+        yield from $this->provideTestList(\MensBeam\Microformats\BASE."tests/cases/mensbeam/lang-true/", ['lang' => true]);
+        yield from $this->provideTestList(\MensBeam\Microformats\BASE."tests/cases/mensbeam/simpletrim-true/", ['simpleTrim' => true]);
     }
 
-    protected function provideTestList(array $tests, ?array $options = null): \Generator {
-        foreach ($tests as $base) {
-            $base = strtr($base, "\\", "/");
-            foreach (new \RegexIterator(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($base )), '/\.json$/') as $file) {
-                $path = $file->getPathname();
-                $path =  preg_replace('/\.json$/', '', $path);
-                $name = strtr($path, "\\", "/");
-                $name = str_replace(strtr($base, "\\", "/"), "", $name);
-                yield $name => [$name, $path, $options];
-            }
+    protected function provideTestList(string $set, ?array $options = null): \Generator {
+        $base = strtr(\MensBeam\Microformats\BASE."tests/cases/", "\\", "/");
+        if (strpos(strtr($set, "\\", "/"), $base,) !== 0) {
+            $base = strtr($set, "\\", "/");
+        }
+        foreach (new \RegexIterator(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($set)), '/\.json$/') as $file) {
+            $path = $file->getPathname();
+            $path =  preg_replace('/\.json$/', '', $path);
+            $name = strtr($path, "\\", "/");
+            $name = str_replace($base, "", $name);
+            yield $name => [$name, $path, $options];
         }
     }
 
@@ -118,9 +120,9 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
                 $this->fixDates($exp['items'][0]['properties']['bday']);
                 $this->fixDates($exp['items'][0]['properties']['rev']);
                 break;
-            case "phpmf2/classic/fberriman":
-            case "phpmf2/classic/mixedroots2":
-            case "phpmf2/classic/hentry-tag":
+            case "third-party/phpmf2/classic/fberriman":
+            case "third-party/phpmf2/classic/mixedroots2":
+            case "third-party/phpmf2/classic/hentry-tag":
                 $this->fixDates($exp['items'][0]['properties']['published']);
                 break;
 

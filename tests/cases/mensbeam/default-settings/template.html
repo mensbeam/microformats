@@ -46,14 +46,33 @@
     </template>
 </div>
 
-<!-- No properties should be found here -->
+<!-- This is not a microformat -->
 <template class="h-test">
     <div class="p-name">TEMPLATE!</div>
 </template>
 
-<!-- This is not a microformat at all -->
+<!-- This is not a microformat, either -->
 <template>
     <div class="h-test">
         <div class="p-name">TEMPLATE!</div>
     </div>
 </template>
+
+<!-- The links here should not appear in the global rel microformat list -->
+<div class="h-test">
+    <span class="p-name">TEST</span>
+    <template>
+        <a rel="TEMPLATE!" href="a"></a>
+        <area rel="TEMPLATE!" href="a">
+        <link rel="TEMPLATE!" href="a">
+    </template>
+</div>
+
+<!-- Templates also should not appear in textContent -->
+<div class="h-test">
+    <span class="p-name">
+        I am
+        <template>NOT</template>
+        the King!
+    </span>
+</div>

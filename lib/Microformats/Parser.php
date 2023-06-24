@@ -281,7 +281,7 @@ class Parser {
             }
         }
         # parse all hyperlink (<a> <area> <link>) elements for rel microformats, adding to the JSON rels & rel-urls hashes accordingly
-        foreach ($this->xpath->query(".//a[@rel][@href]|.//area[@rel][@href]|.//link[@rel][@href]", $root) as $link) {
+        foreach ($this->xpath->query(".//a[@rel and @href and not(ancestor::template)]|.//area[@rel and @href and not(ancestor::template)]|.//link[@rel and @href and not(ancestor::template)]", $root) as $link) {
             # To parse a hyperlink element (e.g. a or link) for rel
             #   microformats: use the following algorithm or an algorithm that
             #   produces equivalent results:
@@ -599,10 +599,6 @@ class Parser {
         // if so configured, add language information
         if ($this->options['lang'] && ($lang = $this->getLang($root))) {
             $out['lang'] = $lang;
-        }
-        // stop here if the root is a template, as all children of templates must be ignored
-        if ($root->localName === "template") {
-            return $out;
         }
         // keep track of deferred properties ("use Y if X is not defined")
         $deferred = [];
