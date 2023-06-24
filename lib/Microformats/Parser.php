@@ -16,9 +16,13 @@ use MensBeam\HTML\Parser\Serializer;
  * is optional. Where an $options array is a possible parameter, the following
  * keys are understood:
  * 
- * - `impliedTz` (bool) Whether to allow an implied datetime value to supply an implied timezone to datetimes without a timezone
- * - `lang` (bool) Whether to include language information in microformat and rich-text structures
- * - `simpleTrim` (bool) Whether to use the traditional "simple" whitespace trimming algorithm rather than the default, more aggressive trimming algorithm
+ * - `impliedTz` (bool) Whether to allow an implied datetime value to supply an
+ * implied timezone to datetimes without a timezone
+ * - `lang` (bool) Whether to include language information in microformat and
+ * rich-text structures
+ * - `simpleTrim` (bool) Whether to use the traditional "simple" whitespace
+ * trimming algorithm rather than the default, more aggressive trimming
+ * algorithm
  */
 class Parser {
     /** @var array A ranking of prefixes (with 1 being least preferred) to break ties when multiple properties of the same name exist on one element */
@@ -346,11 +350,15 @@ class Parser {
         return $out;
     }
 
-    /** Searches an element tree for elements which appear to have microformat root classes.
+    /** Searches an element tree for elements which appear to have microformat
+     * root classes
      *
-     * This is an inexact search, which may include false positives, and for backcompat roots may exclude some descendent roots.
+     * This is an inexact search, which may include false positives, and for
+     * backcompat roots may exclude some descendent roots.
      * 
-     * The results of this search should only be used as an optimization to pare down the number of elements which must be examined for first-level roots.
+     * The results of this search should only be used as an optimization to
+     * pare down the number of elements which must be examined for first-level
+     * roots.
      * 
      * @param \DOMElement $node The element to start searching from, including itself
      */
@@ -380,9 +388,11 @@ class Parser {
         }
     }
 
-    /** Filters an array of class names for those which are syntactically microformat v2 roots
+    /** Filters an array of class names for those which are syntactically
+     * microformat v2 roots
      * 
-     * The list of possible roots is undefined. This merely validates that a class name fits the syntactic rules.
+     * The list of possible roots is undefined. This merely validates that a
+     * class name fits the syntactic rules.
      * 
      * @param array $classes The array of class names to filter
      */
@@ -398,11 +408,13 @@ class Parser {
         });
     }
 
-    /** Filters and array of class names for those which are microformat v1 roots
+    /** Filters and array of class names for those which are microformat v1
+     * roots
      * 
      * The list of backcompat roots is finite, and likely fixed by 2023.
      * 
-     * The returned array contains the equivalent v2 microformat root names rather than the original names.
+     * The returned array contains the equivalent v2 microformat root names
+     * rather than the original names.
      * 
      * @param array $classes The array of class names to filter
      * @param bool $backcompatParent Whether the classes are being checked in the context of a backcompat parent microformat structure
