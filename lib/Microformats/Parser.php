@@ -333,7 +333,7 @@ class Parser {
             # set the value of that "rels" key to an array of all unique items
             #   in the set of rel values unioned with the current array value
             #   of the "rels" key, sorted alphabetically.
-            // NOTE: sorting  and uniqueness filtering will be done later
+            // NOTE: sorting and uniqueness filtering will be done later
             array_push($out['rel-urls'][$url]['rels'], ...$rels);
         }
         // sort and clean rel microformats
@@ -496,7 +496,7 @@ class Parser {
      * Properties are valid only for certain Microformat dialects (hence the
      * $types parameter), and some properties are derived from link relations
      * rather than class names (hence the $node parameter). Additionally some
-     * properties can imply  other root classes. These are appended to the
+     * properties can imply other root classes. These are appended to the
      * &$classes reference when not already in the class list.
      * 
      * The returned information is an indexed array of indexed arrays each

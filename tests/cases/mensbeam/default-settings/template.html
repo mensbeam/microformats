@@ -1,65 +1,136 @@
 <!--
     This tests various cases where templates should be discounted from
-    processing. 
+    processing.
 -->
 
-<!-- None of these implied properties should match -->
-<div class="h-test">
+<!--
+    None of these implied properties should match because they are template
+    content
+-->
+<div class="h-1-test">
     <template>
         <img alt="TEMPLATE!">
     </template>
 </div>
 
-<div class="h-test">
+<div class="h-2-test">
     <template>
         <area alt="TEMPLATE!">
     </template>
 </div>
 
-<div class="h-test">
+<div class="h-3-test">
     <template>
         <abbr title="TEMPLATE!"></abbr>
     </template>
 </div>
 
-<div class="h-test">
+<div class="h-4-test">
     <template>
         <img src="TEMPLATE!">
     </template>
 </div>
 
-<div class="h-test">
+<div class="h-5-test">
     <template>
         <object data="TEMPLATE!"></object>
     </template>
 </div>
 
-<div class="h-test">
+<div class="h-6-test">
     <template>
         <a href="TEMPLATE!"></a>
     </template>
 </div>
 
-<div class="h-test">
+<div class="h-7-test">
     <template>
         <area href="TEMPLATE!">
     </template>
 </div>
 
+<!--
+    None of these implied properties should match because elements which must
+    be only-children are not.
+-->
+<div class="h-8-test">
+    <template></template>
+    <img alt="TEMPLATE!"> PASS
+</div>
+
+<div class="h-9-test">
+    <template></template>
+    <area alt="TEMPLATE!">
+</div>
+
+<div class="h-10-test">
+    <template></template>
+    <abbr title="TEMPLATE!"></abbr>
+</div>
+
+<div class="h-11-test">
+    <template></template>
+    <div>
+        <img alt="TEMPLATE!"> PASS
+    </div>
+</div>
+
+<div class="h-12-test">
+    <template></template>
+    <div>
+        <area alt="TEMPLATE!">
+    </div>
+</div>
+
+<div class="h-13-test">
+    <template></template>
+    <div>
+        <abbr title="TEMPLATE!"></abbr>
+    </div>
+</div>
+
+<div class="h-14-test">
+    <template></template>
+    <div>
+        <img src="TEMPLATE!"> PASS
+    </div>
+</div>
+
+<div class="h-15-test">
+    <template></template>
+    <div>
+        <object data="TEMPLATE!"></object>
+    </div>
+</div>
+
+<div class="h-16-test">
+    <template></template>
+    <div>
+        <a href="TEMPLATE!"></a>
+    </div>
+</div>
+
+<div class="h-17-test">
+    <template></template>
+    <div>
+        <area href="TEMPLATE!">
+    </div>
+</div>
+
 <!-- This is not a microformat -->
-<template class="h-test">
+<template class="h-18-test">
     <div class="p-name">TEMPLATE!</div>
 </template>
 
 <!-- This is not a microformat, either -->
 <template>
-    <div class="h-test">
+    <div class="h-19-test">
         <div class="p-name">TEMPLATE!</div>
     </div>
 </template>
 
 <!-- The links here should not appear in the global rel microformat list -->
-<div class="h-test">
+<div class="h-20-test">
     <span class="p-name">TEST</span>
     <template>
         <a rel="TEMPLATE!" href="a"></a>
@@ -69,10 +140,17 @@
 </div>
 
 <!-- Templates also should not appear in textContent -->
-<div class="h-test">
+<div class="h-21-test">
     <span class="p-name">
         I am
         <template>NOT</template>
         the King!
     </span>
+</div>
+
+<!-- Not even otherwise valid value-title data is accepted -->
+<div class="h-22-test">
+    <div class="p-name">
+        <template class="value-title" title="TEMPLATE!"></template>
+    </div>
 </div>
