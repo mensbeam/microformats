@@ -7,7 +7,6 @@ declare(strict_types=1);
 namespace MensBeam\Microformats\TestCase;
 
 use MensBeam\Microformats;
-use MensBeam\HTML\DOMParser;
 
 /**
  * @covers MensBeam\Microformats
