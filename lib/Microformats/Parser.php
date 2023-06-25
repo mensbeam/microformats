@@ -1261,8 +1261,8 @@ class Parser {
         // TODO: Implement better URL parser
         try {
             return (string) Url::fromString($url, $baseUrl ?? $this->baseUrl);
-        } catch (\Exception $e) {
-            return $url;
+        } catch (\Exception $e) { // @codeCoverageIgnore
+            return $url; // @codeCoverageIgnore
         }
     }
 
@@ -1409,13 +1409,9 @@ class Parser {
         foreach ($copy->getElementsByTagName("img") as $e) {
             $alt = $e->getAttribute("alt");
             $src = " ".($e->hasAttribute("src") ? $this->normalizeUrl($e->getAttribute("src")) : "")." ";
-            if ($prefix === "u") {
-                // alt sttribute does not apply to u-properties
-                $attr = strlen($src) ? $src : "";
-            } elseif ($prefix === "e") {
+            if ($prefix === "e") {
                 $attr = strlen($alt) ? $alt : $src;
             } else {
-                // src attribute does not apply to p-properties
                 $attr = strlen($alt) ? $alt : "";
             }
             $e->parentNode->replaceChild($e->ownerDocument->createTextNode($attr), $e);
