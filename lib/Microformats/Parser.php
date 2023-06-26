@@ -606,7 +606,7 @@ class Parser {
         $deferred = [];
         // keep track of the implied date
         $impliedDate = null;
-        // keep track of whether there is a p- or e- property or child on the microformat; this is required for implied property processing
+        // keep track of whether there is a p-, u-, or e- property or child on the microformat; this is required for implied property processing
         $hasP = false;
         $hasE = false;
         $hasU = false;
