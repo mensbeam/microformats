@@ -50,7 +50,7 @@ The `$options` argument is a list of options for the Microformats parser. See be
 ### Parsing from an HTML element
 
 ```php
-\MensBeam\Microformats::fromHTMLElement(\DOMElement $input, string $url, array $options = []): array
+\MensBeam\Microformats::fromHtmlElement(\DOMElement $input, string $url, array $options = []): array
 ```
 
 The `$input` argument is the element to parse for micrformats. Typically this would be the `documentElement`, but any element may be parsed.
@@ -62,7 +62,7 @@ The `$options` argument is a list of options for the Microformats parser. See be
 ### Serializing to JSON
 
 ```php
-\MensBeam\Microformats::toJSON(array $data, int $flags = 0, int $depth = 512): string
+\MensBeam\Microformats::toJson(array $data, int $flags = 0, int $depth = 512): string
 ```
 
 Since Microformats data is represented as a structure of nested arrays, some of which are associative ("objects" in JSON parlance) and may be empty, it is necessary to convert such empty array into PHP `stdClass` objects before they are serialized to JSON. This method performs these conversions before passing the result to [the `json_encode` function](https://www.php.net/manual/en/function.json-encode). Its parameters are the same as that of `json_encode`.
