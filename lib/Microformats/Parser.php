@@ -253,7 +253,7 @@ class Parser {
      * @param string $baseURL The base URL against which to resolve relative URLs in the output
      * @param array $options An associative array of options. Please see the class documentation for more details
      */
-    public function parseHTMLElement(\DOMElement $node, string $baseUrl = "", ?array $options = null): array {
+    public function parseHtmlElement(\DOMElement $node, string $baseUrl = "", ?array $options = null): array {
         $root = $node;
         // normalize options
         $this->options = $this->normalizeOptions($options ?? []);

@@ -92,7 +92,7 @@ class Microformats {
      */
     public static function fromString(string $input, string $contentType, string $url, array $options = []): array {
         $parsed = HTMLParser::parse($input, $contentType);
-        return static::fromHTMLElement($parsed->document->documentElement, $url, $options);
+        return static::fromHtmlElement($parsed->document->documentElement, $url, $options);
     }
 
     /** Parses an HTML element for microformats
@@ -101,8 +101,8 @@ class Microformats {
      * @param string $url The effective URL (after redirections) of the document if known
      * @param array $options Options for the parser; please see the class documentetation for details
      */
-    public static function fromHTMLElement(\DOMElement $input, string $url, array $options = []): array {
-        return (new MfParser)->parseHTMLElement($input, $url, $options);
+    public static function fromHtmlElement(\DOMElement $input, string $url, array $options = []): array {
+        return (new MfParser)->parseHtmlElement($input, $url, $options);
     }
 
     /** Serializes a Microformats structure to JSON.
