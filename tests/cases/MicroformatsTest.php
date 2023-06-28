@@ -21,4 +21,25 @@ class MicroformatsTest extends \PHPUnit\Framework\TestCase {
     public function testParseMissingFile(): void {
         $this->assertNull(@Microformats::fromFile("THIS FILE DOES NOT EXIST", "", ""));
     }
+
+    public function testParseRedirectedUrl(): void {
+        $exp = [
+            'items'    => [
+                [
+                    'type' => ["h-test"],
+                    'properties' => [
+                        'name' => ["Ça et là"],
+                        'url'  => ["http://localhost:8000/root.html"],
+                    ],
+                ],
+            ],
+            'rels'     => [],
+            'rel-urls' => [],
+        ];
+        $this->assertSame($exp, Microformats::fromUrl("http://localhost:8000/redir"));
+    }
+
+    public function testParseInvalidUrl(): void {
+        $this->assertNull(@Microformats::fromUrl("http://localhost:8000/404"));
+    }
 }

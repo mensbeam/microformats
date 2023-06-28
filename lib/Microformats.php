@@ -9,6 +9,7 @@ namespace MensBeam;
 
 use MensBeam\HTML\Parser as HTMLParser;
 use MensBeam\Microformats\Parser as MfParser;
+use MensBeam\Microformats\Url;
 
 /** A generic parser for microformats
  *
@@ -28,14 +29,46 @@ use MensBeam\Microformats\Parser as MfParser;
  * data may be supported in future.
  */
 class Microformats {
+    /** Parses a resource at a URL for microformats
+     * 
+     * If retrieving the resource fails `null` is returned.
+     * 
+     * @param string $file The resource to retrieve and parse
+     * @param array $options Options for the parser; please see the class documentetation for details
+     */
+    public static function fromUrl(string $url, array $options = []): ?array {
+        $stream = fopen($url, "r");
+        if ($stream) {
+            $location = null;
+            $type = null;
+            $data = stream_get_contents($stream);
+            if ($data !== false) {
+                $meta = stream_get_meta_data($stream);
+                if ($meta && $meta['wrapper_type'] === "http") {
+                    foreach ($meta['wrapper_data'] ?? [] as $h) {
+                        if (preg_match('/^HTTP\//i', $h)) {
+                            $type = null;
+                        } elseif (preg_match('/^Location\s*:\s*(.*)/is', $h, $match)) {
+                            $location = (string) URL::fromString($match[1], $location ?? $url);
+                        } elseif (preg_match('/^Content-Type\s*:\s*(.*)/is', $h, $match)) {
+                            $type = $match[1];
+                        }
+                    }
+                }
+                return static::fromString($data, $type ?? "", $location ?? $url, $options);
+            }
+        }
+        return null;
+    }
+
     /** Parses a file for microformats
      * 
      * If reading the file fails `null` is returned.
      * 
      * While fopen wrappers can be used to open remote resources over HTTP, no
      * effort is made to support this specially by reading the `Content-Type`
-     * header or deducing the URL. Using a proper HTTP client such as Guzzle
-     * is highly recommended instead.
+     * header or deducing the final URL. The `Microformats::fromUrl` method
+     * should be used for this purpose instead.
      * 
      * @param string $file The file to read and parse
      * @param string $contentType The HTTP Content-Type of the file if known, optionally with parameters
