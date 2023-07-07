@@ -147,6 +147,8 @@ class Parser {
     protected const URL_ATTRS_GLOBAL = ["itemid", "itemprop", "itemtype"];
     /** @var array The list of (non-global) attributes which contain URLs and their host elements */
     protected const URL_ATTRS = [
+        // TODO: Fill this out with SVG and MathML attributes as well
+        // See https://github.com/microformats/mf2py/issues/181#issuecomment-1625461973
         'a'          => ["href", "ping"],
         'area'       => ["href", "ping"],
         'audio'      => ["src"],
