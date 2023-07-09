@@ -442,16 +442,6 @@ class Parser {
         return $out;
     }
 
-    /** Asserts whether the node is a microformat root node
-     * 
-     * @param \DOMElement $node The element to examine
-     * @param bool $backcompatParent Whether the element is being checked in the context of a backcompat parent microformat structure
-     */
-    protected function hasRoots(\DOMElement $node, bool $backcompatParent = false): bool {
-        $classes = $this->parseTokens($node, "class");
-        return (bool) ($this->matchRootsMf2($classes) ?: $this->matchRootsBackcompat($classes, $backcompatParent));
-    }
-
     /** Reads an array of classes and returns information on those which are
      * Microformats v2 properties
      * 
@@ -709,6 +699,8 @@ class Parser {
             }
         }
         # imply properties for the found microformat
+        // NOTE: The ":not[.h-*]" condition referenced frequently in specification text is meaningless
+        // See https://github.com/microformats/microformats2-parsing/issues/62
         if (!$backcompat) {
             # if no explicit "name" property, and no other p-* or e-* properties, and no nested microformats,
             if (!isset($out['properties']['name']) && !$hasChild && !$hasP && !$hasE) {
@@ -719,36 +711,30 @@ class Parser {
                 } elseif ($root->hasAttribute("title") && $root->localName === "abbr") {
                     # else if abbr.h-x[title] then use its title attribute for name
                     $name = $root->getAttribute("title");
-                } elseif (($set = $this->xpath->query("./img[@alt and @alt != '' and count(../*) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                } elseif (($set = $this->xpath->query("./img[@alt and @alt != '' and count(../*) = 1]", $root))->length) {
                     # else if .h-x>img:only-child[alt]:not([alt=""]):not[.h-*] then use that img’s alt for name
                     $name = $set->item(0)->getAttribute("alt");
-                } elseif (($set = $this->xpath->query("./area[@alt and @alt != '' and count(../*) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                } elseif (($set = $this->xpath->query("./area[@alt and @alt != '' and count(../*) = 1]", $root))->length) {
                     # else if .h-x>area:only-child[alt]:not([alt=""]):not[.h-*] then use that area’s alt for name
                     $name = $set->item(0)->getAttribute("alt");
-                } elseif (($set = $this->xpath->query("./abbr[@title and @title != '' and count(../*) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                } elseif (($set = $this->xpath->query("./abbr[@title and @title != '' and count(../*) = 1]", $root))->length) {
                     # else if .h-x>abbr:only-child[title]:not([title=""]):not[.h-*] then use that abbr title for name
                     $name = $set->item(0)->getAttribute("title");
                 } elseif (
                     ($set = $this->xpath->query("./*[not(self::template) and count(../*) = 1]", $root))->length
-                    && !$this->hasRoots($set->item(0))
                     && ($set = $this->xpath->query("./img[@alt and @alt != '' and count(../*) = 1]", $set->item(0)))->length
-                    && !$this->hasRoots($set->item(0))
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>img:only-child[alt]:not([alt=""]):not[.h-*] then use that img’s alt for name
                     $name = $set->item(0)->getAttribute("alt");
                 } elseif (
                     ($set = $this->xpath->query("./*[not(self::template) and count(../*) = 1]", $root))->length
-                    && !$this->hasRoots($set->item(0))
                     && ($set = $this->xpath->query("./area[@alt and @alt != '' and count(../*) = 1]", $set->item(0)))->length
-                    && !$this->hasRoots($set->item(0))
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>area:only-child[alt]:not([alt=""]):not[.h-*] then use that area’s alt for name
                     $name = $set->item(0)->getAttribute("alt");
                 } elseif (
                     ($set = $this->xpath->query("./*[not(self::template) and count(../*) = 1]", $root))->length
-                    && !$this->hasRoots($set->item(0))
                     && ($set = $this->xpath->query("./abbr[@title and @title != '' and count(../*) = 1]", $set->item(0)))->length
-                    && !$this->hasRoots($set->item(0))
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>abbr:only-child[title]:not([title=""]):not[.h-*] use that abbr’s title for name
                     $name = $set->item(0)->getAttribute("title");
@@ -769,25 +755,21 @@ class Parser {
                 } elseif ($root->localName === "object" && $root->hasAttribute("data")) {
                     # else if object.h-x[data] then use data for photo
                     $photo = $root->getAttribute("data");
-                } elseif (($set = $this->xpath->query("./img[@src and count(../img) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                } elseif (($set = $this->xpath->query("./img[@src and count(../img) = 1]", $root))->length) {
                     # else if .h-x>img[src]:only-of-type:not[.h-*] then use the result of "parse an img element for src and alt" (see Sec.1.5) for photo
                     $out['properties']['photo'] = [$this->parseImg($set->item(0))];
-                } elseif (($set = $this->xpath->query("./object[@data and count(../object) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                } elseif (($set = $this->xpath->query("./object[@data and count(../object) = 1]", $root))->length) {
                     # else if .h-x>object[data]:only-of-type:not[.h-*] then use that object’s data for photo
                     $photo = $set->item(0)->getAttribute("data");
                 } elseif (
                     ($set = $this->xpath->query("./*[not(self::template) and count(../*) = 1]", $root))->length
-                    && !$this->hasRoots($set->item(0))
                     && ($set = $this->xpath->query("./img[@src and count(../img) = 1]", $set->item(0)))->length
-                    && !$this->hasRoots($set->item(0))
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>img[src]:only-of-type:not[.h-*], then use the result of "parse an img element for src and alt" (see Sec.1.5) for photo
                     $out['properties']['photo'] = [$this->parseImg($set->item(0))];
                 } elseif (
                     ($set = $this->xpath->query("./*[not(self::template) and count(../*) = 1]", $root))->length
-                    && !$this->hasRoots($set->item(0))
                     && ($set = $this->xpath->query("./object[@data and count(../object) = 1]", $set->item(0)))->length
-                    && !$this->hasRoots($set->item(0))
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>object[data]:only-of-type:not[.h-*], then use that object’s data for photo
                     $photo = $set->item(0)->getAttribute("data");
@@ -808,25 +790,21 @@ class Parser {
                 if ($root->hasAttribute("href") && in_array($root->localName, ["a", "area"])) {
                     # if a.h-x[href] or area.h-x[href] then use that [href] for url
                     $url = $root->getAttribute("href");
-                } elseif (($set = $this->xpath->query("./a[@href and count(../a) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                } elseif (($set = $this->xpath->query("./a[@href and count(../a) = 1]", $root))->length) {
                     # else if .h-x>a[href]:only-of-type:not[.h-*], then use that [href] for url
                     $url = $set->item(0)->getAttribute("href");
-                } elseif (($set = $this->xpath->query("./area[@href and count(../area) = 1]", $root))->length && !$this->hasRoots($set->item(0))) {
+                } elseif (($set = $this->xpath->query("./area[@href and count(../area) = 1]", $root))->length) {
                     # else if .h-x>area[href]:only-of-type:not[.h-*], then use that [href] for url
                     $url = $set->item(0)->getAttribute("href");
                 } elseif (
                     ($set = $this->xpath->query("./*[not(self::template) and count(../*) = 1]", $root))->length
-                    && !$this->hasRoots($set->item(0))
                     && ($set = $this->xpath->query("./a[@href and count(../a) = 1]", $set->item(0)))->length
-                    && !$this->hasRoots($set->item(0))
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>a[href]:only-of-type:not[.h-*], then use that [href] for url
                     $url = $set->item(0)->getAttribute("href");
                 } elseif (
                     ($set = $this->xpath->query("./*[not(self::template) and count(../*) = 1]", $root))->length
-                    && !$this->hasRoots($set->item(0))
                     && ($set = $this->xpath->query("./area[@href and count(../area) = 1]", $set->item(0)))->length
-                    && !$this->hasRoots($set->item(0))
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>area[href]:only-of-type:not[.h-*], then use that [href] for url
                     $url = $set->item(0)->getAttribute("href");
