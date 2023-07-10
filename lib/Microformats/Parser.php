@@ -746,7 +746,8 @@ class Parser {
                 $out['properties']['name'] = [trim($name)];
             }
             # if no explicit "photo" property, and no other explicit u-* (Proposed: change to: u-* or e-*) properties, and no nested microformats,
-            if (!isset($out['properties']['photo']) && !$hasChild && !$hasU && !$hasE) {
+            // NOTE: No implementations follow the e- proposal as of 2023-07-10
+            if (!isset($out['properties']['photo']) && !$hasChild && !$hasU) {
                 $photo = null;
                 # then imply by:
                 if ($root->localName === "img" && $root->hasAttribute("src")) {
@@ -784,7 +785,8 @@ class Parser {
                 }
             }
             # if no explicit "url" property, and no other explicit u-* (Proposed: change to: u-* or e-*) properties, and no nested microformats,
-            if (!isset($out['properties']['url']) && !$hasChild && !$hasU && !$hasE) {
+            // NOTE: No implementations follow the e- proposal as of 2023-07-10
+            if (!isset($out['properties']['url']) && !$hasChild && !$hasU) {
                 $url = null;
                 # then imply by:
                 if ($root->hasAttribute("href") && in_array($root->localName, ["a", "area"])) {
