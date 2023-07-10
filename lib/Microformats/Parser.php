@@ -322,7 +322,7 @@ class Parser {
             #       "text": the text content of the element if any
             foreach (["hreflang", "media", "title", "type"] as $attr) {
                 if (!isset($out['rel-urls'][$url][$attr]) && $link->hasAttribute($attr)) {
-                    $out['rel-urls'][$url][$attr] = trim($link->getAttribute($attr));
+                    $out['rel-urls'][$url][$attr] = $link->getAttribute($attr);
                 }
             }
             if (!isset($out['rel-urls'][$url]['text']) && strlen($text = $this->getCleanText($link, "p"))) {
@@ -386,7 +386,7 @@ class Parser {
     protected function parseTokens(\DOMElement $node, string $attr): array {
         $attr = trim($node->getAttribute($attr), " \r\n\t\f");
         if ($attr !== "") {
-            return array_unique(preg_split("/[ \r\n\t\f]+/sS", $attr));
+            return preg_split("/[ \r\n\t\f]+/sS", $attr);
         } else {
             return [];
         }
@@ -401,7 +401,7 @@ class Parser {
      * @param array $classes The array of class names to filter
      */
     protected function matchRootsMf2(array $classes): array {
-        return array_filter($classes, function($c) {
+        return array_filter(array_unique($classes), function($c) {
             # The "*" for root (and property) class names consists of an
             #   optional vendor prefix (series of 1+ number or lowercase
             #   a-z characters i.e. [0-9a-z]+, followed by '-'), then one
@@ -470,6 +470,8 @@ class Parser {
             if (preg_match('/^(p|u|dt|e)((?:-[a-z0-9]+)?(?:-[a-z]+)+)$/S', $c, $match)) {
                 $prefix = $match[1];
                 $name = substr($match[2], 1);
+                /* Other implementations don't perform de-duplication
+                   See https://github.com/microformats/microformats2-parsing/issues/61
                 if (!isset($out[$name])) {
                     // property with this name has not been seen yet; add it
                     $out[$name] = [$prefix, $name];
@@ -477,6 +479,8 @@ class Parser {
                     // property prefix is of a higher rank than one already seen; use the new prefix
                     $out[$name][0] = $prefix;
                 }
+                */
+                $out[] = [$prefix, $name];
             }
         }
         return array_values($out);
@@ -1085,7 +1089,7 @@ class Parser {
                 # value: the element's src attribute as a normalized absolute URL
                 'value' => $this->normalizeUrl($node->getAttribute("src")),
                 # alt: the element's alt attribute
-                'alt'   => trim($node->getAttribute("alt")),
+                'alt'   => $node->getAttribute("alt"),
             ];
         } else {
             # else return the element's src attribute as a normalized absolute URL
