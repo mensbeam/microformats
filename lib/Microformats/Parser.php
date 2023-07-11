@@ -847,7 +847,7 @@ class Parser {
         switch ($prefix) {
             case "p":
                 # To parse an element for a p-x property value (whether explicit p-* or backcompat equivalent):
-                if (!$isChild && $text = $this->getValueClassPattern($node, $prefix, $backcompatTypes)) {
+                if (!$isChild && ($text = $this->getValueClassPattern($node, $prefix, $backcompatTypes)) !== null) {
                     # Parse the element for the Value Class Pattern. If a value is found, return it.
                     return $text;
                 } elseif (in_array($node->localName, ["abbr", "link"]) && $node->hasAttribute("title")) {
@@ -890,7 +890,7 @@ class Parser {
                 } elseif ($node->localName === "object" && $node->hasAttribute("data")) {
                     # else if object.u-x[data], then get the data attribute
                     $url = $node->getAttribute("data");
-                } elseif (!$isChild && $url = $this->getValueClassPattern($node, $prefix, $backcompatTypes)) {
+                } elseif (!$isChild && ($url = $this->getValueClassPattern($node, $prefix, $backcompatTypes)) !== null) {
                     # else parse the element for the Value Class Pattern. If a value is found, get it
                     // Nothing to do in this branch
                 } elseif ($node->localName === "abbr" && $node->hasAttribute("title")) {
@@ -912,7 +912,7 @@ class Parser {
             case "dt":
                 // NOTE: Because we perform implied date resolution we don't blindly return data from nodes; returning is done below after checks
                 # To parse an element for a dt-x property value (whether explicit dt-* or backcompat equivalent):
-                if (!$isChild && $date = $this->getValueClassPattern($node, $prefix, $backcompatTypes, $impliedDate)) {
+                if (!$isChild && ($date = $this->getValueClassPattern($node, $prefix, $backcompatTypes, $impliedDate)) !== null) {
                     # parse the element for the Value Class Pattern, including the date and time parsing rules. If a value is found, then return it.
                     return $date;
                 } elseif (in_array($node->localName, ["time", "ins", "del"]) && $node->hasAttribute("datetime")) {

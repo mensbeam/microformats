@@ -4,7 +4,7 @@ A generic [Microformats](https://microformats.io/) parser for PHP. While it simi
 
 ## Usage
 
-Functionality is provided for parsing from an HTTP URL, from a file, from a string, and from an HTML element (a `\DOMElement` object), as well as for serializing to JSON. A static method of the `MensBeam\Microformats` is provided for each task.
+Functionality is provided for parsing from an HTTP URL, from a file, from a string, and from an HTML element (a `\DOMElement` object), as well as for serializing to JSON. A static method of the `MensBeam\Microformats` class is provided for each task.
 
 The parsing methods all return a Microformats structure as an array. The [Microformats wiki](https://microformats.org/wiki/microformats2) includes some sample structures in JSON format.
 
