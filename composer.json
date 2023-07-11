@@ -2,7 +2,7 @@
     "name": "mensbeam/microformats",
     "type": "library",
     "description": "A microformats parser",
-    "keywords": ["microformats", "mf2", "indieweb", "aprser", "htnml"],
+    "keywords": ["microformats", "mf2", "indieweb", "parser", "html"],
     "license": "MIT",
     "authors": [
         {
