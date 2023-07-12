@@ -985,15 +985,15 @@ class Parser {
             $skipChildren = false;
             $classes = $this->parseTokens($node, "class");
             $candidate = null;
-            if (!array_intersect(["value", "value-title"], $classes) && (
+            if (
                 ($backcompatTypes && ($this->matchPropertiesBackcompat($classes, $backcompatTypes, $node) || $this->matchRootsBackcompat($classes)))
                 || ($this->matchRootsMf2($classes) || $this->matchPropertiesMf2($classes))
-            )) {
-                // only consider elements which are not themselves properties or roots, unless they have a value
+            ) {
+                // only consider elements which are not inside properties or roots
                 // NOTE: The specification doesn't mention roots, but these should surely be skipped as well
                 $skipChildren = true;
-                continue;
-            } elseif ($node->hasAttribute("title") && in_array("value-title", $classes)) {
+            }
+            if ($node->hasAttribute("title") && in_array("value-title", $classes)) {
                 $candidate = $node->getAttribute("title");
             } elseif (in_array("value", $classes)) {
                 # Where an element with such a microformat property class name
