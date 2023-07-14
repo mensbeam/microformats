@@ -39,6 +39,7 @@ class Microformats {
     public static function fromUrl(string $url, array $options = []): ?array {
         $stream = fopen($url, "r");
         if ($stream) {
+            $locationAcceptable = true;
             $location = null;
             $type = null;
             $data = stream_get_contents($stream);
@@ -48,8 +49,10 @@ class Microformats {
                     foreach ($meta['wrapper_data'] ?? [] as $h) {
                         if (preg_match('/^HTTP\//i', $h)) {
                             $type = null;
-                        } elseif (preg_match('/^Location\s*:\s*(.*)/is', $h, $match) && $location) {
+                            $locationAcceptable = true;
+                        } elseif (preg_match('/^Location\s*:\s*(.*)/is', $h, $match) && $locationAcceptable) {
                             $location = (string) URL::fromString($match[1], $location ?? $url);
+                            $locationAcceptable = false;
                         } elseif (preg_match('/^Content-Type\s*:\s*(.*)/is', $h, $match) && $type === null) {
                             $type = $match[1];
                         }
