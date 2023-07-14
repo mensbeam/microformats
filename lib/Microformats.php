@@ -48,9 +48,9 @@ class Microformats {
                     foreach ($meta['wrapper_data'] ?? [] as $h) {
                         if (preg_match('/^HTTP\//i', $h)) {
                             $type = null;
-                        } elseif (preg_match('/^Location\s*:\s*(.*)/is', $h, $match)) {
+                        } elseif (preg_match('/^Location\s*:\s*(.*)/is', $h, $match) && $location) {
                             $location = (string) URL::fromString($match[1], $location ?? $url);
-                        } elseif (preg_match('/^Content-Type\s*:\s*(.*)/is', $h, $match)) {
+                        } elseif (preg_match('/^Content-Type\s*:\s*(.*)/is', $h, $match) && $type === null) {
                             $type = $match[1];
                         }
                     }
