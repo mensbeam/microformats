@@ -213,26 +213,26 @@ class Parser {
         '\z' => self::DATE_TYPE_ZULU,
     ];
     protected const DATE_OUTPUT_FORMATS = [
-        self::DATE_TYPE_DATE | self::DATE_TYPE_SEC | self::DATE_TYPE_ZONE  => 'Y-m-d H:i:sO',
+        self::DATE_TYPE_DATE | self::DATE_TYPE_SEC | self::DATE_TYPE_ZONE  => 'Y-m-d H:i:sP',
         self::DATE_TYPE_DATE | self::DATE_TYPE_SEC | self::DATE_TYPE_ZULU  => 'Y-m-d H:i:s\Z',
-        self::DATE_TYPE_DATE | self::DATE_TYPE_MIN | self::DATE_TYPE_ZONE  => 'Y-m-d H:iO',
+        self::DATE_TYPE_DATE | self::DATE_TYPE_MIN | self::DATE_TYPE_ZONE  => 'Y-m-d H:iP',
         self::DATE_TYPE_DATE | self::DATE_TYPE_MIN | self::DATE_TYPE_ZULU  => 'Y-m-d H:i\Z',
-        self::DATE_TYPE_DATE | self::DATE_TYPE_HOUR | self::DATE_TYPE_ZONE => 'Y-m-d H:00O',
+        self::DATE_TYPE_DATE | self::DATE_TYPE_HOUR | self::DATE_TYPE_ZONE => 'Y-m-d H:00P',
         self::DATE_TYPE_DATE | self::DATE_TYPE_HOUR | self::DATE_TYPE_ZULU => 'Y-m-d H:00\Z',
         self::DATE_TYPE_DATE | self::DATE_TYPE_SEC                         => 'Y-m-d H:i:s',
         self::DATE_TYPE_DATE | self::DATE_TYPE_MIN                         => 'Y-m-d H:i',
         self::DATE_TYPE_DATE | self::DATE_TYPE_HOUR                        => 'Y-m-d H:00',
         self::DATE_TYPE_DATE                                               => 'Y-m-d',
-        self::DATE_TYPE_SEC | self::DATE_TYPE_ZONE                         => 'H:i:sO',
+        self::DATE_TYPE_SEC | self::DATE_TYPE_ZONE                         => 'H:i:sP',
         self::DATE_TYPE_SEC | self::DATE_TYPE_ZULU                         => 'H:i:s\Z',
-        self::DATE_TYPE_MIN | self::DATE_TYPE_ZONE                         => 'H:iO',
+        self::DATE_TYPE_MIN | self::DATE_TYPE_ZONE                         => 'H:iP',
         self::DATE_TYPE_MIN | self::DATE_TYPE_ZULU                         => 'H:i\Z',
-        self::DATE_TYPE_HOUR | self::DATE_TYPE_ZONE                        => 'H:00O',
+        self::DATE_TYPE_HOUR | self::DATE_TYPE_ZONE                        => 'H:00P',
         self::DATE_TYPE_HOUR | self::DATE_TYPE_ZULU                        => 'H:00\Z',
         self::DATE_TYPE_SEC                                                => 'H:i:s',
         self::DATE_TYPE_MIN                                                => 'H:i',
         self::DATE_TYPE_HOUR                                               => 'H:00',
-        self::DATE_TYPE_ZONE                                               => 'O',
+        self::DATE_TYPE_ZONE                                               => 'P',
         self::DATE_TYPE_ZULU                                               => '\Z',
     ];
 
@@ -1114,8 +1114,8 @@ class Parser {
      * @param string $input The string to test for validity
      */
     protected function parseDatePart(string $input): array {
-        // do a first-pass normalization on the input; this normalizes am/pm and normalizes and trims whitespace
-        $input = trim(preg_replace(['/([ap])\.m\.$/', '/\s+/'], ["$1m", " "], strtr($input, "APM", "apm")));
+        // do a first-pass normalization on the input; this normalizes am/pm and normalizes, removes -00:00 time zone offsets, and trims whitespace
+        $input = preg_replace(['/([ap])\.m\./', '/\s+/s', '/(?:^-00|(:\d\d)? ?-00)(?::?00)$/'], ["$1m", " ", "$1"], strtr(trim($input), "APM", "apm"));
         // match against all valid date/time format patterns and returns the matched parts
         // we try with space and with T between date and time, as well as with and without space before time zone
         foreach (self::DATE_INPUT_FORMATS as $df => $dp) {
