@@ -384,7 +384,7 @@ class Parser {
      * @param string $attr The ttribute to split
      */
     protected function parseTokens(\DOMElement $node, string $attr): array {
-        $attr = trim($node->getAttribute($attr), " \r\n\t\f");
+        $attr = $this->trim($node->getAttribute($attr));
         if ($attr !== "") {
             return preg_split("/[ \r\n\t\f]+/sS", $attr);
         } else {
@@ -747,7 +747,7 @@ class Parser {
                     $name = $this->getCleanText($root, "p");
                 }
                 # remove all leading/trailing spaces
-                $out['properties']['name'] = [trim($name)];
+                $out['properties']['name'] = [$this->trim($name)];
             }
             # if no explicit "photo" property, and no other explicit u-* (Proposed: change to: u-* or e-*) properties, and no nested microformats,
             // NOTE: No implementations follow the e- proposal as of 2023-07-10
@@ -951,7 +951,7 @@ class Parser {
                 }
                 // return the result
                 $out = [
-                    'html'  => trim(Serializer::serializeInner($copy)),
+                    'html'  => $this->trim(Serializer::serializeInner($copy)),
                     'value' => $this->getCleanText($node, $prefix),
                 ];
                 // if so configured, add language information
@@ -1115,7 +1115,7 @@ class Parser {
      */
     protected function parseDatePart(string $input): array {
         // do a first-pass normalization on the input; this normalizes am/pm and normalizes, removes -00:00 time zone offsets, and trims whitespace
-        $input = preg_replace(['/([ap])\.m\./', '/\s+/s', '/(?:^-00|(:\d\d)? ?-00)(?::?00)$/'], ["$1m", " ", "$1"], strtr(trim($input), "APM", "apm"));
+        $input = preg_replace(['/([ap])\.m\./', '/[ \r\n\t\f]+/s', '/(?:^-00|(:\d\d)? ?-00)(?::?00)$/'], ["$1m", " ", "$1"], strtr($this->trim($input), "APM", "apm"));
         // match against all valid date/time format patterns and returns the matched parts
         // we try with space and with T between date and time, as well as with and without space before time zone
         foreach (self::DATE_INPUT_FORMATS as $df => $dp) {
@@ -1272,11 +1272,11 @@ class Parser {
             # Let output be the result of running [Element to string] on input
             $output = $this->getCleanTextThorough($node, $prefix);
             # Remove any sequence of one or more consecutive U+0020 SPACE code points directly before and after an U+000A LF code point from output
-            $output = preg_replace('/^\s+|\s+$/m', "", $output);
+            $output = preg_replace('/^[ \r\t\f]+|[ \r\t\f]+$/m', "", $output);
             # Strip leading and trailing ASCII whitespace from output
-            $output = trim($output);
+            $output = $this->trim($output);
             # Replace any sequence of one or more consecutive U+0020 SPACE code points in output with a single U+0020 SPACE code point
-            $output = preg_replace('/\s{2,}/m', " ", $output);
+            $output = preg_replace('/[ \r\n\t\f]{2,}/m', " ", $output);
             # Return output
             return $output;
         }
@@ -1323,12 +1323,12 @@ class Parser {
                             # If child has an alt attribute, then:
                             # Let value be the contents of the alt attribute
                             # Strip leading and trailing ASCII whitespace from value
-                            $value = trim($n->getAttribute("alt"));
+                            $value = $this->trim($n->getAttribute("alt"));
                         } elseif ($n->hasAttribute("src")) {
                             # Else if child has a src attribute, then:
                             # Let value be the contents of the src attribute
                             # Strip leading and trailing ASCII whitespace from value
-                            $value = trim($n->getAttribute("src"));
+                            $value = $this->trim($n->getAttribute("src"));
                             # Set value to the absolute URL created by resolving value following the containing document’s language’s rules
                             $value = $this->normalizeUrl($value);
                         } else {
@@ -1403,7 +1403,7 @@ class Parser {
             $e->parentNode->replaceChild($e->ownerDocument->createTextNode($attr), $e);
         }
         # removing all leading/trailing spaces
-        return trim($copy->textContent);
+        return $this->trim($copy->textContent);
     }
 
     /** Retrieves and resolves the base URL of an HTML document's `<base>`
@@ -1430,7 +1430,7 @@ class Parser {
         while ($node && !($node instanceof \DOMElement && $node->hasAttribute("lang"))) {
             $node = $node->parentNode;
         }
-        if ($node && strlen($lang = trim($node->getAttribute("lang")))) {
+        if ($node && strlen($lang = $this->trim($node->getAttribute("lang")))) {
             return $lang;
         }
         return null;
@@ -1481,5 +1481,9 @@ class Parser {
             'lang'       => (bool) ($options['lang'] ?? false),
             'simpleTrim' => (bool) ($options['simpleTrim'] ?? false),
         ];
+    }
+
+    protected function trim(string $str): string {
+        return trim($str, " \r\n\t\f");
     }
 }
