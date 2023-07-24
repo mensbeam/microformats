@@ -71,8 +71,9 @@ Since Microformats data is represented as a structure of nested arrays, some of 
 
 The parsing methods all optionally take an `$options` array as an argument. These options are all flags, either for experimental features, or for backwards-compatible features no longer used by default. The options are as followings:
 
-| Key          | Type    | Default | Description
-|--------------|---------|---------|------------
-| `impliedTz`  | Boolean | `false` | Time values in microformats may have an implied date associated with them taken from a prior date value in the same microformat structure. This option allows for a time zone to be implied as well, if a time does not include its time zone.
-| `lang`       | Boolean | `false` | This option determines whether language information is retrieved from the parsed document and included in the output, in `lang` keys. Both Microformat structures and embedded markup (`e-` property) structures are affected by this options.
-| `simpleTrim` | Boolean | `false` | This option uses the "classic", simpler whitespace-trimming algorithm rather than the more aggressive one proposed for future standardization, and used by default for this algorithm. This affects both `p-` and `e-` properties.
+| Key                 | Type    | Default | Description
+|---------------------|---------|---------|------------
+| `dateNormalization` | Boolean | `true`  | This optiona enables date and time normalization throughout microformat parsing rather than only where required by the specification
+| `impliedTz`         | Boolean | `false` | Time values in microformats may have an implied date associated with them taken from a prior date value in the same microformat structure. This option allows for a time zone to be implied as well, if a time does not include its time zone.
+| `lang`              | Boolean | `true`  | This option determines whether language information is retrieved from the parsed document and included in the output, in `lang` keys. Both Microformat structures and embedded markup (`e-` property) structures are affected by this options.
+| `thoroughTrim`      | Boolean | `true`  | This option uses the more thorough whitespace-trimming algorithm proposed for future standardization rather than the "classic", simpler whitespace-trimming algorithm mandated by the parsing specification. This affects both `p-` and `e-` properties.

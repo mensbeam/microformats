@@ -17,14 +17,19 @@ use MensBeam\Microformats\Url;
  * so-called "classic" or "backcompat" Microformats. Some of its functionality
  * is optional. Where an $options array is a possible parameter, the following
  * keys are understood:
- * 
+ *
+ * - `dateNormalization` (bool) Whether to perform date and time normalization
+ * throughout parsing rather than only in value-class parsing where it is
+ * required by the specification. True by default
  * - `impliedTz` (bool) Whether to allow an implied datetime value to supply an
  * implied timezone to datetimes without a timezone
  * - `lang` (bool) Whether to include language information in microformat and
- * rich-text structures
- * - `simpleTrim` (bool) Whether to use the traditional "simple" whitespace
- * trimming algorithm rather than the default, more aggressive trimming algorithm
- * 
+ * rich-text structures. True by default
+ * - `thoroughTrim` (bool) Whether to use the more thorough whitespace-trimming
+ * algorithm proposed for future standardization rather than the "classic",
+ * simpler whitespace-trimming algorithm mandated by the parsing specification.
+ * True by default.
+ *
  * Currently all input is assumed to be HTML, but processing of generic XML
  * data may be supported in future.
  */

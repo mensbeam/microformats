@@ -16,13 +16,17 @@ use MensBeam\HTML\Parser\Serializer;
  * is optional. Where an $options array is a possible parameter, the following
  * keys are understood:
  * 
+ * - `dateNormalization` (bool) Whether to perform date and time normalization
+ * throughout parsing rather than only in value-class parsing where it is
+ * required by the specification. True by default
  * - `impliedTz` (bool) Whether to allow an implied datetime value to supply an
  * implied timezone to datetimes without a timezone
  * - `lang` (bool) Whether to include language information in microformat and
- * rich-text structures
- * - `simpleTrim` (bool) Whether to use the traditional "simple" whitespace
- * trimming algorithm rather than the default, more aggressive trimming
- * algorithm
+ * rich-text structures. True by default
+ * - `thoroughTrim` (bool) Whether to use the more thorough whitespace-trimming
+ * algorithm proposed for future standardization rather than the "classic",
+ * simpler whitespace-trimming algorithm mandated by the parsing specification.
+ * True by default.
  */
 class Parser {
     /** @var array A ranking of prefixes (with 1 being least preferred) to break ties when multiple properties of the same name exist on one element */
@@ -910,7 +914,6 @@ class Parser {
                 #   element, if any).
                 return $this->normalizeUrl($url);
             case "dt":
-                // NOTE: Because we perform implied date resolution we don't blindly return data from nodes; returning is done below after checks
                 # To parse an element for a dt-x property value (whether explicit dt-* or backcompat equivalent):
                 if (!$isChild && ($date = $this->getValueClassPattern($node, $prefix, $backcompatTypes, $impliedDate)) !== null) {
                     # parse the element for the Value Class Pattern, including the date and time parsing rules. If a value is found, then return it.
@@ -928,7 +931,11 @@ class Parser {
                     # else return the textContent of the element after removing all leading/trailing spaces and nested <script> & <style> elements.
                     $date = $this->getCleanText($node, $prefix);
                 }
-                return $this->stitchDate($this->parseDatePart($date), $impliedDate) ?? $date;
+                if ($this->options['dateNormalization']) {
+                    return $this->stitchDate($this->parseDatePart($date), $impliedDate) ?? $date;
+                } else {
+                    return $date;
+                }
             case "e":
                 # To parse an element for a e-x property value (whether explicit "e-*" or backcompat equivalent):
                 # return a dictionary with two keys:
@@ -1263,7 +1270,7 @@ class Parser {
      * @param string $prefix The prefix of the microformat property the text is to be used for. This is only relevant for the "simple" algorithm
      */
     protected function getCleanText(\DOMElement $node, string $prefix): string {
-        if ($this->options['simpleTrim']) {
+        if (!$this->options['thoroughTrim']) {
             return $this->getCleanTextSimple($node, $prefix);
         } else {
             // https://microformats.org/wiki/textcontent-parsing
@@ -1469,6 +1476,10 @@ class Parser {
         return $next;
     }
 
+    protected function trim(string $str): string {
+        return trim($str, " \r\n\t\f");
+    }
+
     /** Normalizes an array of options
      * 
      * Default values are filled in and unknown options removed
@@ -1477,13 +1488,10 @@ class Parser {
      */
     protected function normalizeOptions(array $options): array {
         return [
-            'impliedTz'  => (bool) ($options['impliedTz'] ?? false),
-            'lang'       => (bool) ($options['lang'] ?? false),
-            'simpleTrim' => (bool) ($options['simpleTrim'] ?? false),
+            'dateNormalization' => (bool) ($options['dateNormalization'] ?? true),
+            'impliedTz'         => (bool) ($options['impliedTz'] ?? false),
+            'lang'              => (bool) ($options['lang'] ?? true),
+            'thoroughTrim'      => (bool) ($options['thoroughTrim'] ?? true),
         ];
-    }
-
-    protected function trim(string $str): string {
-        return trim($str, " \r\n\t\f");
     }
 }
