@@ -26,7 +26,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
     ];
 
     /** @dataProvider provideStandardTests */
-    public function testStandardTests(string $name, string $path, $options): void {
+    public function testStandardTests(string $name, string $path, array $options): void {
         if (isset(self::SUPPRESSED[$name])) {
             $this->markTestIncomplete(self::SUPPRESSED[$name]);
         }
@@ -82,7 +82,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         yield from $this->provideTestList(\MensBeam\Microformats\BASE."tests/cases/microformats-v2-unit/");
     }
 
-    protected function provideTestList(string $set, ?array $options = null): \Generator {
+    protected function provideTestList(string $set, array $options = []): \Generator {
         if (!is_dir($set)) {
             return;
         }
