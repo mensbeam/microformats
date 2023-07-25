@@ -96,18 +96,23 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
             $name = strtr($path, "\\", "/");
             $name = str_replace($base, "", $name);
             // perform some special handling for the standard unit test suite
-            if (!$options && preg_match('/^microformats-v2-unit\/(?!text\/)/', $name)) {
-                // run the test with both text trimming algorithms so that we ensure the tests pass with both
-                $opt = [
-                    'thoroughTrim' => true,
-                    'dateNormalization' => true,
-                ];
-                yield "$name options:default" => [$name, $path, $opt];
-                $opt = [
-                    'thoroughTrim' => false,
-                    'dateNormalization' => false,
-                ];
-                yield "$name options:standard" => [$name, $path, $opt];
+            if (!$options && preg_match('/^microformats-v2-unit\//', $name)) {
+                if (preg_match('/^microformats-v2-unit\/(?!text\/)/', $name)) {
+                    // if we're doing standard textContent tests, do a single test with the correct option
+                    yield $name => [$name, $path, ['thoroughTrim' => false]];
+                } else {
+                    // otherwise run the test with both text trimming algorithms so that we ensure the tests pass with both
+                    $opt = [
+                        'thoroughTrim' => true,
+                        'dateNormalization' => true,
+                    ];
+                    yield "$name options:default" => [$name, $path, $opt];
+                    $opt = [
+                        'thoroughTrim' => false,
+                        'dateNormalization' => false,
+                    ];
+                    yield "$name options:standard" => [$name, $path, $opt];
+                }
             } else {
                 yield $name => [$name, $path, $options];
             }
