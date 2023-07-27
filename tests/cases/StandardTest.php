@@ -36,14 +36,16 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         // read expectation data
         $exp = json_decode(file_get_contents($path.".json"), true);
         if ($exp) {
+            $pattern = '#(\bhttps?://[^/ "\']+)($|[ "\'])#';
+            $replace = "$1/$2";
             // fix up expectation where necessary
-            array_walk_recursive($exp, function(&$v) {
+            array_walk_recursive($exp, function(&$v) use ($pattern, $replace) {
                 // URLs differ trivially from output of our normalization library
-                $v = preg_replace('#^https?://[^/]+$#', "$0/", $v);
+                $v = preg_replace($pattern, $replace, $v);
             });
             // URLs also need fixing as keys in rel-urls
             foreach ($exp['rel-urls'] as $k => $v) {
-                $fixed = preg_replace('#^https?://[^/]+$#', "$0/", $k);
+                $fixed = preg_replace($pattern, $replace, $k);
                 $exp['rel-urls'][$fixed] = $v;
                 if ($fixed !== $k) {
                     unset($exp['rel-urls'][$k]);

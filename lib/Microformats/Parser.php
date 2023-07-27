@@ -1398,16 +1398,19 @@ class Parser {
         # replacing any nested <img> elements with their alt attribute, if
         #   present; otherwise their src attribute, if present, adding a
         #   space at the beginning and end, resolving the URL if it’s
-        #   relative;
-        foreach ($copy->getElementsByTagName("img") as $e) {
-            $alt = $e->getAttribute("alt");
-            $src = " ".($e->hasAttribute("src") ? $this->normalizeUrl($e->getAttribute("src")) : "")." ";
-            if ($prefix === "e") {
-                $attr = strlen($alt) ? $alt : $src;
-            } else {
-                $attr = strlen($alt) ? $alt : "";
+        #   relative; [p- and e- only]
+        if (in_array($prefix, ["p", "e"])) {
+            foreach ($copy->getElementsByTagName("img") as $e) {
+                $attr = null;
+                if ($e->hasAttribute("alt")) {
+                    $attr = $alt = $e->getAttribute("alt");
+                } elseif ($e->hasAttribute("src")) {
+                    $attr = " ".($e->hasAttribute("src") ? $this->normalizeUrl($e->getAttribute("src")) : "")." ";
+                }
+                if ($attr !== null) {
+                    $e->parentNode->replaceChild($e->ownerDocument->createTextNode($attr), $e);
+                }
             }
-            $e->parentNode->replaceChild($e->ownerDocument->createTextNode($attr), $e);
         }
         # removing all leading/trailing spaces
         return $this->trim($copy->textContent);
