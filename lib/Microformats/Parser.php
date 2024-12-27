@@ -1250,7 +1250,7 @@ class Parser {
      * @param string $url The URL to resolve and normalize
      * @param string|null $baseUrl The base URL to resolve against. If this argument is absent the document base will be used
      */
-    protected function normalizeUrl(string $url, string $baseUrl = null): string {
+    protected function normalizeUrl(string $url, ?string $baseUrl = null): string {
         // TODO: Implement better URL parser
         try {
             return (string) Url::fromString($url, $baseUrl ?? $this->baseUrl);

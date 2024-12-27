@@ -101,7 +101,7 @@ PCRE;
         return ($uri instanceof self) ? $uri : new self((string) $uri);
     }
 
-    public static function fromString(string $url, string $baseUrl = null): ?self {
+    public static function fromString(string $url, ?string $baseUrl = null): ?self {
         try {
             return new static($url, $baseUrl);
         } catch (\InvalidArgumentException $e) {
@@ -109,7 +109,7 @@ PCRE;
         }
     }
 
-    public function __construct(string $url, string $baseUrl = null) {
+    public function __construct(string $url, ?string $baseUrl = null) {
         $url = str_replace(["\t", "\n", "\r"], "", trim($url, self::WHITESPACE_CHARS));
         $base = null;
         $pattern = self::URI_PATTERN;
