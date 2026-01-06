@@ -397,7 +397,7 @@ PCRE;
             $this->port = null;
         } elseif ($this->scheme === "file") {
             throw new \InvalidArgumentException("Port in file: scheme must always be null");
-        } elseif (preg_match(self::PORT_PATTERN, (string) $value) && (int) $value <= 0xFFFF) {
+        } elseif (preg_match(self::PORT_PATTERN, (string) $value) && (float) $value <= 0xFFFF) {
             $value = (int) $value;
             if ($this->specialScheme && $value === self::SPECIAL_SCHEMES[$this->scheme]) {
                 $this->port = null;

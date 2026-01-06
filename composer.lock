@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "mensbeam/html-parser",
-            "version": "1.4.1",
+            "version": "1.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mensbeam/HTML-Parser.git",
-                "reference": "024011fed0a606855819517b581c9fc709cd2763"
+                "reference": "6fd16295df1b70671e1f8a695cff7340d53957d8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mensbeam/HTML-Parser/zipball/024011fed0a606855819517b581c9fc709cd2763",
-                "reference": "024011fed0a606855819517b581c9fc709cd2763",
+                "url": "https://api.github.com/repos/mensbeam/HTML-Parser/zipball/6fd16295df1b70671e1f8a695cff7340d53957d8",
+                "reference": "6fd16295df1b70671e1f8a695cff7340d53957d8",
                 "shasum": ""
             },
             "require": {
@@ -72,9 +72,9 @@
                 "parsing"
             ],
             "support": {
-                "source": "https://github.com/mensbeam/HTML-Parser/tree/1.4.1"
+                "source": "https://github.com/mensbeam/HTML-Parser/tree/1.4.2"
             },
-            "time": "2024-12-27T12:34:07+00:00"
+            "time": "2024-12-29T14:48:58+00:00"
         },
         {
             "name": "mensbeam/intl",
@@ -132,16 +132,16 @@
         },
         {
             "name": "mensbeam/mimesniff",
-            "version": "0.2.1",
+            "version": "0.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mensbeam/mime.git",
-                "reference": "c19be2496ab1e27fbf9c3483c2a9faa2781796cd"
+                "reference": "13f4eddf1ed7db6438ab4f945021a0c90b2d8052"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mensbeam/mime/zipball/c19be2496ab1e27fbf9c3483c2a9faa2781796cd",
-                "reference": "c19be2496ab1e27fbf9c3483c2a9faa2781796cd",
+                "url": "https://api.github.com/repos/mensbeam/mime/zipball/13f4eddf1ed7db6438ab4f945021a0c90b2d8052",
+                "reference": "13f4eddf1ed7db6438ab4f945021a0c90b2d8052",
                 "shasum": ""
             },
             "require": {
@@ -177,9 +177,9 @@
             ],
             "support": {
                 "issues": "https://github.com/mensbeam/mime/issues",
-                "source": "https://github.com/mensbeam/mime/tree/0.2.1"
+                "source": "https://github.com/mensbeam/mime/tree/0.3.0"
             },
-            "time": "2021-03-07T03:58:00+00:00"
+            "time": "2025-03-07T15:14:03+00:00"
         },
         {
             "name": "psr/http-message",
@@ -236,16 +236,16 @@
         },
         {
             "name": "symfony/polyfill-intl-idn",
-            "version": "v1.31.0",
+            "version": "v1.33.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-intl-idn.git",
-                "reference": "c36586dcf89a12315939e00ec9b4474adcb1d773"
+                "reference": "9614ac4d8061dc257ecc64cba1b140873dce8ad3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-intl-idn/zipball/c36586dcf89a12315939e00ec9b4474adcb1d773",
-                "reference": "c36586dcf89a12315939e00ec9b4474adcb1d773",
+                "url": "https://api.github.com/repos/symfony/polyfill-intl-idn/zipball/9614ac4d8061dc257ecc64cba1b140873dce8ad3",
+                "reference": "9614ac4d8061dc257ecc64cba1b140873dce8ad3",
                 "shasum": ""
             },
             "require": {
@@ -299,7 +299,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-intl-idn/tree/v1.31.0"
+                "source": "https://github.com/symfony/polyfill-intl-idn/tree/v1.33.0"
             },
             "funding": [
                 {
@@ -311,15 +311,19 @@
                     "type": "github"
                 },
                 {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
                     "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-09-09T11:45:10+00:00"
+            "time": "2024-09-10T14:38:51+00:00"
         },
         {
             "name": "symfony/polyfill-intl-normalizer",
-            "version": "v1.31.0",
+            "version": "v1.33.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-intl-normalizer.git",
@@ -380,7 +384,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-intl-normalizer/tree/v1.31.0"
+                "source": "https://github.com/symfony/polyfill-intl-normalizer/tree/v1.33.0"
             },
             "funding": [
                 {
@@ -389,6 +393,10 @@
                 },
                 {
                     "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
                     "type": "github"
                 },
                 {
@@ -402,16 +410,16 @@
     "packages-dev": [
         {
             "name": "bamarni/composer-bin-plugin",
-            "version": "1.8.2",
+            "version": "1.8.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bamarni/composer-bin-plugin.git",
-                "reference": "92fd7b1e6e9cdae19b0d57369d8ad31a37b6a880"
+                "reference": "e7ef9e012667327516c24e5fad9903a3bc91389d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bamarni/composer-bin-plugin/zipball/92fd7b1e6e9cdae19b0d57369d8ad31a37b6a880",
-                "reference": "92fd7b1e6e9cdae19b0d57369d8ad31a37b6a880",
+                "url": "https://api.github.com/repos/bamarni/composer-bin-plugin/zipball/e7ef9e012667327516c24e5fad9903a3bc91389d",
+                "reference": "e7ef9e012667327516c24e5fad9903a3bc91389d",
                 "shasum": ""
             },
             "require": {
@@ -424,7 +432,7 @@
                 "phpstan/extension-installer": "^1.1",
                 "phpstan/phpstan": "^1.8",
                 "phpstan/phpstan-phpunit": "^1.1",
-                "phpunit/phpunit": "^8.5 || ^9.5",
+                "phpunit/phpunit": "^8.5 || ^9.6 || ^10.0",
                 "symfony/console": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0",
                 "symfony/finder": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0",
                 "symfony/process": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0"
@@ -453,9 +461,9 @@
             ],
             "support": {
                 "issues": "https://github.com/bamarni/composer-bin-plugin/issues",
-                "source": "https://github.com/bamarni/composer-bin-plugin/tree/1.8.2"
+                "source": "https://github.com/bamarni/composer-bin-plugin/tree/1.8.3"
             },
-            "time": "2022-10-31T08:38:03+00:00"
+            "time": "2025-11-24T19:20:55+00:00"
         }
     ],
     "aliases": [],
@@ -472,5 +480,5 @@
     "platform-overrides": {
         "php": "7.3.33"
     },
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
