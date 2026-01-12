@@ -82,12 +82,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/microformats/tests.git",
-                "reference": "58b0d136b24dd63e5be4dd3febf066e4eda6af07"
+                "reference": "d49f5d76d0395676274c9ff15f1a14091498d7d4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/microformats/tests/zipball/58b0d136b24dd63e5be4dd3febf066e4eda6af07",
-                "reference": "58b0d136b24dd63e5be4dd3febf066e4eda6af07",
+                "url": "https://api.github.com/repos/microformats/tests/zipball/d49f5d76d0395676274c9ff15f1a14091498d7d4",
+                "reference": "d49f5d76d0395676274c9ff15f1a14091498d7d4",
                 "shasum": ""
             },
             "default-branch": true,
@@ -108,7 +108,7 @@
                 "issues": "https://github.com/microformats/tests/issues",
                 "source": "https://github.com/microformats/tests/tree/master"
             },
-            "time": "2024-03-11T19:53:25+00:00"
+            "time": "2025-12-09T20:13:56+00:00"
         },
         {
             "name": "myclabs/deep-copy",

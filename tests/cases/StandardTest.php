@@ -73,7 +73,10 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
 
     public function provideStandardTests(): \Generator {
         // the standard tests
-        yield from $this->provideTestList(\MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/", ['thoroughTrim' => false, 'dateNormalization' => false]);
+        yield from $this->provideTestList(\MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/microformats-v2/", ['thoroughTrim' => false, 'dateNormalization' => false]);
+        yield from $this->provideTestList(\MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/microformats-v1/", ['thoroughTrim' => false, 'dateNormalization' => false]);
+        yield from $this->provideTestList(\MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/microformats-mixed/", ['thoroughTrim' => false, 'dateNormalization' => false]);
+        yield from $this->provideTestList(\MensBeam\Microformats\BASE."vendor-bin/phpunit/vendor/mf2/tests/tests/microformats-v2-unit/", []);
         // tests from php-mf2
         yield from $this->provideTestList(\MensBeam\Microformats\BASE."tests/cases/third-party/", ['dateNormalization' => false, 'lang' => false]);
         // tests from our own corpus
@@ -89,8 +92,8 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
             return;
         }
         $base = strtr(\MensBeam\Microformats\BASE."tests/cases/", "\\", "/");
-        if (strpos(strtr($set, "\\", "/"), $base,) !== 0) {
-            $base = strtr($set, "\\", "/");
+        if (strpos(strtr($set, "\\", "/"), $base) !== 0) {
+            $base = dirname(strtr($set, "\\", "/"))."/";
         }
         foreach (new \RegexIterator(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($set)), '/\.json$/') as $file) {
             $path = $file->getPathname();
