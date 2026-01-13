@@ -53,9 +53,11 @@ class Microformats {
                 if ($meta && $meta['wrapper_type'] === "http") {
                     foreach ($meta['wrapper_data'] ?? [] as $h) {
                         if (preg_match('/^HTTP\//i', $h)) {
+                            // a new set of header fields begins here; any previously seen Content-Type is invalid
                             $type = null;
                             $locationAcceptable = true;
                         } elseif (preg_match('/^Location\s*:\s*(.*)/is', $h, $match) && $locationAcceptable) {
+                            // this is the first-seen Location header-field after a redirect; subsequent locations are ignored
                             $location = (string) URL::fromString($match[1], $location ?? $url);
                             $locationAcceptable = false;
                         } elseif (preg_match('/^Content-Type\s*:\s*(.*)/is', $h, $match) && $type === null) {
@@ -75,7 +77,8 @@ class Microformats {
      * 
      * While fopen wrappers can be used to open remote resources over HTTP, no
      * effort is made to support this specially by reading the `Content-Type`
-     * header or deducing the final URL. The `Microformats::fromUrl` method
+     * header or deducing the final URL for the purpose of relative URL
+     * resolution within microformats. The `Microformats::fromUrl` method
      * should be used for this purpose instead.
      * 
      * @param string $file The file to read and parse

@@ -416,7 +416,7 @@ class Parser {
         });
     }
 
-    /** Filters and array of class names for those which are microformat v1
+    /** Filters an array of class names for those which are microformat v1
      * roots
      * 
      * The list of backcompat roots is finite, and likely fixed by 2023.
@@ -457,10 +457,6 @@ class Parser {
      * 
      * - The prefix (`p`, `dt`, `u`, or `e`)
      * - The property name with prefix and dash removed (e.g. `author`)
-     * 
-     * The returned array will contain the same property name only once. If
-     * for example the class list contains both `p-url` and `u-url`, the
-     * output will contain only one of the two, based on prefix ranking.
      * 
      * @param array $classes The array of class names to examine
      */
@@ -981,7 +977,7 @@ class Parser {
      * 
      * @param \DOMElement $node The subject element
      * @param string $prefix The property prefix (`p`, `dt`, `u`, or `e`)
-     * @param array $backcompatTypes The set of microformat types currently in scope, if performing backcompat processing (and empty array otherwise)
+     * @param array $backcompatTypes The set of microformat types currently in scope, if performing backcompat processing (an empty array otherwise)
      * @param string|null $impliedDate A previously-seen date value from which we can imply a date if only a time is present on the element
      * @return string|array|null
      */
