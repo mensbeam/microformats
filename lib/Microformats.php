@@ -58,7 +58,7 @@ class Microformats {
                             $locationAcceptable = true;
                         } elseif (preg_match('/^Location\s*:\s*(.*)/is', $h, $match) && $locationAcceptable) {
                             // this is the first-seen Location header-field after a redirect; subsequent locations are ignored
-                            $location = (string) URL::fromString($match[1], $location ?? $url);
+                            $location = (string) Url::fromString($match[1], $location ?? $url);
                             $locationAcceptable = false;
                         } elseif (preg_match('/^Content-Type\s*:\s*(.*)/is', $h, $match) && $type === null) {
                             $type = $match[1];

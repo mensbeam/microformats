@@ -863,7 +863,7 @@ class Parser {
                     // we have encountered a tag relation during backcompat processing
                     // https://microformats.org/wiki/rel-tag#Abstract
                     // we are required to retrieve the last component of the URL path and use that
-                    preg_match('#([^/]*)/?$#', URL::fromString($this->normalizeUrl($node->getAttribute("href")))->getPath(), $match);
+                    preg_match('#([^/]*)/?$#', Url::fromString($this->normalizeUrl($node->getAttribute("href")))->getPath(), $match);
                     return urldecode($match[1]);
                 }
                 # else return the textContent of the element after [cleaning]
