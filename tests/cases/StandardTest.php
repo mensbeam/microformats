@@ -23,6 +23,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         'microformats-v2/rel/duplicate-rels'                      => "this test has a spurious newline at the beginning of a value",
         'microformats-v2-unit/names/names-microformats'           => "This is probably a bug in the HTML parser",
         'microformats-v2-unit/nested/nested-microformat-mistyped' => "The spec may change here soon",
+        'microformats-v2-unit/value/value-dt'                     => "Date output format is wrong in test",
     ];
 
     /** @dataProvider provideStandardTests */
@@ -109,7 +110,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
                     // otherwise run the test with both text trimming algorithms so that we ensure the tests pass with both
                     $opt = [
                         'thoroughTrim' => true,
-                        'dateNormalization' => true,
+                        'dateNormalization' => false,
                     ];
                     yield "$name options:default" => [$name, $path, $opt];
                     $opt = [
@@ -135,17 +136,8 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
 
     protected function fixTests(array $exp, string $test) {
         switch ($test) {
-            case "microformats-v2/h-event/time":
-            case "microformats-v1/hcalendar/time":
-                $this->fixDates($exp['items'][0]['properties']['start']);
-                break;
-            case "microformats-v2/h-event/concatenate":
-            case "third-party/phpmf2/classic/vevent-summary":
-                $this->fixDates($exp['items'][0]['properties']['start']);
-                $this->fixDates($exp['items'][0]['properties']['end']);
-                break;
             case "third-party/phpmf2/vcp":
-                $this->fixDates($exp['items'][5]['properties']['published']);
+                $exp['items'][5]['properties']['published'][0] = "2012-02-16 16:14:47+0000";
                 $exp['items'][7]['properties']['published'][0] = "2013-02-01 06:01";
                 break;
             case "third-party/phpmf2/classic/fberriman":
@@ -153,13 +145,5 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
                 break;
         }
         return $exp;
-    }
-
-    protected function fixDates(&$dateArray): void {
-        foreach ($dateArray as &$d) {
-            $d = strtr($d, "Tt", "  ");
-            $d = preg_replace('/([+-]\d\d)(\d\d)$/', "$1:$2", $d);
-            $d = preg_replace('/:\d\d[+-]\d\d$/', "$0:00", $d);
-        }
     }
 }

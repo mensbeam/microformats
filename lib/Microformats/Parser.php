@@ -928,7 +928,7 @@ class Parser {
                     $date = $this->getCleanText($node, $prefix);
                 }
                 if ($this->options['dateNormalization']) {
-                    return $this->stitchDate($this->parseDatePart($date), $impliedDate) ?? $date;
+                    return $this->stitchDate($this->parseDatePart($date), $impliedDate, false) ?? $date;
                 } else {
                     return $date;
                 }
@@ -1063,9 +1063,14 @@ class Parser {
                 #   additional characters or white-space.
                 return implode("", $out);
             } else {
-                # if the microformats property expects a datetime value, see the Date Time Parsing section.
-                // The rules for datetimes are dispersed elsewhere. All that's required here is to stitch parts together
-                return $this->stitchDate($out, $impliedDate);
+                # if the microformats property expects a datetime value, see
+                #   the Date Time Parsing section.
+                // The rules for datetimes are dispersed elsewhere. All that's
+                //   required here is to stitch parts together
+                // NOTE: We use RFC 3339 time zone format when generalized
+                //   normalization is requested instead of the VCP format
+                //   without colon
+                return $this->stitchDate($out, $impliedDate, !$this->options['dateNormalization']);
             }
         } else {
             return null;
@@ -1219,8 +1224,12 @@ class Parser {
      * 
      * @param array $parts The date parts, `date`, `time`, and `zone`
      * @param string|null $implied An optional implied date to use if the date is absent from the input
+     * @param bool $vcp Whether the date is stitched as part of the Value Class Pattern algorithm. VCP requires a non-RFC 3339 time zone specifier in its normalized form
      */
-    protected function stitchDate(array $parts, ?string $implied): ?string {
+    protected function stitchDate(array $parts, ?string $implied, bool $vcp): ?string {
+        if ($vcp && isset($parts['zone'])) {
+            $parts['zone'] = str_replace(":", "", $parts['zone']);
+        }
         if (sizeof($parts) === 3) {
             return $parts['date']." ".$parts['time'].$parts['zone'];
         } elseif (sizeof($parts) === 1 && isset($parts['date'])) {
@@ -1231,6 +1240,8 @@ class Parser {
             // only imply time zone if so configured
             if (!$this->options['impliedTz']) {
                 $implied['zone'] = null;
+            } elseif ($vcp && isset($implied['zone'])) {
+                $implied['zone'] = str_replace(":", "", $implied['zone']);
             }
             if (isset($parts['date']) && isset($parts['time'])) {
                 return $parts['date']." ".$parts['time'].($implied['zone'] ?? "");
