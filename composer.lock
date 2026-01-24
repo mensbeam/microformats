@@ -78,16 +78,16 @@
         },
         {
             "name": "mensbeam/intl",
-            "version": "0.9.3",
+            "version": "0.9.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mensbeam/Intl.git",
-                "reference": "986c709fce69580bd9680194bed21f5bf663fafd"
+                "reference": "4cddddc30fe147b9249b1ffe751ebffd68ff3745"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mensbeam/Intl/zipball/986c709fce69580bd9680194bed21f5bf663fafd",
-                "reference": "986c709fce69580bd9680194bed21f5bf663fafd",
+                "url": "https://api.github.com/repos/mensbeam/Intl/zipball/4cddddc30fe147b9249b1ffe751ebffd68ff3745",
+                "reference": "4cddddc30fe147b9249b1ffe751ebffd68ff3745",
                 "shasum": ""
             },
             "require": {
@@ -98,6 +98,12 @@
                 "ext-intl": "*"
             },
             "type": "library",
+            "extra": {
+                "bamarni-bin": {
+                    "bin-links": false,
+                    "forward-command": true
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "MensBeam\\Intl\\": "lib/"
@@ -126,9 +132,9 @@
                 "utf8"
             ],
             "support": {
-                "source": "https://github.com/mensbeam/Intl/tree/0.9.3"
+                "source": "https://github.com/mensbeam/Intl/tree/0.9.4"
             },
-            "time": "2024-12-27T12:23:00+00:00"
+            "time": "2026-01-19T19:58:03+00:00"
         },
         {
             "name": "mensbeam/mimesniff",

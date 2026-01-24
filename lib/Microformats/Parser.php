@@ -94,7 +94,7 @@ class Parser {
         'ingredient'        => ['h-recipe' => ["p", "ingredient"]],
         'instructions'      => ['h-recipe' => ["e", "instructions"]],
         'item'              => ['h-review' => ["p", "item"], 'h-review-aggregate' => ["p", "item"]],
-        'key'               => ['h-card' => ["u", "key"]],
+        'key'               => ['h-card' => ["p", "key"]], // h-card docs say u-, but test suite assumes p-; see https://microformats.org/wiki/h-card#Backward_Compatibility
         'label'             => ['h-card' => ["p", "label"]],
         'latitude'          => ['h-card' => ["p", "latitude"], 'h-event' => ["p", "latitude"], 'h-geo' => ["p", "latitude"]],
         'locality'          => ['h-adr' => ["p", "locality"], 'h-card' => ["p", "locality"]],
@@ -329,7 +329,8 @@ class Parser {
                     $out['rel-urls'][$url][$attr] = $link->getAttribute($attr);
                 }
             }
-            if (!isset($out['rel-urls'][$url]['text']) && strlen($text = $this->getCleanText($link, "p"))) {
+            $text = $this->options['thoroughTrim'] ? $this->getCleanText($link, "p") : $link->textContent;
+            if (!isset($out['rel-urls'][$url]['text']) && strlen($text)) {
                 $out['rel-urls'][$url]['text'] = $text;
             }
             # if there is no "rels" key in that hash, add it with an empty array value

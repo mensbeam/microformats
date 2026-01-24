@@ -14,13 +14,11 @@ use MensBeam\Microformats;
  */
 class StandardTest extends \PHPUnit\Framework\TestCase {
     protected const SUPPRESSED = [
-        'microformats-v1/hcard/multiple'                          => "whether vcard keys are p- or u- is unclear",
         'microformats-v1/includes/hcarditemref'                   => "include pattern not implemented",
         'microformats-v1/includes/heventitemref'                  => "include pattern not implemented",
         'microformats-v1/includes/hyperlink'                      => "include pattern not implemented",
         'microformats-v1/includes/object'                         => "include pattern not implemented",
         'microformats-v1/includes/table'                          => "include pattern not implemented",
-        'microformats-v2/rel/duplicate-rels'                      => "this test has a spurious newline at the beginning of a value",
         'microformats-v2-unit/names/names-microformats'           => "This is probably a bug in the HTML parser",
         'microformats-v2-unit/nested/nested-microformat-mistyped' => "The spec may change here soon",
         'microformats-v2-unit/value/value-dt'                     => "Date output format is wrong in test",
@@ -137,10 +135,12 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
     protected function fixTests(array $exp, string $test) {
         switch ($test) {
             case "third-party/phpmf2/vcp":
+                // these values match VCP datetime productions and should be normalized
                 $exp['items'][5]['properties']['published'][0] = "2012-02-16 16:14:47+0000";
                 $exp['items'][7]['properties']['published'][0] = "2013-02-01 06:01";
                 break;
             case "third-party/phpmf2/classic/fberriman":
+                // the value is not retrieved in a VCP context, so should not be normalized and instead appear as-is from HTML
                 $exp['items'][0]['properties']['published'][0] = "2013-05-14T11:54:06+00:00";
                 break;
         }
