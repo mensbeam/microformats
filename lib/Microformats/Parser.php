@@ -976,7 +976,7 @@ class Parser {
      * 
      * @see https://microformats.org/wiki/value-class-pattern#Basic_Parsing
      * 
-     * @param \DOMElement $node The subject element
+     * @param \DOMElement $root The subject element
      * @param string $prefix The property prefix (`p`, `dt`, `u`, or `e`)
      * @param array $backcompatTypes The set of microformat types currently in scope, if performing backcompat processing (an empty array otherwise)
      * @param string|null $impliedDate A previously-seen date value from which we can imply a date if only a time is present on the element
@@ -997,7 +997,12 @@ class Parser {
                 // NOTE: The specification doesn't mention roots, but these should surely be skipped as well
                 $skipChildren = true;
             }
-            if ($node->hasAttribute("title") && in_array("value-title", $classes)) {
+            if (in_array("value-title", $classes)) {
+                # Where a microformats property has a child element with class
+                #   name of value-title, the content of the title attribute of
+                #   that element must be parsed, rather than the portion of the
+                #   element that would be parsed for a class name of value.
+                // NOTE: This applies even if there is no title attribute
                 $candidate = $node->getAttribute("title");
             } elseif (in_array("value", $classes)) {
                 # Where an element with such a microformat property class name
@@ -1024,7 +1029,7 @@ class Parser {
                 } elseif ($prefix === "dt" && in_array($node->localName, ["del", "ins", "time"])) {
                     # if the element is a del, ins, or time element, then use
                     #   the element's datetime attribute value if present,
-                    #   otherwise its inner-text. [datetime only]
+                    #   otherwise its inner-text. [dt- property only]
                     if ($node->hasAttribute("datetime")) {
                         $candidate = $node->getAttribute("datetime");
                     } else {
@@ -1052,7 +1057,7 @@ class Parser {
                     || (isset($out['zone']) && isset($candidate['zone']))
                 )) {
                     $skipChildren = true;
-                    $out += $candidate;
+                    $out += $candidate; // this is an array union; keys which don't exist in $out are added from $candidate
                 }
             }
         }
@@ -1233,7 +1238,7 @@ class Parser {
         }
         if (sizeof($parts) === 3) {
             return $parts['date']." ".$parts['time'].$parts['zone'];
-        } elseif (sizeof($parts) === 1 && isset($parts['date'])) {
+        } elseif (isset($parts['date']) && !isset($parts['time'])) {
             return $parts['date'];
         } else {
             $implied = $implied ? $this->parseDatePart($implied) : [];

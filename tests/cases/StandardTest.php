@@ -13,19 +13,20 @@ use MensBeam\Microformats;
  * @covers MensBeam\Microformats\Parser
  */
 class StandardTest extends \PHPUnit\Framework\TestCase {
+
     protected const SUPPRESSED = [
-        'microformats-v1/includes/hcarditemref'                   => "include pattern not implemented",
-        'microformats-v1/includes/heventitemref'                  => "include pattern not implemented",
-        'microformats-v1/includes/hyperlink'                      => "include pattern not implemented",
-        'microformats-v1/includes/object'                         => "include pattern not implemented",
-        'microformats-v1/includes/table'                          => "include pattern not implemented",
-        'microformats-v2-unit/names/names-microformats'           => "This is probably a bug in the HTML parser",
-        'microformats-v2-unit/nested/nested-microformat-mistyped' => "The spec may change here soon",
-        'microformats-v2-unit/value/value-dt'                     => "Date output format is wrong in test",
+        'microformats-v1/includes/hcarditemref'                             => "include pattern not implemented",
+        'microformats-v1/includes/heventitemref'                            => "include pattern not implemented",
+        'microformats-v1/includes/hyperlink'                                => "include pattern not implemented",
+        'microformats-v1/includes/object'                                   => "include pattern not implemented",
+        'microformats-v1/includes/table'                                    => "include pattern not implemented",
+        'microformats-v2-unit/names/names-microformats'                     => "This is probably a bug in the HTML parser",
+        'microformats-v2-unit/nested/tentative-nested-microformat-mistyped' => "The spec may change here soon",
     ];
 
     /** @dataProvider provideStandardTests */
     public function testStandardTests(string $name, string $path, array $options): void {
+        // suppress tests which are known to fail for understood reasons
         if (isset(self::SUPPRESSED[$name])) {
             $this->markTestIncomplete(self::SUPPRESSED[$name]);
         }
@@ -107,15 +108,15 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
                 } else {
                     // otherwise run the test with both text trimming algorithms so that we ensure the tests pass with both
                     $opt = [
-                        'thoroughTrim' => true,
-                        'dateNormalization' => false,
-                    ];
-                    yield "$name options:default" => [$name, $path, $opt];
-                    $opt = [
                         'thoroughTrim' => false,
                         'dateNormalization' => false,
                     ];
-                    yield "$name options:standard" => [$name, $path, $opt];
+                    yield "$name trim:standard" => [$name, $path, $opt];
+                    $opt = [
+                        'thoroughTrim' => true,
+                        'dateNormalization' => false,
+                    ];
+                    yield "$name trim:thorough" => [$name, $path, $opt];
                 }
             } else {
                 yield $name => [$name, $path, $options];
