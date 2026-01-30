@@ -1,6 +1,12 @@
 {
     "require-dev": {
         "phpunit/phpunit": "^9.0",
-        "mf2/tests": "dev-master"
-    }
+        "mf2/tests": "dev-fix"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/mensbeam/tests/"
+        }
+    ]
 }
