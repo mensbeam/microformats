@@ -601,8 +601,12 @@ class Parser {
         }
         // keep track of deferred properties ("use Y if X is not defined")
         $deferred = [];
-        // keep track of the implied date
+        // keep track of the implied date and partial datetime values which need to be
+        //   filled in with a post-implied date. The members of the partials array will
+        //   be a set of date-parts and a reference pointing into the microformat
+        //   structure at the element to be replace.
         $impliedDate = null;
+        $partials = [];
         // keep track of whether there is a p-, u-, or e- property or child on the microformat; this is required for implied property processing
         $hasP = false;
         $hasE = false;
@@ -637,7 +641,8 @@ class Parser {
                     }
                     $out['children'][] = $child;
                 }
-                // If our root element is in the list of root candiates found by XPath, remove it from that list while we're here
+                // if our root element is in the list of root candiates found by XPath, remove
+                //   it from that list while we're here
                 foreach ($this->roots as $k => $r) {
                     if ($node->isSameNode($r)) {
                         unset($this->roots[$k]);
@@ -654,10 +659,22 @@ class Parser {
                 $hasE = $hasE ?: $prefix === "e";
                 $hasU = $hasU ?: $prefix === "u";
                 // parse the node for the property value
+                $partialDate = null;
                 $value = $this->parseProperty($node, $prefix, $backcompat ? $types : [], $impliedDate, (bool) $child);
                 if ($prefix === "dt") {
-                    // keep track of the last seen date value to serve as an implied date
-                    $impliedDate = $value;
+                    // dates may have a partial value due to post-implied dates in VCP processing
+                    [$value, $partialDate] = $value;
+                    if (!$partialDate && ($parsedDate = $this->parseDatePart($value))) {
+                        // if this is not a partial date, save it as our implied date for future values
+                        //   in this microformat structure, assuming it is valid (it may be an unparsed
+                        //   value which is not actually suitable once parsed)
+                        $impliedDate = $parsedDate;
+                        // fill in any partial dates we may have; this involves overwriting the values of references
+                        foreach ($partials as [$partialDate, &$ref]) {
+                            $ref = $this->stitchDate($partialDate, $impliedDate, true);
+                        }
+                        $partials = [];
+                    }
                 }
                 # if that child element itself has a microformat ("h-*" or
                 #   backcompat roots) and is a property element, add it into
@@ -683,13 +700,30 @@ class Parser {
                     $childValue = null;
                 }
                 if ($defer) {
-                    // defer addition of the property if it's supposed to be a fallback for another instance of the property
+                    // defer addition of the property if it's supposed to be a fallback for another
+                    //   instance of the property (this only occurs in backcompat processing)
                     $deferred[] = [$key, $value];
+                    // save a reference for any partial date
+                    if ($partialDate) {
+                        if (!$child) {
+                            $partials[] = [$partialDate, &$deferred[sizeof($deferred) -1][1]];
+                        } else {
+                            $partials[] = [$partialDate, &$deferred[sizeof($deferred) -1][1]['value']];
+                        }
+                    }
                 } else {
                     if (!isset($out['properties'][$key])) {
                         $out['properties'][$key] = [];
                     }
                     $out['properties'][$key][] = $value;
+                    // save a reference for any partial date
+                    if ($partialDate) {
+                        if (!$child) {
+                            $partials[] = [$partialDate, &$out['properties'][$key][sizeof($out['properties'][$key]) -1]];
+                        } else {
+                            $partials[] = [$partialDate, &$out['properties'][$key][sizeof($out['properties'][$key]) -1]['value']];
+                        }
+                    }
                 }
             }
         }
@@ -840,11 +874,11 @@ class Parser {
      * @param \DOMElement $node The element to retrieve a value from
      * @param string $prefix The property prefix (`p`, `dt`, `u`, or `e`)
      * @param array $backcompatTypes The set of microformat types currently in scope, if performing backcompat processing (and empty array otherwise)
-     * @param string|null $impliedDate A previously-seen date value from which we can imply a date if only a time is present on the element
+     * @param array|null $impliedDate A previously-seen date value from which we can imply a date if only a time is present on the element
      * @param bool $isChild Whether the subject element is itself a child microformat. This affect whether the "Value Class Pattern" applies
      * @return string|array
      */
-    protected function parseProperty(\DOMElement $node, string $prefix, array $backcompatTypes, ?string $impliedDate, bool $isChild) {
+    protected function parseProperty(\DOMElement $node, string $prefix, array $backcompatTypes, ?array $impliedDate, bool $isChild) {
         switch ($prefix) {
             case "p":
                 # To parse an element for a p-x property value (whether explicit p-* or backcompat equivalent):
@@ -913,9 +947,20 @@ class Parser {
             case "dt":
                 # To parse an element for a dt-x property value (whether explicit dt-* or backcompat equivalent):
                 if (!$isChild && ($date = $this->getValueClassPattern($node, $prefix, $backcompatTypes, $impliedDate)) !== null) {
-                    # parse the element for the Value Class Pattern, including the date and time parsing rules. If a value is found, then return it.
-                    return $date;
-                } elseif (in_array($node->localName, ["time", "ins", "del"]) && $node->hasAttribute("datetime")) {
+                    # parse the element for the Value Class Pattern, including the date and time
+                    #   parsing rules. If a value is found, then return it.
+                    // To handle post-implied dates we have to jump through some hoops. If the
+                    //   returned value is an array, then it is a set of time-parts needing an
+                    //   implied date. Instead of returning this partial date we continue with
+                    //   processing to get the value which should be inserted till a post-implied
+                    //   date is found (if ever). Yes, this is totally crazy.
+                    if (is_array($date)) {
+                        $partialValue = $date;
+                    } else {
+                        return [$date, null];
+                    }
+                }
+                if (in_array($node->localName, ["time", "ins", "del"]) && $node->hasAttribute("datetime")) {
                     # if time.dt-x[datetime] or ins.dt-x[datetime] or del.dt-x[datetime], then return the datetime attribute
                     $date = $node->getAttribute("datetime");
                 } elseif ($node->localName === "abbr" && $node->hasAttribute("title")) {
@@ -929,10 +974,9 @@ class Parser {
                     $date = $this->getCleanText($node, $prefix);
                 }
                 if ($this->options['dateNormalization']) {
-                    return $this->stitchDate($this->parseDatePart($date), $impliedDate, false) ?? $date;
-                } else {
-                    return $date;
+                    $date = $this->stitchDate($this->parseDatePart($date), $impliedDate, false) ?? $date;
                 }
+                return [$date, $partialValue ?? null];
             case "e":
                 # To parse an element for a e-x property value (whether explicit "e-*" or backcompat equivalent):
                 # return a dictionary with two keys:
@@ -979,10 +1023,10 @@ class Parser {
      * @param \DOMElement $root The subject element
      * @param string $prefix The property prefix (`p`, `dt`, `u`, or `e`)
      * @param array $backcompatTypes The set of microformat types currently in scope, if performing backcompat processing (an empty array otherwise)
-     * @param string|null $impliedDate A previously-seen date value from which we can imply a date if only a time is present on the element
+     * @param array|null $impliedDate A previously-seen date value from which we can imply a date if only a time is present on the element
      * @return string|array|null
      */
-    protected function getValueClassPattern(\DOMElement $root, string $prefix, array $backcompatTypes, ?string $impliedDate = null) {
+    protected function getValueClassPattern(\DOMElement $root, string $prefix, array $backcompatTypes, ?array $impliedDate = null) {
         $out = [];
         $skipChildren = false;
         while ($node = $this->nextElement($node ?? $root, $root, !$skipChildren)) {
@@ -1229,10 +1273,11 @@ class Parser {
     /** Concatenates date parts together, optionally with an implied date
      * 
      * @param array $parts The date parts, `date`, `time`, and `zone`
-     * @param string|null $implied An optional implied date to use if the date is absent from the input
-     * @param bool $vcp Whether the date is stitched as part of the Value Class Pattern algorithm. VCP requires a non-RFC 3339 time zone specifier in its normalized form
+     * @param array|null $implied An optional implied date to use if the date is absent from the input
+     * @param bool $vcp Whether the date is stitched as part of the Value Class Pattern algorithm. VCP requires a non-RFC 3339 time zone specifier in its normalized form. VCP also allows provisional dateless times, and these are handled specially
+     * @return string|array|null
      */
-    protected function stitchDate(array $parts, ?string $implied, bool $vcp): ?string {
+    protected function stitchDate(array $parts, ?array $implied, bool $vcp) {
         if ($vcp && isset($parts['zone'])) {
             $parts['zone'] = str_replace(":", "", $parts['zone']);
         }
@@ -1241,7 +1286,7 @@ class Parser {
         } elseif (isset($parts['date']) && !isset($parts['time'])) {
             return $parts['date'];
         } else {
-            $implied = $implied ? $this->parseDatePart($implied) : [];
+            $implied = $implied ?? [];
             // PROPOSAL: https://github.com/microformats/microformats2-parsing/issues/4
             // only imply time zone if so configured
             if (!$this->options['impliedTz']) {
@@ -1253,6 +1298,8 @@ class Parser {
                 return $parts['date']." ".$parts['time'].($implied['zone'] ?? "");
             } elseif (isset($parts['time']) && isset($implied['date'])) {
                 return $implied['date']." ".$parts['time'].($parts['zone'] ?? $implied['zone'] ?? "");
+            } elseif (isset($parts['time']) && $vcp) {
+                return $parts;
             }
         }
         return null;
