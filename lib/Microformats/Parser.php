@@ -184,7 +184,7 @@ class Parser {
         # YYYY-MM-DD
         'Y-m-d' => self::DATE_TYPE_DATE,
         # YYYY-DDD
-        'Y-z'   => self::DATE_TYPE_DATE,
+        // Ordinal dates require special processing because PHP's ordinal-date format pattern is utterly bizarre
     ];
     protected const TIME_INPUT_FORMATS = [
         # HH:MM:SS
@@ -1174,6 +1174,10 @@ class Parser {
     protected function parseDatePart(string $input): array {
         // do a first-pass normalization on the input; this normalizes am/pm and normalizes, removes -00:00 time zone offsets, and trims whitespace
         $input = preg_replace(['/([ap])\.m\./', '/[ \r\n\t\f]+/s', '/(?:^-00|(:\d\d)? ?-00)(?::?00)$/'], ["$1m", " ", "$1"], strtr($this->trim($input), "APM", "apm"));
+        // check for an ordinal date and convert it to a calendar date; PHP does not have a usable ordinal date format
+        if (preg_match('/^(\d{4}-\d{3}(?!\d))/', $input)) {
+            $input = $this->normalizeOrdinalDate($input);
+        }
         // match against all valid date/time format patterns and returns the matched parts
         // we try with space and with T between date and time, as well as with and without space before time zone
         foreach (self::DATE_INPUT_FORMATS as $df => $dp) {
@@ -1303,6 +1307,32 @@ class Parser {
             }
         }
         return null;
+    }
+
+    /** Converts an ordinal date (possibly embedded in a longer string) into a calendar date
+     * 
+     * This is necessary because PHP does not have support for ordinal dates in
+     * any way which suits our purpose. If the date is out of range (less than
+     * one or greater than the number of days in the year) the input string
+     * will be returned unmodified and the string will ultimately be rejected
+     * as invalid.
+     * 
+     * @param string $input A candidate date string which begins with an ordinal date
+     */
+    protected function normalizeOrdinalDate(string $input): string {
+        assert(preg_match('/^(\d{4}-\d{3}(?!\d))/', $input), new \Exception("Input is not an ordinal date"));
+        $year = substr($input, 0, 4);
+        $day = (int) substr($input, 5, 3) -1; // we subtract one because PHP's "z" date format for ordinal days counts from zero
+        if ($day < 0 || $day > 365) {
+            // day is out of range even for a leap year
+            return $input;
+        }
+        $test = \DateTimeImmutable::createFromFormat("!Y-z", "$year-$day", new \DateTimeZone("UTC"));
+        // ensure the year hasn't rolled over in a common year
+        if ($test->format("Y") === $year) {
+            return substr_replace($input, $test->format("Y-m-d"), 0, 8);
+        }
+        return $input;
     }
 
     /** Resolves a URL against a base URL and normalizes the result
