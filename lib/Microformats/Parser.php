@@ -189,19 +189,18 @@ class Parser {
     protected const TIME_INPUT_FORMATS = [
         # HH:MM:SS
         'H:i:s'   => self::DATE_TYPE_SEC,
+        'G:i:s'   => self::DATE_TYPE_SEC,
         # HH:MM
         'H:i'     => self::DATE_TYPE_MIN,
+        'G:i'     => self::DATE_TYPE_MIN,
         # HH:MM:SSam HH:MM:SSpm
         'h:i:sa'  => self::DATE_TYPE_SEC,
+        'g:i:sa'  => self::DATE_TYPE_SEC,
         # HH:MMam HH:MMpm
         'h:ia'    => self::DATE_TYPE_MIN,
+        'g:ia'    => self::DATE_TYPE_MIN,
         # HHam HHpm
         'ha'      => self::DATE_TYPE_HOUR,
-        // time without hour's leading zero; these are not part of the spec, but definitely occur
-        'G:i:s'   => self::DATE_TYPE_SEC,
-        'G:i'     => self::DATE_TYPE_MIN,
-        'g:i:sa'  => self::DATE_TYPE_SEC,
-        'g:ia'    => self::DATE_TYPE_MIN,
         'ga'      => self::DATE_TYPE_HOUR,
     ];
     protected const ZONE_INPUT_FORMATS = [
@@ -213,8 +212,7 @@ class Parser {
         // Hour-only time zones require special processing
         # Z
         '\Z' => self::DATE_TYPE_ZULU,
-        // Lowercase z is used in tests
-        '\z' => self::DATE_TYPE_ZULU,
+        '\z' => self::DATE_TYPE_ZULU, // Lowercase z is used in tests
     ];
     protected const DATE_OUTPUT_FORMATS = [
         self::DATE_TYPE_DATE | self::DATE_TYPE_SEC | self::DATE_TYPE_ZONE  => 'Y-m-d H:i:sP',
@@ -1172,8 +1170,16 @@ class Parser {
      * @param string $input The string to test for validity
      */
     protected function parseDatePart(string $input): array {
-        // do a first-pass normalization on the input; this normalizes am/pm and normalizes, removes -00:00 time zone offsets, and trims whitespace
-        $input = preg_replace(['/([ap])\.m\./', '/[ \r\n\t\f]+/s', '/(?:^-00|(:\d\d)? ?-00)(?::?00)$/'], ["$1m", " ", "$1"], strtr($this->trim($input), "APM", "apm"));
+        // do a first-pass normalization on the input; there are transformations
+        //   which are compatible with the allowed output formats, so we don't
+        //   need to keep the original value
+        $input = preg_replace([
+            '/[ \r\n\t\f]+/s',                 // collapses whitespace
+            '/([ap])\.m\./',                   // together with strtr() below, converts various permutations to just "am" or "pm"
+            '/(^|:\d\d)(\+|-)(\d(:?\d\d)?)$/', // adds leading zeroes to time zone offsets lacking them
+            '/(^|:\d\d)[+-]\d\d$/',            // adds minutes to time zones lacking them
+            '/(^|:\d\d)-(00:?00)$/'            // converts negative-zero time zone offset to positive (PHP does not support negative-zero)
+        ], [' ', '$1m', '$1${2}0$3', '${0}00', '$1+$2'], strtr($this->trim($input), "APM", "apm"));
         // check for an ordinal date and convert it to a calendar date; PHP does not have a usable ordinal date format
         if (preg_match('/^(\d{4}-\d{3}(?!\d))/', $input)) {
             $input = $this->normalizeOrdinalDate($input);
@@ -1201,17 +1207,6 @@ class Parser {
                             'zone' => $out->format(self::DATE_OUTPUT_FORMATS[$zp]),
                         ];
                     }
-                    // if no match was found and we're testing a pattern ending in "O" (zone offset without colon), add double-zero to input and try again
-                    if ($zf[strlen($zf) - 1] === "O") {
-                        $padded = $input."00";
-                        if ($out = $this->testDate($padded, "$df $tf$zf", "$df\T$tf$zf", "$df\\t$tf$zf", "$df $tf $zf", "$df\T$tf $zf", "$df\\t$tf $zf")) {
-                            return [
-                                'date' => $out->format(self::DATE_OUTPUT_FORMATS[$dp]),
-                                'time' => $out->format(self::DATE_OUTPUT_FORMATS[$tp]),
-                                'zone' => $out->format(self::DATE_OUTPUT_FORMATS[$zp]),
-                            ];
-                        }
-                    }
                 }
             }
         }
@@ -1228,15 +1223,6 @@ class Parser {
                         'zone' => $out->format(self::DATE_OUTPUT_FORMATS[$zp]),
                     ];
                 }
-                if ($zf[strlen($zf) - 1] === "O") {
-                    $padded = $input."00";
-                    if ($out = $this->testDate($padded, "$tf$zf", "$tf $zf")) {
-                        return [
-                            'time' => $out->format(self::DATE_OUTPUT_FORMATS[$tp]),
-                            'zone' => $out->format(self::DATE_OUTPUT_FORMATS[$zp]),
-                        ];
-                    }
-                }
             }
         }
         foreach (self::ZONE_INPUT_FORMATS as $zf => $zp) {
@@ -1244,14 +1230,6 @@ class Parser {
                 return [
                     'zone' => $out->format(self::DATE_OUTPUT_FORMATS[$zp]),
                 ];
-            }
-            if ($zf[strlen($zf) - 1] === "O") {
-                $padded = $input."00";
-                if ($out = $this->testDate($padded, "$zf")) {
-                    return [
-                        'zone' => $out->format(self::DATE_OUTPUT_FORMATS[$zp]),
-                    ];
-                }
             }
         }
         return [];

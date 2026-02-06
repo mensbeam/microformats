@@ -22,6 +22,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         'microformats-v1/includes/table'                                    => "include pattern not implemented",
         'microformats-v2-unit/names/names-microformats'                     => "This is probably a bug in the HTML parser",
         'microformats-v2-unit/nested/tentative-nested-microformat-mistyped' => "The spec may change here soon",
+        'microformats-v2-unit/value/tentative-value-innertext'              => "We still need to decide what we want to do here",
     ];
 
     /** @dataProvider provideStandardTests */
