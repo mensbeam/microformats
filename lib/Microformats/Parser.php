@@ -299,6 +299,11 @@ class Parser {
             $url = $this->normalizeUrl($link->getAttribute("href"));
             # treat the "rel" attribute of the element as a space separate set of rel values
             $rels = $this->parseTokens($link, "rel");
+            // NOTE: The specification is subtly wrong in the steps above.
+            // See https://github.com/microformats/microformats2-parsing/issues/85
+            if (!$rels) {
+                continue;
+            }
             # # for each rel value (rel-value)
             foreach ($rels as $relValue) {
                 # if there is no key rel-value in the rels hash then create it with an empty array as its value
