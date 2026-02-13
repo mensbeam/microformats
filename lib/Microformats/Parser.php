@@ -386,10 +386,10 @@ class Parser {
         $this->roots = iterator_to_array($this->xpath->query($query, $node));
     }
 
-    /** Splits the attribute of an element into an array of unique whitespace-separated tokens
+    /** Splits the attribute of an element into an array of whitespace-separated tokens
      * 
      * @param \DOMElement $node The subject element
-     * @param string $attr The ttribute to split
+     * @param string $attr The attribute to split
      */
     protected function parseTokens(\DOMElement $node, string $attr): array {
         $attr = $this->trim($node->getAttribute($attr));
