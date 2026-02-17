@@ -4,7 +4,7 @@ A generic [Microformats](https://microformats.io/) parser for PHP. While it simi
 
 ## Usage
 
-Functionality is provided for parsing from an HTTP URL, from a file, from a string, and from an HTML element (a `\DOMElement` object), as well as for serializing to JSON. A static method of the `MensBeam\Microformats` class is provided for each task.
+Functionality is provided for parsing from an HTTP URL, from a file, from a string, and from an HTML element (a `\DOMElement` or `\Dom\HTMLElement` object), as well as for serializing to JSON. A static method of the `MensBeam\Microformats` class is provided for each task.
 
 The parsing methods all return a Microformats structure as an array. The [Microformats wiki](https://microformats.org/wiki/microformats2) includes some sample structures in JSON format.
 
@@ -50,7 +50,7 @@ The `$options` argument is a list of options for the Microformats parser. See be
 ### Parsing from an HTML element
 
 ```php
-\MensBeam\Microformats::fromHtmlElement(\DOMElement $input, string $url, array $options = []): array
+\MensBeam\Microformats::fromHtmlElement(\DOMElement|\Dom\HTMLElement $input, string $url, array $options = []): array
 ```
 
 The `$input` argument is the element to parse for micrformats. Typically this would be the `documentElement`, but any element may be parsed.
@@ -77,3 +77,13 @@ The parsing methods all optionally take an `$options` array as an argument. Thes
 | `impliedTz`         | Boolean | `false` | Time values in microformats may have an implied date associated with them taken from a prior date value in the same microformat structure. This option allows for a time zone to be implied as well, if a time does not include its time zone.
 | `lang`              | Boolean | `true`  | This option determines whether language information is retrieved from the parsed document and included in the output, in `lang` keys. Both Microformat structures and embedded markup (`e-` property) structures are affected by this options.
 | `thoroughTrim`      | Boolean | `true`  | This option uses the more thorough whitespace-trimming algorithm proposed for future standardization rather than the "classic", simpler whitespace-trimming algorithm mandated by the parsing specification. This affects both `p-` and `e-` properties.
+
+## Change log
+
+### Version 0.2.0 (2026-02-17)
+
+- Accept and use `Dom\HTMLDocument` when available (since PHP 8.4)
+
+### Version 0.1.0 (2023-06-28)
+
+- Initial release

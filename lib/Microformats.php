@@ -10,6 +10,7 @@ namespace MensBeam;
 use MensBeam\HTML\Parser as HTMLParser;
 use MensBeam\Microformats\Parser as MfParser;
 use MensBeam\Microformats\Url;
+use MensBeam\Mime\MimeType;
 
 /** A generic parser for microformats
  *
@@ -102,17 +103,24 @@ class Microformats {
      * @param array $options Options for the parser; please see the class documentetation for details
      */
     public static function fromString(string $input, string $contentType, string $url, array $options = []): array {
-        $parsed = HTMLParser::parse($input, $contentType);
-        return static::fromHtmlElement($parsed->document->documentElement, $url, $options);
+        if (static::useHtmlDocument()) {
+            $type = MimeType::parseBytes($contentType);
+            $enc = $type ? $type->params['charset'] ?? null : null;
+            $parsed = @\Dom\HTMLDocument::createFromString($input, 0, $enc);
+        } else {
+            // use our own parser if we're using PHP 8.3 or earlier
+            $parsed = HTMLParser::parse($input, $contentType)->document;
+        }
+        return static::fromHtmlElement($parsed->documentElement, $url, $options);
     }
 
     /** Parses an HTML element for microformats
      * 
-     * @param \DOMElement $input The element to examine. Siblings and ancestors of this element will be ignored
+     * @param \DOMElement|\Dom\HTMLElement $input The element to examine. Siblings and ancestors of this element will be ignored
      * @param string $url The effective URL (after redirections) of the document if known
      * @param array $options Options for the parser; please see the class documentetation for details
      */
-    public static function fromHtmlElement(\DOMElement $input, string $url, array $options = []): array {
+    public static function fromHtmlElement($input, string $url, array $options = []): array {
         return (new MfParser)->parseHtmlElement($input, $url, $options);
     }
 
@@ -146,5 +154,14 @@ class Microformats {
         }
         $walk($data['items']);
         return json_encode($data, $flags, $depth);
+    }
+
+    /** Answers whether the new HTML DOM available since PHP 8.4 should be used
+     * 
+     * This normally answers true depending on whether the required class
+     * exists, but can be overriden if needed.
+     */
+    protected static function useHtmlDocument(): bool {
+        return class_exists(\Dom\HTMLDocument::class);
     }
 }

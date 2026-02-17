@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace MensBeam\Microformats\TestCase;
 
 use MensBeam\Microformats;
+use MensBeam\Microformats\Test\Microformats as MfDomCompat;
 
 /**
  * @covers MensBeam\Microformats
@@ -31,9 +32,8 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
         if (isset(self::SUPPRESSED[$name])) {
             $this->markTestIncomplete(self::SUPPRESSED[$name]);
         }
-        // parse input
+        // define the base URL
         $base = strpos($name, "microformats-v2-unit/") === 0 ? "http://example.test/" : "http://example.com/";
-        $act = Microformats::fromFile($path.".html", "text/html; charset=UTF-8", $base, $options);
         // read expectation data
         $exp = json_decode(file_get_contents($path.".json"), true);
         if ($exp) {
@@ -54,22 +54,27 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
             }
             // perform some further monkey-patching on specific tests
             $exp = $this->fixTests($exp, $name);
+            // sort the array
+            $this->ksort($exp);
         } else {
             // if there are no expectations we're probably developing a new test; print the output as JSON
-            echo Microformats::toJson($act, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES);
+            echo Microformats::toJson(Microformats::fromFile($path.".html", "text/html; charset=UTF-8", $base, $options), \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES);
             exit;
         }
-        // sort both arrays
-        $this->ksort($exp);
-        $this->ksort($act);
-        // run comparison
-        foreach ($exp['items'] as $k => $mf) {
-            $x = json_encode($mf, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES);
-            $a = json_encode($act['items'][$k] ?? new \stdClass, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES);
-            $types = implode(", ", $mf['type']);
-            $this->assertSame($x, $a, "Microformat $types does not match");
+            foreach ([Microformats::class, MfDomCompat::class] as $class) {
+            // parse the input data
+            $act = $class::fromFile($path.".html", "text/html; charset=UTF-8", $base, $options);
+            // sort the array
+            $this->ksort($act);
+            // run comparison
+            foreach ($exp['items'] as $k => $mf) {
+                $x = json_encode($mf, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES);
+                $a = json_encode($act['items'][$k] ?? new \stdClass, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES);
+                $types = implode(", ", $mf['type']);
+                $this->assertSame($x, $a, "Microformat $types does not match ($class)");
+            }
+            $this->assertEquals($exp, $act);
         }
-        $this->assertEquals($exp, $act);
     }
 
     public function provideStandardTests(): \Generator {

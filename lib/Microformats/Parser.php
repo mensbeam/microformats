@@ -244,7 +244,7 @@ class Parser {
     protected $baseUrl;
     /** @var string The base URL supplied by the user, with no further normalization or transformation */
     protected $docUrl;
-    /** @var \DOMXPath The XPtah processor used for certain aspects of parsing */
+    /** @var \DOMXPath|\Dom\XPath The XPath processor used for certain aspects of parsing */
     protected $xpath;
     /** @var array The list of microformat root candidates found by XPath at the start of processing; the array is manipulated during processing to remove child roots so that they are only processed once */
     protected $roots;
@@ -253,11 +253,11 @@ class Parser {
      * 
      * @see https://microformats.org/wiki/microformats2-parsing
      *
-     * @param \DOMElement $node The DOMElement to parse
+     * @param \DOMElement|\Dom\HTMLElement $node The DOMElement to parse
      * @param string $baseURL The base URL against which to resolve relative URLs in the output
      * @param array $options An associative array of options. Please see the class documentation for more details
      */
-    public function parseHtmlElement(\DOMElement $node, string $baseUrl = "", ?array $options = null): array {
+    public function parseHtmlElement($node, string $baseUrl = "", ?array $options = null): array {
         $root = $node;
         // normalize options
         $this->options = $this->normalizeOptions($options ?? []);
@@ -265,7 +265,12 @@ class Parser {
         $this->docUrl = $baseUrl;
         $this->baseUrl = $this->getBaseUrl($root, $baseUrl);
         // Initialize an XPath processor
-        $this->xpath = new \DOMXPath($node->ownerDocument);
+        if ($node instanceof \Dom\HTMLElement) {
+            $this->xpath = new \Dom\XPath($node->ownerDocument);
+        } else {
+            $this->xpath = new \DOMXPath($node->ownerDocument);
+        }
+        $this->xpath->registerNamespace("html", "http://www.w3.org/1999/xhtml");
         # start with an empty JSON "items" array and "rels" & "rel-urls" hashes:
         $out = [
             'items'    => [],
@@ -287,7 +292,7 @@ class Parser {
             }
         }
         # parse all hyperlink (<a> <area> <link>) elements for rel microformats, adding to the JSON rels & rel-urls hashes accordingly
-        foreach ($this->xpath->query(".//a[@rel and @href and not(ancestor::template)]|.//area[@rel and @href and not(ancestor::template)]|.//link[@rel and @href and not(ancestor::template)]", $root) as $link) {
+        foreach ($this->query(".//html:a[@rel and @href and not(ancestor::html:template)]|.//html:area[@rel and @href and not(ancestor::html:template)]|.//html:link[@rel and @href and not(ancestor::html:template)]", $root) as $link) {
             # To parse a hyperlink element (e.g. a or link) for rel
             #   microformats: use the following algorithm or an algorithm that
             #   produces equivalent results:
@@ -372,27 +377,27 @@ class Parser {
      * pare down the number of elements which must be examined for first-level
      * roots.
      * 
-     * @param \DOMElement $node The element to start searching from, including itself
+     * @param \DOMElement|\Dom\HTMLElement $node The element to start searching from, including itself
      */
-    protected function getRootCandidates(\DOMElement $node): void {
+    protected function getRootCandidates($node): void {
         // NOTE: Templates being completely ignored is an unwritten rule followed by all implementations
         $query = [ 
-            "descendant-or-self::*[contains(concat(' ', normalize-space(@class)), ' h-') and not(ancestor-or-self::template)]",
+            "descendant-or-self::*[contains(concat(' ', normalize-space(@class)), ' h-') and not(ancestor-or-self::html:template)]",
         ];
         foreach (array_keys(static::BACKCOMPAT_ROOTS) as $root) {
-            $query[] = "descendant-or-self::*[contains(concat(' ', normalize-space(@class), ' '), ' $root ') and not(ancestor-or-self::template)]";
+            $query[] = "descendant-or-self::*[contains(concat(' ', normalize-space(@class), ' '), ' $root ') and not(ancestor-or-self::html:template)]";
         }
         $query = implode("|", $query);
-        $this->roots = iterator_to_array($this->xpath->query($query, $node));
+        $this->roots = iterator_to_array($this->query($query, $node));
     }
 
     /** Splits the attribute of an element into an array of whitespace-separated tokens
      * 
-     * @param \DOMElement $node The subject element
+     * @param \DOMElement|\Dom\HTMLElement $node The subject element
      * @param string $attr The attribute to split
      */
-    protected function parseTokens(\DOMElement $node, string $attr): array {
-        $attr = $this->trim($node->getAttribute($attr));
+    protected function parseTokens($node, string $attr): array {
+        $attr = $this->trim($node->getAttribute($attr) ?? "");
         if ($attr !== "") {
             return preg_split("/[ \r\n\t\f]+/sS", $attr);
         } else {
@@ -514,9 +519,9 @@ class Parser {
      * 
      * @param &array $classes A reference to an array of the element's classes
      * @param array $types Anarray of the current microformat's types
-     * @param \DOMElement $node The element to examine
+     * @param \DOMElement|\Dom\HTMLElement $node The element to examine
      */
-    protected function matchPropertiesBackcompat(array &$classes, array $types, \DOMElement $node): array {
+    protected function matchPropertiesBackcompat(array &$classes, array $types, $node): array {
         $props = [];
         $out = [];
         foreach ($types as $t) {
@@ -576,11 +581,11 @@ class Parser {
      * 
      * @see https://microformats.org/wiki/microformats2-parsing#parse_an_element_for_class_microformats
      * 
-     * @param \DOMElement $root The root element of the microformat
+     * @param \DOMElement|\Dom\HTMLElement $root The root element of the microformat
      * @param array $types The previously determined v2 microformat types of the element
      * @param bool $backcompat Whether this element is a v1 microformat and backward-compatible processing should be used
      */
-    protected function parseMicroformat(\DOMElement $root, array $types, bool $backcompat): array {
+    protected function parseMicroformat($root, array $types, bool $backcompat): array {
         # keep track of whether the root class name(s) was from backcompat
         // this is a parameter to this function
         # create a new { } structure
@@ -595,7 +600,7 @@ class Parser {
             // Added below
         ];
         sort($out['type']);
-        if (strlen($id = $root->getAttribute("id"))) {
+        if (strlen($id = $root->getAttribute("id") ?? "")) {
             $out['id'] = $id;
         }
         // if so configured, add language information
@@ -749,34 +754,34 @@ class Parser {
                 # then imply by:
                 if ($root->hasAttribute("alt") && in_array($root->localName, ["img", "area"])) {
                     # if img.h-x or area.h-x, then use its alt attribute for name
-                    $name = $root->getAttribute("alt");
+                    $name = $root->getAttribute("alt") ?? "";
                 } elseif ($root->hasAttribute("title") && $root->localName === "abbr") {
                     # else if abbr.h-x[title] then use its title attribute for name
                     $name = $root->getAttribute("title");
-                } elseif (($set = $this->xpath->query("./img[@alt and @alt != '' and count(../*) = 1]", $root))->length) {
+                } elseif (($set = $this->query("./html:img[@alt and @alt != '' and count(../*) = 1]", $root))->length) {
                     # else if .h-x>img:only-child[alt]:not([alt=""]):not[.h-*] then use that img’s alt for name
                     $name = $set->item(0)->getAttribute("alt");
-                } elseif (($set = $this->xpath->query("./area[@alt and @alt != '' and count(../*) = 1]", $root))->length) {
+                } elseif (($set = $this->query("./html:area[@alt and @alt != '' and count(../*) = 1]", $root))->length) {
                     # else if .h-x>area:only-child[alt]:not([alt=""]):not[.h-*] then use that area’s alt for name
                     $name = $set->item(0)->getAttribute("alt");
-                } elseif (($set = $this->xpath->query("./abbr[@title and @title != '' and count(../*) = 1]", $root))->length) {
+                } elseif (($set = $this->query("./html:abbr[@title and @title != '' and count(../*) = 1]", $root))->length) {
                     # else if .h-x>abbr:only-child[title]:not([title=""]):not[.h-*] then use that abbr title for name
                     $name = $set->item(0)->getAttribute("title");
                 } elseif (
-                    ($set = $this->xpath->query("./*[not(self::template) and count(../*) = 1]", $root))->length
-                    && ($set = $this->xpath->query("./img[@alt and @alt != '' and count(../*) = 1]", $set->item(0)))->length
+                    ($set = $this->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
+                    && ($set = $this->query("./html:img[@alt and @alt != '' and count(../*) = 1]", $set->item(0)))->length
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>img:only-child[alt]:not([alt=""]):not[.h-*] then use that img’s alt for name
                     $name = $set->item(0)->getAttribute("alt");
                 } elseif (
-                    ($set = $this->xpath->query("./*[not(self::template) and count(../*) = 1]", $root))->length
-                    && ($set = $this->xpath->query("./area[@alt and @alt != '' and count(../*) = 1]", $set->item(0)))->length
+                    ($set = $this->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
+                    && ($set = $this->query("./html:area[@alt and @alt != '' and count(../*) = 1]", $set->item(0)))->length
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>area:only-child[alt]:not([alt=""]):not[.h-*] then use that area’s alt for name
                     $name = $set->item(0)->getAttribute("alt");
                 } elseif (
-                    ($set = $this->xpath->query("./*[not(self::template) and count(../*) = 1]", $root))->length
-                    && ($set = $this->xpath->query("./abbr[@title and @title != '' and count(../*) = 1]", $set->item(0)))->length
+                    ($set = $this->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
+                    && ($set = $this->query("./html:abbr[@title and @title != '' and count(../*) = 1]", $set->item(0)))->length
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>abbr:only-child[title]:not([title=""]):not[.h-*] use that abbr’s title for name
                     $name = $set->item(0)->getAttribute("title");
@@ -798,21 +803,21 @@ class Parser {
                 } elseif ($root->localName === "object" && $root->hasAttribute("data")) {
                     # else if object.h-x[data] then use data for photo
                     $photo = $root->getAttribute("data");
-                } elseif (($set = $this->xpath->query("./img[@src and count(../img) = 1]", $root))->length) {
+                } elseif (($set = $this->query("./html:img[@src and count(../html:img) = 1]", $root))->length) {
                     # else if .h-x>img[src]:only-of-type:not[.h-*] then use the result of "parse an img element for src and alt" (see Sec.1.5) for photo
                     $out['properties']['photo'] = [$this->parseImg($set->item(0))];
-                } elseif (($set = $this->xpath->query("./object[@data and count(../object) = 1]", $root))->length) {
+                } elseif (($set = $this->query("./html:object[@data and count(../html:object) = 1]", $root))->length) {
                     # else if .h-x>object[data]:only-of-type:not[.h-*] then use that object’s data for photo
                     $photo = $set->item(0)->getAttribute("data");
                 } elseif (
-                    ($set = $this->xpath->query("./*[not(self::template) and count(../*) = 1]", $root))->length
-                    && ($set = $this->xpath->query("./img[@src and count(../img) = 1]", $set->item(0)))->length
+                    ($set = $this->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
+                    && ($set = $this->query("./html:img[@src and count(../html:img) = 1]", $set->item(0)))->length
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>img[src]:only-of-type:not[.h-*], then use the result of "parse an img element for src and alt" (see Sec.1.5) for photo
                     $out['properties']['photo'] = [$this->parseImg($set->item(0))];
                 } elseif (
-                    ($set = $this->xpath->query("./*[not(self::template) and count(../*) = 1]", $root))->length
-                    && ($set = $this->xpath->query("./object[@data and count(../object) = 1]", $set->item(0)))->length
+                    ($set = $this->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
+                    && ($set = $this->query("./html:object[@data and count(../html:object) = 1]", $set->item(0)))->length
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>object[data]:only-of-type:not[.h-*], then use that object’s data for photo
                     $photo = $set->item(0)->getAttribute("data");
@@ -834,21 +839,21 @@ class Parser {
                 if ($root->hasAttribute("href") && in_array($root->localName, ["a", "area"])) {
                     # if a.h-x[href] or area.h-x[href] then use that [href] for url
                     $url = $root->getAttribute("href");
-                } elseif (($set = $this->xpath->query("./a[@href and count(../a) = 1]", $root))->length) {
+                } elseif (($set = $this->query("./html:a[@href and count(../html:a) = 1]", $root))->length) {
                     # else if .h-x>a[href]:only-of-type:not[.h-*], then use that [href] for url
                     $url = $set->item(0)->getAttribute("href");
-                } elseif (($set = $this->xpath->query("./area[@href and count(../area) = 1]", $root))->length) {
+                } elseif (($set = $this->query("./html:area[@href and count(../html:area) = 1]", $root))->length) {
                     # else if .h-x>area[href]:only-of-type:not[.h-*], then use that [href] for url
                     $url = $set->item(0)->getAttribute("href");
                 } elseif (
-                    ($set = $this->xpath->query("./*[not(self::template) and count(../*) = 1]", $root))->length
-                    && ($set = $this->xpath->query("./a[@href and count(../a) = 1]", $set->item(0)))->length
+                    ($set = $this->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
+                    && ($set = $this->query("./html:a[@href and count(../html:a) = 1]", $set->item(0)))->length
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>a[href]:only-of-type:not[.h-*], then use that [href] for url
                     $url = $set->item(0)->getAttribute("href");
                 } elseif (
-                    ($set = $this->xpath->query("./*[not(self::template) and count(../*) = 1]", $root))->length
-                    && ($set = $this->xpath->query("./area[@href and count(../area) = 1]", $set->item(0)))->length
+                    ($set = $this->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
+                    && ($set = $this->query("./html:area[@href and count(../html:area) = 1]", $set->item(0)))->length
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>area[href]:only-of-type:not[.h-*], then use that [href] for url
                     $url = $set->item(0)->getAttribute("href");
@@ -874,14 +879,14 @@ class Parser {
      * 
      * @see https://microformats.org/wiki/microformats2-parsing#parse_an_element_for_properties
      * 
-     * @param \DOMElement $node The element to retrieve a value from
+     * @param \DOMElement|\Dom\HTMLElement $node The element to retrieve a value from
      * @param string $prefix The property prefix (`p`, `dt`, `u`, or `e`)
      * @param array $backcompatTypes The set of microformat types currently in scope, if performing backcompat processing (and empty array otherwise)
      * @param array|null $impliedDate A previously-seen date value from which we can imply a date if only a time is present on the element
      * @param bool $isChild Whether the subject element is itself a child microformat. This affect whether the "Value Class Pattern" applies
      * @return string|array
      */
-    protected function parseProperty(\DOMElement $node, string $prefix, array $backcompatTypes, ?array $impliedDate, bool $isChild) {
+    protected function parseProperty($node, string $prefix, array $backcompatTypes, ?array $impliedDate, bool $isChild) {
         switch ($prefix) {
             case "p":
                 # To parse an element for a p-x property value (whether explicit p-* or backcompat equivalent):
@@ -897,7 +902,7 @@ class Parser {
                 } elseif (in_array($node->localName, ["img", "area"]) && $node->hasAttribute("alt")) {
                     # else if img.p-x[alt] or area.p-x[alt], then return the alt attribute
                     return $node->getAttribute("alt");
-                } elseif (in_array($node->localName, ["a", "area", "link"]) && array_intersect($backcompatTypes, array_keys(static::BACKCOMPAT_RELATIONS['tag'])) && preg_match('/\btag\b/', $node->getAttribute("rel"))) {
+                } elseif (in_array($node->localName, ["a", "area", "link"]) && array_intersect($backcompatTypes, array_keys(static::BACKCOMPAT_RELATIONS['tag'])) && preg_match('/\btag\b/', $node->getAttribute("rel") ?? "")) {
                     // we have encountered a tag relation during backcompat processing
                     // https://microformats.org/wiki/rel-tag#Abstract
                     // we are required to retrieve the last component of the URL path and use that
@@ -1002,7 +1007,7 @@ class Parser {
                 }
                 // return the result
                 $out = [
-                    'html'  => $this->trim(Serializer::serializeInner($copy)),
+                    'html'  => $this->trim($copy instanceof \Dom\HTMLElement ? $copy->innerHTML : Serializer::serializeInner($copy)),
                     'value' => $this->getCleanText($node, $prefix),
                 ];
                 // if so configured, add language information
@@ -1023,13 +1028,13 @@ class Parser {
      * 
      * @see https://microformats.org/wiki/value-class-pattern#Basic_Parsing
      * 
-     * @param \DOMElement $root The subject element
+     * @param \DOMElement|\Dom\HTMLElement $root The subject element
      * @param string $prefix The property prefix (`p`, `dt`, `u`, or `e`)
      * @param array $backcompatTypes The set of microformat types currently in scope, if performing backcompat processing (an empty array otherwise)
      * @param array|null $impliedDate A previously-seen date value from which we can imply a date if only a time is present on the element
      * @return string|array|null
      */
-    protected function getValueClassPattern(\DOMElement $root, string $prefix, array $backcompatTypes, ?array $impliedDate = null) {
+    protected function getValueClassPattern($root, string $prefix, array $backcompatTypes, ?array $impliedDate = null) {
         $out = [];
         $skipChildren = false;
         while ($node = $this->nextElement($node ?? $root, $root, !$skipChildren)) {
@@ -1050,7 +1055,7 @@ class Parser {
                 #   that element must be parsed, rather than the portion of the
                 #   element that would be parsed for a class name of value.
                 // NOTE: This applies even if there is no title attribute
-                $candidate = $node->getAttribute("title");
+                $candidate = $node->getAttribute("title") ?? "";
             } elseif (in_array("value", $classes)) {
                 # Where an element with such a microformat property class name
                 #   has a descendant with class name value (a "value element")
@@ -1058,7 +1063,7 @@ class Parser {
                 #   the following portion of that value element:
                 if (in_array($node->localName, ["img", "area"])) {
                     # if the value element is an img or area element, then use the element's alt attribute value.
-                    $candidate = $node->getAttribute("alt");
+                    $candidate = $node->getAttribute("alt") ?? "";
                 } elseif ($node->localName === "data") {
                     # if the value element is a data element, then use the element's value attribute value if present, otherwise its inner-text.
                     if ($node->hasAttribute("value")) {
@@ -1138,10 +1143,10 @@ class Parser {
      * 
      * @see https://microformats.org/wiki/microformats2-parsing#parse_an_img_element_for_src_and_alt
      * 
-     * @param \DOMElement $node The `img` element to examine
+     * @param \DOMElement|\Dom\HTMLElement $node The `img` element to examine
      * @return array|string
      */
-    protected function parseImg(\DOMElement $node) {
+    protected function parseImg($node) {
         # To parse an img element for src and alt attributes:
         if ($node->localName === "img" && $node->hasAttribute("alt")) {
             # if img[alt]
@@ -1339,10 +1344,10 @@ class Parser {
      * 
      * @see https://microformats.org/wiki/textcontent-parsing
      * 
-     * @param \DOMElement $node The element whose text is to be retrieved
+     * @param \DOMElement|\Dom\HTMLElement $node The element whose text is to be retrieved
      * @param string $prefix The prefix of the microformat property the text is to be used for. This is only relevant for the "simple" algorithm
      */
-    protected function getCleanText(\DOMElement $node, string $prefix): string {
+    protected function getCleanText($node, string $prefix): string {
         if (!$this->options['thoroughTrim']) {
             return $this->getCleanTextSimple($node, $prefix);
         } else {
@@ -1366,9 +1371,9 @@ class Parser {
      *
      * @see https://microformats.org/wiki/textcontent-parsing#Element_to_string
      * 
-     * @param \DOMElement $node The element whose text is to be retrieved
+     * @param \DOMElement|\Dom\HTMLElement $node The element whose text is to be retrieved
      */
-    protected function getCleanTextThorough(\DOMElement $node): string {
+    protected function getCleanTextThorough($node): string {
         # Element to string
         # To get the string value for an Element input:
         # Let output be an empty list
@@ -1376,7 +1381,7 @@ class Parser {
         # Let children be the children of input in tree order
         # For each child in children:
         foreach ($node->childNodes as $n) {
-            if ($n instanceof \DOMText) {
+            if ($n instanceof \DOMText || $n instanceof \Dom\Text) {
                 # If child is a Text node:
                 # Let value be the textContent of child
                 $value = $n->textContent;
@@ -1385,7 +1390,7 @@ class Parser {
                 $value = strtr($value, "\t\n\r\f", "    ");
                 # Append value to output
                 $output[] = $value;
-            } elseif ($n instanceof \DOMElement) {
+            } elseif ($n instanceof \DOMElement || $n instanceof \Dom\HTMLElement) {
                 # If child is an Element, switch on its tagName:
                 // NOTE: we switch on localName instead to avoid silly case folding
                 switch ($n->localName) {
@@ -1451,10 +1456,10 @@ class Parser {
      *
      * This is the traditional "simple" algorithm.
      * 
-     * @param \DOMElement $node The element whose text is to be retrieved
+     * @param \DOMElement|\Dom\HTMLElement $node The element whose text is to be retrieved
      * @param string $prefix The prefix of the microformat property the text is to be used for
      */
-    protected function getCleanTextSimple(\DOMElement $node, string $prefix): string {
+    protected function getCleanTextSimple($node, string $prefix): string {
         #  the textContent of the element after:
         $copy = $node->cloneNode(true);
         # dropping any nested <script> & <style> elements;
@@ -1492,10 +1497,10 @@ class Parser {
     /** Retrieves and resolves the base URL of an HTML document's `<base>`
      * element, if any
      * 
-     * @param \DOMElement $root Any element within the document to check
+     * @param \DOMElement|\Dom\HTMLElement $root Any element within the document to check
      * @param string $base The HTTP-level base URL, if available
      */
-    protected function getBaseUrl(\DOMElement $root, string $base): string {
+    protected function getBaseUrl($root, string $base): string {
         $set = $root->ownerDocument->getElementsByTagName("base");
         if ($set->length) {
             return $this->normalizeUrl($set[0]->getAttribute("href"), $base);
@@ -1507,13 +1512,13 @@ class Parser {
      * 
      * No validation or normalization is performed on the returned information.
      * 
-     * @param \DOMElement $node The subject element
+     * @param \DOMElement|\Dom\HTMLElement $node The subject element
      */
-    protected function getLang(\DOMElement $node): ?string {
-        while ($node && !($node instanceof \DOMElement && $node->hasAttribute("lang"))) {
+    protected function getLang($node): ?string {
+        while ($node && !(($node instanceof \DOMElement || $node instanceof \Dom\HTMLElement) && $node->hasAttribute("lang"))) {
             $node = $node->parentNode;
         }
-        if ($node && strlen($lang = $this->trim($node->getAttribute("lang")))) {
+        if (($node instanceof \DOMElement || $node instanceof \Dom\HTMLElement) && strlen($lang = $this->trim($node->getAttribute("lang")))) {
             return $lang;
         }
         return null;
@@ -1521,11 +1526,12 @@ class Parser {
 
     /** Finds the next element in tree order after $node, if any
      *
-     * @param \DOMNode $node The context node
-     * @param \DOMElement $root The element to consider the contextual root of the tree; nodes outside this element will not be examined
+     * @param \DOMElement|\Dom\HTMLElement $node The context node
+     * @param \DOMElement|\Dom\HTMLElement $root The element to consider the contextual root of the tree; nodes outside this element will not be examined
      * @param bool $considerChildren Whether or not child nodes are valid next nodes
+     * @return \DOMElement|\Dom\HTMLElement
      */
-    protected function nextElement(\DOMElement $node, \DOMElement $root, bool $considerChildren): ?\DOMElement {
+    protected function nextElement($node, $root, bool $considerChildren) {
         if ($considerChildren && $node->hasChildNodes() && $node->localName !== "template") {
             $node = $node->firstChild;
             $next = $node;
@@ -1534,7 +1540,7 @@ class Parser {
          } else {
             $next = $node->nextSibling;
         }
-        while ($next && (!$next instanceof \DOMElement ||  $next->localName === "template")) {
+        while ($next && (!($next instanceof \DOMElement || $next instanceof \Dom\HTMLElement) || $next->localName === "template")) {
             // NOTE: Templates being completely ignored is an unwritten rule followed by all implementations
             $next = $next->nextSibling;
         }
@@ -1544,7 +1550,7 @@ class Parser {
                 return null;
             }
             $next = $node->nextSibling;
-            while ($next && (!$next instanceof \DOMElement ||  $next->localName === "template")) {
+            while ($next && (!($next instanceof \DOMElement || $next instanceof \Dom\HTMLElement) || $next->localName === "template")) {
                 // NOTE: Templates being completely ignored is an unwritten rule followed by all implementations
                 $next = $next->nextSibling;
             }
@@ -1569,5 +1575,23 @@ class Parser {
             'lang'              => (bool) ($options['lang'] ?? true),
             'thoroughTrim'      => (bool) ($options['thoroughTrim'] ?? true),
         ];
+    }
+
+    /** Performs an XPath query on a node.
+     *
+     * This helper exists because we must deal with the document possibly being
+     * in the HTML namespace, or not. We cannot define a prefix for the null
+     * namespace, so we must mangle the query to remove any HTML namespace
+     * prefixes when the HTML namespace is not used.
+     *
+     * @param string $query The query text
+     * @param \DOMElement|\Dom\HTMLElement The context element for the query
+     * @return \DOMNodeList|Dom\NodeList
+     */
+    protected function query(string $query, $node) {
+        if ($node->ownerDocument->documentElement->namespaceURI === null) {
+            $query = str_replace("html:", "", $query);
+        }
+        return $this->xpath->query($query, $node);
     }
 }

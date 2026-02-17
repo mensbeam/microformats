@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a30da295c1beac8ff9796d2e9bfc9c03",
+    "content-hash": "51f3f59b12e3cd92c47151034da4354f",
     "packages": [
         {
             "name": "mensbeam/html-parser",
