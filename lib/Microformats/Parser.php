@@ -370,8 +370,12 @@ class Parser {
     /** Searches an element tree for elements which appear to have microformat
      * root classes
      *
-     * This is an inexact search, which may include false positives, and for
-     * backcompat roots may exclude some descendent roots.
+     * This is a very broad search which will often include false positives,
+     * but a more specific selection is not possible because a) the definition
+     * of whitespace differs between HTML and XPath and b) expressions
+     * containing control characters (such as form feeds) cause libxml's XPath
+     * parser to fail with an error. For backcompat classes it may also exclude
+     * some descendant roots.
      * 
      * The results of this search should only be used as an optimization to
      * pare down the number of elements which must be examined for first-level
@@ -382,10 +386,10 @@ class Parser {
     protected function getRootCandidates($node): void {
         // NOTE: Templates being completely ignored is an unwritten rule followed by all implementations
         $query = [ 
-            "descendant-or-self::*[contains(concat(' ', normalize-space(@class)), ' h-') and not(ancestor-or-self::html:template)]",
+            "descendant-or-self::*[contains(@class, 'h-') and not(ancestor-or-self::html:template)]",
         ];
         foreach (array_keys(static::BACKCOMPAT_ROOTS) as $root) {
-            $query[] = "descendant-or-self::*[contains(concat(' ', normalize-space(@class), ' '), ' $root ') and not(ancestor-or-self::html:template)]";
+            $query[] = "descendant-or-self::*[contains(@class, '$root') and not(ancestor-or-self::html:template)]";
         }
         $query = implode("|", $query);
         $this->roots = iterator_to_array($this->query($query, $node));
