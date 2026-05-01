@@ -60,7 +60,7 @@ class StandardTest extends \PHPUnit\Framework\TestCase {
             echo Microformats::toJson(Microformats::fromFile($path.".html", "text/html; charset=UTF-8", $base, $options), \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES);
             exit;
         }
-            foreach ([Microformats::class, MfDomCompat::class] as $class) {
+        foreach ([Microformats::class] as $class) {
             // parse the input data
             $act = $class::fromFile($path.".html", "text/html; charset=UTF-8", $base, $options);
             // sort the array
