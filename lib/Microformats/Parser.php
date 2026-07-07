@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace MensBeam\Microformats;
 
 use MensBeam\HTML\Parser\Serializer;
+use Uri\WhatWg\Url;
 
 /** A generic parser for microformats
  *
@@ -240,9 +241,9 @@ class Parser {
 
     /** @var array The list of options supplied by the user, after normallization */
     protected $options;
-    /** @var string The base URL supplied by the user, resolved against <base href="..."> when appropriate */
+    /** @var ?Url The base URL supplied by the user, resolved against <base href="..."> when appropriate */
     protected $baseUrl;
-    /** @var string The base URL supplied by the user, with no further normalization or transformation */
+    /** @var ?Url The base URL supplied by the user, parsed */
     protected $docUrl;
     /** @var \DOMXPath|\Dom\XPath The XPath processor used for certain aspects of parsing */
     protected $xpath;
@@ -254,16 +255,16 @@ class Parser {
      * @see https://microformats.org/wiki/microformats2-parsing
      *
      * @param \DOMElement|\Dom\HTMLElement $node The DOMElement to parse
-     * @param string $baseURL The base URL against which to resolve relative URLs in the output
+     * @param ?string $baseUrl The base URL against which to resolve relative URLs in the output
      * @param array $options An associative array of options. Please see the class documentation for more details
      */
-    public function parseHtmlElement($node, string $baseUrl = "", ?array $options = null): array {
+    public function parseHtmlElement($node, ?string $baseUrl = null, ?array $options = null): array {
         $root = $node;
         // normalize options
         $this->options = $this->normalizeOptions($options ?? []);
         // Perform HTML base-URL resolution
-        $this->docUrl = $baseUrl;
-        $this->baseUrl = $this->getBaseUrl($root, $baseUrl);
+        $this->docUrl = Url::parse($baseUrl);
+        $this->baseUrl = $this->getBaseUrl($root, Url::parse($baseUrl));
         // Initialize an XPath processor
         if ($node instanceof \Dom\HTMLElement) {
             $this->xpath = new \Dom\XPath($node->ownerDocument);
@@ -910,7 +911,9 @@ class Parser {
                     // we have encountered a tag relation during backcompat processing
                     // https://microformats.org/wiki/rel-tag#Abstract
                     // we are required to retrieve the last component of the URL path and use that
-                    preg_match('#([^/]*)/?$#', Url::fromString($this->normalizeUrl($node->getAttribute("href")))->getPath(), $match);
+                    $url = Url::parse($node->getAttribute("href"), $this->baseUrl);
+                    $subject = $url ? $url->getPath() : $node->getAttribute("href");
+                    preg_match('#([^/]*)/?$#', $subject, $match);
                     return urldecode($match[1]);
                 }
                 # else return the textContent of the element after [cleaning]
@@ -1332,10 +1335,9 @@ class Parser {
      * @param string $url The URL to resolve and normalize
      * @param string|null $baseUrl The base URL to resolve against. If this argument is absent the document base will be used
      */
-    protected function normalizeUrl(string $url, ?string $baseUrl = null): string {
-        // TODO: Implement better URL parser
+    protected function normalizeUrl(string $url, ?Url $baseUrl = null): string {
         try {
-            return (string) Url::fromString($url, $baseUrl ?? $this->baseUrl);
+            return (new Url($url, $baseUrl ?? $this->baseUrl))->toAsciiString();
         } catch (\Exception $e) { // @codeCoverageIgnore
             return $url; // @codeCoverageIgnore
         }
@@ -1502,15 +1504,17 @@ class Parser {
      * element, if any
      * 
      * @param \DOMElement|\Dom\HTMLElement $root Any element within the document to check
-     * @param string $base The HTTP-level base URL, if available
+     * @param ?Url $base The HTTP-level base URL, if available
      */
-    protected function getBaseUrl($root, string $base): string {
+    protected function getBaseUrl($root, ?Url $base): ?Url {
         $set = $root->ownerDocument->getElementsByTagName("base");
         if ($set->length) {
-            return $this->normalizeUrl($set[0]->getAttribute("href"), $base);
+            return Url::parse($set->item(0)->getAttribute("href"), $base) ?? $base;
         }
         return $base;
     }
+
+
 
     /** Finds the nearest HTML language information for an element
      * 
@@ -1589,8 +1593,8 @@ class Parser {
      * prefixes when the HTML namespace is not used.
      *
      * @param string $query The query text
-     * @param \DOMElement|\Dom\HTMLElement The context element for the query
-     * @return \DOMNodeList|Dom\NodeList
+     * @param \DOMElement|\Dom\HTMLElement $node The context element for the query
+     * @return \DOMNodeList|\Dom\NodeList
      */
     protected function query(string $query, $node) {
         if ($node->ownerDocument->documentElement->namespaceURI === null) {

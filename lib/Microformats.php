@@ -9,8 +9,8 @@ namespace MensBeam;
 
 use MensBeam\HTML\Parser as HTMLParser;
 use MensBeam\Microformats\Parser as MfParser;
-use MensBeam\Microformats\Url;
 use MensBeam\Mime\MimeType;
+use Uri\WhatWg\Url;
 
 /** A generic parser for microformats
  *
@@ -39,7 +39,7 @@ class Microformats {
      * 
      * If retrieving the resource fails `null` is returned.
      * 
-     * @param string $file The resource to retrieve and parse
+     * @param string $url The resource to retrieve and parse
      * @param array $options Options for the parser; please see the class documentetation for details
      */
     public static function fromUrl(string $url, array $options = []): ?array {
@@ -59,7 +59,7 @@ class Microformats {
                             $locationAcceptable = true;
                         } elseif (preg_match('/^Location\s*:\s*(.*)/is', $h, $match) && $locationAcceptable) {
                             // this is the first-seen Location header-field after a redirect; subsequent locations are ignored
-                            $location = (string) Url::fromString($match[1], $location ?? $url);
+                            $location = Url::parse($match[1], Url::parse($location ?? $url))->toAsciiString();
                             $locationAcceptable = false;
                         } elseif (preg_match('/^Content-Type\s*:\s*(.*)/is', $h, $match) && $type === null) {
                             $type = $match[1];
