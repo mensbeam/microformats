@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace MensBeam\Microformats;
 
 use MensBeam\HTML\Parser\Serializer;
+use Uri\WhatWg\InvalidUrlException;
 use Uri\WhatWg\Url;
 
 /** A generic parser for microformats
@@ -1507,9 +1508,15 @@ class Parser {
      * @param ?Url $base The HTTP-level base URL, if available
      */
     protected function getBaseUrl($root, ?Url $base): ?Url {
-        $set = $root->ownerDocument->getElementsByTagName("base");
-        if ($set->length) {
-            return Url::parse($set->item(0)->getAttribute("href"), $base) ?? $base;
+        $nodes = $root->ownerDocument->getElementsByTagName("base");
+        foreach ($nodes as $node) {
+            if ($node->hasAttribute("href")) {
+                try {
+                    return new Url($node->getAttribute("href"), $base);
+                } catch (InvalidUrlException $e) {
+                    break;
+                }
+            }
         }
         return $base;
     }
