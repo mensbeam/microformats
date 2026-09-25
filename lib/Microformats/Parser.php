@@ -246,7 +246,7 @@ class Parser {
     protected $baseUrl;
     /** @var ?Url The base URL supplied by the user, parsed */
     protected $docUrl;
-    /** @var \DOMXPath|\Dom\XPath The XPath processor used for certain aspects of parsing */
+    /** @var XPath The XPath processor used for certain aspects of parsing */
     protected $xpath;
     /** @var array The list of microformat root candidates found by XPath at the start of processing; the array is manipulated during processing to remove child roots so that they are only processed once */
     protected $roots;
@@ -267,12 +267,7 @@ class Parser {
         $this->docUrl = Url::parse($baseUrl);
         $this->baseUrl = $this->getBaseUrl($root, Url::parse($baseUrl));
         // Initialize an XPath processor
-        if ($node instanceof \Dom\HTMLElement) {
-            $this->xpath = new \Dom\XPath($node->ownerDocument);
-        } else {
-            $this->xpath = new \DOMXPath($node->ownerDocument);
-        }
-        $this->xpath->registerNamespace("html", "http://www.w3.org/1999/xhtml");
+        $this->xpath = new XPath($node->ownerDocument);
         # start with an empty JSON "items" array and "rels" & "rel-urls" hashes:
         $out = [
             'items'    => [],
@@ -294,7 +289,7 @@ class Parser {
             }
         }
         # parse all hyperlink (<a> <area> <link>) elements for rel microformats, adding to the JSON rels & rel-urls hashes accordingly
-        foreach ($this->query(".//html:a[@rel and @href and not(ancestor::html:template)]|.//html:area[@rel and @href and not(ancestor::html:template)]|.//html:link[@rel and @href and not(ancestor::html:template)]", $root) as $link) {
+        foreach ($this->xpath->query(".//html:a[@rel and @href and not(ancestor::html:template)]|.//html:area[@rel and @href and not(ancestor::html:template)]|.//html:link[@rel and @href and not(ancestor::html:template)]", $root) as $link) {
             # To parse a hyperlink element (e.g. a or link) for rel
             #   microformats: use the following algorithm or an algorithm that
             #   produces equivalent results:
@@ -394,7 +389,7 @@ class Parser {
             $query[] = "descendant-or-self::*[contains(@class, '$root') and not(ancestor-or-self::html:template)]";
         }
         $query = implode("|", $query);
-        $this->roots = iterator_to_array($this->query($query, $node));
+        $this->roots = iterator_to_array($this->xpath->query($query, $node));
     }
 
     /** Splits the attribute of an element into an array of whitespace-separated tokens
@@ -764,30 +759,30 @@ class Parser {
                 } elseif ($root->hasAttribute("title") && $root->localName === "abbr") {
                     # else if abbr.h-x[title] then use its title attribute for name
                     $name = $root->getAttribute("title");
-                } elseif (($set = $this->query("./html:img[@alt and @alt != '' and count(../*) = 1]", $root))->length) {
+                } elseif (($set = $this->xpath->query("./html:img[@alt and @alt != '' and count(../*) = 1]", $root))->length) {
                     # else if .h-x>img:only-child[alt]:not([alt=""]):not[.h-*] then use that img’s alt for name
                     $name = $set->item(0)->getAttribute("alt");
-                } elseif (($set = $this->query("./html:area[@alt and @alt != '' and count(../*) = 1]", $root))->length) {
+                } elseif (($set = $this->xpath->query("./html:area[@alt and @alt != '' and count(../*) = 1]", $root))->length) {
                     # else if .h-x>area:only-child[alt]:not([alt=""]):not[.h-*] then use that area’s alt for name
                     $name = $set->item(0)->getAttribute("alt");
-                } elseif (($set = $this->query("./html:abbr[@title and @title != '' and count(../*) = 1]", $root))->length) {
+                } elseif (($set = $this->xpath->query("./html:abbr[@title and @title != '' and count(../*) = 1]", $root))->length) {
                     # else if .h-x>abbr:only-child[title]:not([title=""]):not[.h-*] then use that abbr title for name
                     $name = $set->item(0)->getAttribute("title");
                 } elseif (
-                    ($set = $this->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
-                    && ($set = $this->query("./html:img[@alt and @alt != '' and count(../*) = 1]", $set->item(0)))->length
+                    ($set = $this->xpath->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
+                    && ($set = $this->xpath->query("./html:img[@alt and @alt != '' and count(../*) = 1]", $set->item(0)))->length
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>img:only-child[alt]:not([alt=""]):not[.h-*] then use that img’s alt for name
                     $name = $set->item(0)->getAttribute("alt");
                 } elseif (
-                    ($set = $this->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
-                    && ($set = $this->query("./html:area[@alt and @alt != '' and count(../*) = 1]", $set->item(0)))->length
+                    ($set = $this->xpath->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
+                    && ($set = $this->xpath->query("./html:area[@alt and @alt != '' and count(../*) = 1]", $set->item(0)))->length
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>area:only-child[alt]:not([alt=""]):not[.h-*] then use that area’s alt for name
                     $name = $set->item(0)->getAttribute("alt");
                 } elseif (
-                    ($set = $this->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
-                    && ($set = $this->query("./html:abbr[@title and @title != '' and count(../*) = 1]", $set->item(0)))->length
+                    ($set = $this->xpath->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
+                    && ($set = $this->xpath->query("./html:abbr[@title and @title != '' and count(../*) = 1]", $set->item(0)))->length
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>abbr:only-child[title]:not([title=""]):not[.h-*] use that abbr’s title for name
                     $name = $set->item(0)->getAttribute("title");
@@ -809,21 +804,21 @@ class Parser {
                 } elseif ($root->localName === "object" && $root->hasAttribute("data")) {
                     # else if object.h-x[data] then use data for photo
                     $photo = $root->getAttribute("data");
-                } elseif (($set = $this->query("./html:img[@src and count(../html:img) = 1]", $root))->length) {
+                } elseif (($set = $this->xpath->query("./html:img[@src and count(../html:img) = 1]", $root))->length) {
                     # else if .h-x>img[src]:only-of-type:not[.h-*] then use the result of "parse an img element for src and alt" (see Sec.1.5) for photo
                     $out['properties']['photo'] = [$this->parseImg($set->item(0))];
-                } elseif (($set = $this->query("./html:object[@data and count(../html:object) = 1]", $root))->length) {
+                } elseif (($set = $this->xpath->query("./html:object[@data and count(../html:object) = 1]", $root))->length) {
                     # else if .h-x>object[data]:only-of-type:not[.h-*] then use that object’s data for photo
                     $photo = $set->item(0)->getAttribute("data");
                 } elseif (
-                    ($set = $this->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
-                    && ($set = $this->query("./html:img[@src and count(../html:img) = 1]", $set->item(0)))->length
+                    ($set = $this->xpath->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
+                    && ($set = $this->xpath->query("./html:img[@src and count(../html:img) = 1]", $set->item(0)))->length
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>img[src]:only-of-type:not[.h-*], then use the result of "parse an img element for src and alt" (see Sec.1.5) for photo
                     $out['properties']['photo'] = [$this->parseImg($set->item(0))];
                 } elseif (
-                    ($set = $this->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
-                    && ($set = $this->query("./html:object[@data and count(../html:object) = 1]", $set->item(0)))->length
+                    ($set = $this->xpath->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
+                    && ($set = $this->xpath->query("./html:object[@data and count(../html:object) = 1]", $set->item(0)))->length
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>object[data]:only-of-type:not[.h-*], then use that object’s data for photo
                     $photo = $set->item(0)->getAttribute("data");
@@ -845,21 +840,21 @@ class Parser {
                 if ($root->hasAttribute("href") && in_array($root->localName, ["a", "area"])) {
                     # if a.h-x[href] or area.h-x[href] then use that [href] for url
                     $url = $root->getAttribute("href");
-                } elseif (($set = $this->query("./html:a[@href and count(../html:a) = 1]", $root))->length) {
+                } elseif (($set = $this->xpath->query("./html:a[@href and count(../html:a) = 1]", $root))->length) {
                     # else if .h-x>a[href]:only-of-type:not[.h-*], then use that [href] for url
                     $url = $set->item(0)->getAttribute("href");
-                } elseif (($set = $this->query("./html:area[@href and count(../html:area) = 1]", $root))->length) {
+                } elseif (($set = $this->xpath->query("./html:area[@href and count(../html:area) = 1]", $root))->length) {
                     # else if .h-x>area[href]:only-of-type:not[.h-*], then use that [href] for url
                     $url = $set->item(0)->getAttribute("href");
                 } elseif (
-                    ($set = $this->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
-                    && ($set = $this->query("./html:a[@href and count(../html:a) = 1]", $set->item(0)))->length
+                    ($set = $this->xpath->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
+                    && ($set = $this->xpath->query("./html:a[@href and count(../html:a) = 1]", $set->item(0)))->length
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>a[href]:only-of-type:not[.h-*], then use that [href] for url
                     $url = $set->item(0)->getAttribute("href");
                 } elseif (
-                    ($set = $this->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
-                    && ($set = $this->query("./html:area[@href and count(../html:area) = 1]", $set->item(0)))->length
+                    ($set = $this->xpath->query("./*[not(self::html:template) and count(../*) = 1]", $root))->length
+                    && ($set = $this->xpath->query("./html:area[@href and count(../html:area) = 1]", $set->item(0)))->length
                 ) {
                     # else if .h-x>:only-child:not[.h-*]>area[href]:only-of-type:not[.h-*], then use that [href] for url
                     $url = $set->item(0)->getAttribute("href");
@@ -1590,23 +1585,5 @@ class Parser {
             'lang'              => (bool) ($options['lang'] ?? true),
             'thoroughTrim'      => (bool) ($options['thoroughTrim'] ?? true),
         ];
-    }
-
-    /** Performs an XPath query on a node.
-     *
-     * This helper exists because we must deal with the document possibly being
-     * in the HTML namespace, or not. We cannot define a prefix for the null
-     * namespace, so we must mangle the query to remove any HTML namespace
-     * prefixes when the HTML namespace is not used.
-     *
-     * @param string $query The query text
-     * @param \DOMElement|\Dom\HTMLElement $node The context element for the query
-     * @return \DOMNodeList|\Dom\NodeList
-     */
-    protected function query(string $query, $node) {
-        if ($node->ownerDocument->documentElement->namespaceURI === null) {
-            $query = str_replace("html:", "", $query);
-        }
-        return $this->xpath->query($query, $node);
     }
 }
