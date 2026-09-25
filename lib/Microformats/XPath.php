@@ -8,10 +8,6 @@ declare(strict_types=1);
 namespace MensBeam\Microformats;
 
 use Dom\Document;
-use Dom\HTMLDocument;
-use Dom\Node;
-use Dom\NodeList;
-use Dom\XMLDocument;
 
 /** This class simplifies using XPath with both DOMDocument and Dom\HTMLDocument
  * 
@@ -42,8 +38,7 @@ class XPath {
             //   normally not have namespaced elements. We note this case here
             //   so that we can later transform queries against the document
             //   to remove the relevant prefixes at time of query.
-            $name = $doc->documentElement->localName;
-            if ($name === "html") {
+            if ($doc->documentElement->localName === "html") {
                 $this->isHTMLCompat = true;
             }
         }

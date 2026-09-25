@@ -250,6 +250,8 @@ class Parser {
     protected $xpath;
     /** @var array The list of microformat root candidates found by XPath at the start of processing; the array is manipulated during processing to remove child roots so that they are only processed once */
     protected $roots;
+    /** @var ?string $ns The effective namespace to use for HTML elements */
+    protected $ns;
 
     /** Parses an HTML DOMElement for microformats
      * 
@@ -263,6 +265,17 @@ class Parser {
         $root = $node;
         // normalize options
         $this->options = $this->normalizeOptions($options ?? []);
+        // determine whether we should use the HTML namespace or the null
+        //   namespace when examining elements. Historically HTML elements
+        //   were in the null namespace is the PHP DOM, but some userland
+        //   parsers will use the correct HTML namespace, and the new parsers
+        //   in PHP 8.4 will use the HTML namespace by default, though this
+        //   can be turned off as well.
+        if ($node->ownerDocument->documentElement->namespaceURI === null && $node->ownerDocument->documentElement->localName === "html") {
+            $this->ns = null;
+        } else {
+            $this->ns = "http://www.w3.org/1999/xhtml";
+        }
         // Perform HTML base-URL resolution
         $this->docUrl = Url::parse($baseUrl);
         $this->baseUrl = $this->getBaseUrl($root, Url::parse($baseUrl));
@@ -528,7 +541,7 @@ class Parser {
         foreach ($types as $t) {
             // check for backcompat classes
             foreach ($classes as $c) {
-                if ($c === "entry-date" && ($node->localName !== "time" || !$node->hasAttribute("datetime"))) {
+                if ($c === "entry-date" && ($node->namespaceURI !== $this->ns || $node->localName !== "time" || !$node->hasAttribute("datetime"))) {
                     // entry-date is only valid on time elements with a machine-readable datetime
                     continue;
                 } elseif ($map = static::BACKCOMPAT_CLASSES[$c][$t] ?? null) {
@@ -536,7 +549,7 @@ class Parser {
                 }
             }
             // check for backcompat relations, if the node is of the appropriate type
-            if (in_array($node->localName, ["a", "area", "link"])) {
+            if ($node->namespaceURI === $this->ns && in_array($node->localName, ["a", "area", "link"])) {
                 $relations = $this->parseTokens($node, "rel");
                 foreach ($relations as $r) {
                     if ($map = static::BACKCOMPAT_RELATIONS[$r][$t] ?? null) {
@@ -753,10 +766,10 @@ class Parser {
             # if no explicit "name" property, and no other p-* or e-* properties, and no nested microformats,
             if (!isset($out['properties']['name']) && !$hasChild && !$hasP && !$hasE) {
                 # then imply by:
-                if ($root->hasAttribute("alt") && in_array($root->localName, ["img", "area"])) {
+                if ($root->hasAttribute("alt") && $root->namespaceURI === $this->ns && in_array($root->localName, ["img", "area"])) {
                     # if img.h-x or area.h-x, then use its alt attribute for name
                     $name = $root->getAttribute("alt") ?? "";
-                } elseif ($root->hasAttribute("title") && $root->localName === "abbr") {
+                } elseif ($root->hasAttribute("title") && $root->namespaceURI === $this->ns && $root->localName === "abbr") {
                     # else if abbr.h-x[title] then use its title attribute for name
                     $name = $root->getAttribute("title");
                 } elseif (($set = $this->xpath->query("./html:img[@alt and @alt != '' and count(../*) = 1]", $root))->length) {
@@ -798,10 +811,10 @@ class Parser {
             if (!isset($out['properties']['photo']) && !$hasChild && !$hasU) {
                 $photo = null;
                 # then imply by:
-                if ($root->localName === "img" && $root->hasAttribute("src")) {
+                if ($root->namespaceURI === $this->ns && $root->localName === "img" && $root->hasAttribute("src")) {
                     # if img.h-x[src], then use the result of "parse an img element for src and alt" (see Sec.1.5) for photo
                     $out['properties']['photo'] = [$this->parseImg($root)];
-                } elseif ($root->localName === "object" && $root->hasAttribute("data")) {
+                } elseif ($root->namespaceURI === $this->ns && $root->localName === "object" && $root->hasAttribute("data")) {
                     # else if object.h-x[data] then use data for photo
                     $photo = $root->getAttribute("data");
                 } elseif (($set = $this->xpath->query("./html:img[@src and count(../html:img) = 1]", $root))->length) {
@@ -837,7 +850,7 @@ class Parser {
             if (!isset($out['properties']['url']) && !$hasChild && !$hasU) {
                 $url = null;
                 # then imply by:
-                if ($root->hasAttribute("href") && in_array($root->localName, ["a", "area"])) {
+                if ($root->hasAttribute("href") && $root->namespaceURI === $this->ns && in_array($root->localName, ["a", "area"])) {
                     # if a.h-x[href] or area.h-x[href] then use that [href] for url
                     $url = $root->getAttribute("href");
                 } elseif (($set = $this->xpath->query("./html:a[@href and count(../html:a) = 1]", $root))->length) {
@@ -894,16 +907,16 @@ class Parser {
                 if (!$isChild && ($text = $this->getValueClassPattern($node, $prefix, $backcompatTypes)) !== null) {
                     # Parse the element for the Value Class Pattern. If a value is found, return it.
                     return $text;
-                } elseif (in_array($node->localName, ["abbr", "link"]) && $node->hasAttribute("title")) {
+                } elseif ($node->namespaceURI === $this->ns && in_array($node->localName, ["abbr", "link"]) && $node->hasAttribute("title")) {
                     # If abbr.p-x[title] or link.p-x[title], return the title attribute.
                     return $node->getAttribute("title");
-                } elseif (in_array($node->localName, ["data", "input"]) && $node->hasAttribute("value")) {
+                } elseif ($node->namespaceURI === $this->ns && in_array($node->localName, ["data", "input"]) && $node->hasAttribute("value")) {
                     # else if data.p-x[value] or input.p-x[value], then return the value attribute
                     return $node->getAttribute("value");
-                } elseif (in_array($node->localName, ["img", "area"]) && $node->hasAttribute("alt")) {
+                } elseif ($node->namespaceURI === $this->ns && in_array($node->localName, ["img", "area"]) && $node->hasAttribute("alt")) {
                     # else if img.p-x[alt] or area.p-x[alt], then return the alt attribute
                     return $node->getAttribute("alt");
-                } elseif (in_array($node->localName, ["a", "area", "link"]) && array_intersect($backcompatTypes, array_keys(static::BACKCOMPAT_RELATIONS['tag'])) && preg_match('/\btag\b/', $node->getAttribute("rel") ?? "")) {
+                } elseif ($node->namespaceURI === $this->ns && in_array($node->localName, ["a", "area", "link"]) && array_intersect($backcompatTypes, array_keys(static::BACKCOMPAT_RELATIONS['tag'])) && preg_match('/\btag\b/', $node->getAttribute("rel") ?? "")) {
                     // we have encountered a tag relation during backcompat processing
                     // https://microformats.org/wiki/rel-tag#Abstract
                     // we are required to retrieve the last component of the URL path and use that
@@ -916,10 +929,10 @@ class Parser {
                 return $this->getCleanText($node, $prefix);
             case "u":
                 # To parse an element for a u-x property value (whether explicit u-* or backcompat equivalent):
-                if (in_array($node->localName, ["a", "area", "link"]) && $node->hasAttribute("href")) {
+                if ($node->namespaceURI === $this->ns && in_array($node->localName, ["a", "area", "link"]) && $node->hasAttribute("href")) {
                     # if a.u-x[href] or area.u-x[href] or link.u-x[href], then get the href attribute
                     $url = $node->getAttribute("href");
-                } elseif ($node->localName === "img" && $node->hasAttribute("src")) {
+                } elseif ($node->namespaceURI === $this->ns && $node->localName === "img" && $node->hasAttribute("src")) {
                     # else if img.u-x[src] return the result of "parse an img element for src and alt" (see Sec.1.5)
                     // NOTE: this seems not to apply to backcompat processing
                     if (!$backcompatTypes) {
@@ -927,22 +940,22 @@ class Parser {
                     } else {
                         $url= $node->getAttribute("src");
                     }
-                } elseif (in_array($node->localName, ["audio", "video", "source", "iframe"]) && $node->hasAttribute("src")) {
+                } elseif ($node->namespaceURI === $this->ns && in_array($node->localName, ["audio", "video", "source", "iframe"]) && $node->hasAttribute("src")) {
                     # else if audio.u-x[src] or video.u-x[src] or source.u-x[src] or iframe.u-x[src], then get the src attribute
                     $url = $node->getAttribute("src");
-                } elseif ($node->localName === "video" && $node->hasAttribute("poster")) {
+                } elseif ($node->namespaceURI === $this->ns && $node->localName === "video" && $node->hasAttribute("poster")) {
                     # else if video.u-x[poster], then get the poster attribute
                     $url = $node->getAttribute("poster");
-                } elseif ($node->localName === "object" && $node->hasAttribute("data")) {
+                } elseif ($node->namespaceURI === $this->ns && $node->localName === "object" && $node->hasAttribute("data")) {
                     # else if object.u-x[data], then get the data attribute
                     $url = $node->getAttribute("data");
                 } elseif (!$isChild && ($url = $this->getValueClassPattern($node, $prefix, $backcompatTypes)) !== null) {
                     # else parse the element for the Value Class Pattern. If a value is found, get it
                     // Nothing to do in this branch
-                } elseif ($node->localName === "abbr" && $node->hasAttribute("title")) {
+                } elseif ($node->namespaceURI === $this->ns && $node->localName === "abbr" && $node->hasAttribute("title")) {
                     # else if abbr.u-x[title], then get the title attribute
                     $url = $node->getAttribute("title");
-                } elseif (in_array($node->localName, ["data", "input"]) && $node->hasAttribute("value")) {
+                } elseif ($node->namespaceURI === $this->ns && in_array($node->localName, ["data", "input"]) && $node->hasAttribute("value")) {
                     # else if data.u-x[value] or input.u-x[value], then get the value attribute
                     $url = $node->getAttribute("value");
                 } else {
@@ -971,13 +984,13 @@ class Parser {
                         return [$date, null];
                     }
                 }
-                if (in_array($node->localName, ["time", "ins", "del"]) && $node->hasAttribute("datetime")) {
+                if ($node->namespaceURI === $this->ns && in_array($node->localName, ["time", "ins", "del"]) && $node->hasAttribute("datetime")) {
                     # if time.dt-x[datetime] or ins.dt-x[datetime] or del.dt-x[datetime], then return the datetime attribute
                     $date = $node->getAttribute("datetime");
-                } elseif ($node->localName === "abbr" && $node->hasAttribute("title")) {
+                } elseif ($node->namespaceURI === $this->ns && $node->localName === "abbr" && $node->hasAttribute("title")) {
                     # else if abbr.dt-x[title], then return the title attribute
                     $date = $node->getAttribute("title");
-                } elseif (in_array($node->localName, ["data", "input"]) && $node->hasAttribute("value")) {
+                } elseif ($node->namespaceURI === $this->ns && in_array($node->localName, ["data", "input"]) && $node->hasAttribute("value")) {
                     # else if data.dt-x[value] or input.dt-x[value], then return the value attribute
                     $date = $node->getAttribute("value");
                 } else {
@@ -1064,24 +1077,24 @@ class Parser {
                 #   has a descendant with class name value (a "value element")
                 #   not inside some other property element, parsers should use
                 #   the following portion of that value element:
-                if (in_array($node->localName, ["img", "area"])) {
+                if ($node->namespaceURI === $this->ns && in_array($node->localName, ["img", "area"])) {
                     # if the value element is an img or area element, then use the element's alt attribute value.
                     $candidate = $node->getAttribute("alt") ?? "";
-                } elseif ($node->localName === "data") {
+                } elseif ($node->namespaceURI === $this->ns && $node->localName === "data") {
                     # if the value element is a data element, then use the element's value attribute value if present, otherwise its inner-text.
                     if ($node->hasAttribute("value")) {
                         $candidate = $node->getAttribute("value");
                     } else {
                         $candidate = $this->getCleanText($node, $prefix);
                     }
-                } elseif ($node->localName === "abbr") {
+                } elseif ($node->namespaceURI === $this->ns && $node->localName === "abbr") {
                     # if the value element is an abbr element, then use the element's title attribute value if present, otherwise its inner-text.
                     if ($node->hasAttribute("title")) {
                         $candidate = $node->getAttribute("title");
                     } else {
                         $candidate = $this->getCleanText($node, $prefix);
                     }
-                } elseif ($prefix === "dt" && in_array($node->localName, ["del", "ins", "time"])) {
+                } elseif ($prefix === "dt" && $node->namespaceURI === $this->ns && in_array($node->localName, ["del", "ins", "time"])) {
                     # if the element is a del, ins, or time element, then use
                     #   the element's datetime attribute value if present,
                     #   otherwise its inner-text. [dt- property only]
@@ -1151,7 +1164,7 @@ class Parser {
      */
     protected function parseImg($node) {
         # To parse an img element for src and alt attributes:
-        if ($node->localName === "img" && $node->hasAttribute("alt")) {
+        if ($node->namespaceURI === $this->ns && $node->localName === "img" && $node->hasAttribute("alt")) {
             # if img[alt]
             # return a new {} structure with
             return [
@@ -1392,7 +1405,7 @@ class Parser {
                 $value = strtr($value, "\t\n\r\f", "    ");
                 # Append value to output
                 $output[] = $value;
-            } elseif ($n instanceof \DOMElement || $n instanceof \Dom\HTMLElement) {
+            } elseif ($node->namespaceURI === $this->ns && ($n instanceof \DOMElement || $n instanceof \Dom\HTMLElement)) {
                 # If child is an Element, switch on its tagName:
                 // NOTE: we switch on localName instead to avoid silly case folding
                 switch ($n->localName) {
@@ -1464,7 +1477,7 @@ class Parser {
     protected function getCleanTextSimple($node, string $prefix): string {
         #  the textContent of the element after:
         $copy = $node->cloneNode(true);
-        # dropping any nested <script> & <style> elements;
+        # dropping any nested <script> & <style> elements, regardless of namespace;
         foreach ($copy->getElementsByTagName("script") as $e) {
             $e->parentNode->removeChild($e);
         }
@@ -1472,7 +1485,7 @@ class Parser {
             $e->parentNode->removeChild($e);
         }
         // also drop templates; their contents would not normally be included in textContent
-        foreach ($copy->getElementsByTagName("template") as $e) {
+        foreach ($copy->getElementsByTagNameNS($this->ns, "template") as $e) {
             $e->parentNode->removeChild($e);
         }
         # replacing any nested <img> elements with their alt attribute, if
@@ -1480,7 +1493,7 @@ class Parser {
         #   space at the beginning and end, resolving the URL if it’s
         #   relative; [p- and e- only]
         if (in_array($prefix, ["p", "e"])) {
-            foreach ($copy->getElementsByTagName("img") as $e) {
+            foreach ($copy->getElementsByTagNameNS($this->ns, "img") as $e) {
                 $attr = null;
                 if ($e->hasAttribute("alt")) {
                     $attr = $alt = $e->getAttribute("alt");
@@ -1503,7 +1516,7 @@ class Parser {
      * @param ?Url $base The HTTP-level base URL, if available
      */
     protected function getBaseUrl($root, ?Url $base): ?Url {
-        $nodes = $root->ownerDocument->getElementsByTagName("base");
+        $nodes = $root->ownerDocument->getElementsByTagNameNS($this->ns, "base");
         foreach ($nodes as $node) {
             if ($node->hasAttribute("href")) {
                 try {
@@ -1542,7 +1555,7 @@ class Parser {
      * @return \DOMElement|\Dom\HTMLElement
      */
     protected function nextElement($node, $root, bool $considerChildren) {
-        if ($considerChildren && $node->hasChildNodes() && $node->localName !== "template") {
+        if ($considerChildren && $node->hasChildNodes() && !($node->namespaceURI === $this->ns && $node->localName === "template")) {
             $node = $node->firstChild;
             $next = $node;
         } elseif ($node->isSameNode($root)) {
@@ -1550,7 +1563,7 @@ class Parser {
          } else {
             $next = $node->nextSibling;
         }
-        while ($next && (!($next instanceof \DOMElement || $next instanceof \Dom\HTMLElement) || $next->localName === "template")) {
+        while ($next && (!($next instanceof \DOMElement || $next instanceof \Dom\HTMLElement) || ($next->namespaceURI === $this->ns && $next->localName === "template"))) {
             // NOTE: Templates being completely ignored is an unwritten rule followed by all implementations
             $next = $next->nextSibling;
         }
@@ -1560,7 +1573,7 @@ class Parser {
                 return null;
             }
             $next = $node->nextSibling;
-            while ($next && (!($next instanceof \DOMElement || $next instanceof \Dom\HTMLElement) || $next->localName === "template")) {
+            while ($next && (!($next instanceof \DOMElement || $next instanceof \Dom\HTMLElement) || ($next->namespaceURI === $this->ns && $next->localName === "template"))) {
                 // NOTE: Templates being completely ignored is an unwritten rule followed by all implementations
                 $next = $next->nextSibling;
             }
