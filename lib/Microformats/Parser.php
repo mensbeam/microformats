@@ -149,32 +149,36 @@ class Parser {
         'item-license' => ['h-news' => ["u", "license"]],
         'principles'   => ['h-news' => ["u", "principles"]],
     ];
+    protected const NS_HTML = "http://www.w3.org/1999/xhtml";
+    protected const NS_SVG = "http://www.w3.org/2000/svg";
+    protected const NS_MATHML = "http://www.w3.org/1998/Math/MathML";
+    protected const NS_XLINK = "http://www.w3.org/1999/xlink";
     /** @var array The list of (global) attributes which contain URLs and apply to any element */
     protected const URL_ATTRS_GLOBAL = ["itemid", "itemprop", "itemtype"];
     /** @var array The list of (non-global) attributes which contain URLs and their host elements */
     protected const URL_ATTRS = [
         // TODO: Fill this out with SVG and MathML attributes as well
         // See https://github.com/microformats/mf2py/issues/181#issuecomment-1625461973
-        'a'          => ["href", "ping"],
-        'area'       => ["href", "ping"],
-        'audio'      => ["src"],
-        'base'       => ["href"], // this requires special processing to not resolve against itself
-        'blockquote' => ["cite"],
-        'button'     => ["formaction"],
-        'del'        => ["cite"],
-        'embed'      => ["src"],
-        'form'       => ["action"],
-        'iframe'     => ["src"],
-        'img'        => ["src"],
-        'input'      => ["formaction", "src"],
-        'ins'        => ["cite"],
-        'link'       => ["href"],
-        'object'     => ["data"],
-        'q'          => ["cite"],
-        'script'     => ["src"],
-        'source'     => ["src"],
-        'track'      => ["src"],
-        'video'      => ["poster", "src"],
+        'a http://www.w3.org/1999/xhtml'          => ["href", "ping"],
+        'area http://www.w3.org/1999/xhtml'       => ["href", "ping"],
+        'audio http://www.w3.org/1999/xhtml'      => ["src"],
+        'base http://www.w3.org/1999/xhtml'       => ["href"], // this requires special processing to not resolve against itself
+        'blockquote http://www.w3.org/1999/xhtml' => ["cite"],
+        'button http://www.w3.org/1999/xhtml'     => ["formaction"],
+        'del http://www.w3.org/1999/xhtml'        => ["cite"],
+        'embed http://www.w3.org/1999/xhtml'      => ["src"],
+        'form http://www.w3.org/1999/xhtml'       => ["action"],
+        'iframe http://www.w3.org/1999/xhtml'     => ["src"],
+        'img http://www.w3.org/1999/xhtml'        => ["src"],
+        'input http://www.w3.org/1999/xhtml'      => ["formaction", "src"],
+        'ins http://www.w3.org/1999/xhtml'        => ["cite"],
+        'link http://www.w3.org/1999/xhtml'       => ["href"],
+        'object http://www.w3.org/1999/xhtml'     => ["data"],
+        'q http://www.w3.org/1999/xhtml'          => ["cite"],
+        'script http://www.w3.org/1999/xhtml'     => ["src"],
+        'source http://www.w3.org/1999/xhtml'     => ["src"],
+        'track http://www.w3.org/1999/xhtml'      => ["src"],
+        'video http://www.w3.org/1999/xhtml'      => ["poster", "src"],
     ];
     protected const DATE_TYPE_DATE = 1 << 0;
     protected const DATE_TYPE_HOUR = 1 << 1;
@@ -274,7 +278,7 @@ class Parser {
         if ($node->ownerDocument->documentElement->namespaceURI === null && $node->ownerDocument->documentElement->localName === "html") {
             $this->ns = null;
         } else {
-            $this->ns = "http://www.w3.org/1999/xhtml";
+            $this->ns = self::NS_HTML;
         }
         // Perform HTML base-URL resolution
         $this->docUrl = Url::parse($baseUrl);
@@ -1014,7 +1018,8 @@ class Parser {
                 // normalize URLs in the copy
                 $copyNode = $copy;
                 while ($copyNode) {
-                    foreach (array_merge(self::URL_ATTRS_GLOBAL, self::URL_ATTRS[$copyNode->localName] ?? []) as $attr) {
+                    $ns = $copyNode->namespaceURI ?? ($this->ns === null ? self::NS_HTML : null);
+                    foreach (array_merge($ns === self::NS_HTML ? self::URL_ATTRS_GLOBAL : [], self::URL_ATTRS["{$copyNode->localName} $ns"] ?? []) as $attr) {
                         if ($copyNode->hasAttribute($attr)) {
                             $copyNode->setAttribute($attr, $this->normalizeUrl($copyNode->getAttribute($attr), ($copyNode->localName === "base" ? $this->docUrl : $this->baseUrl)));
                         }
@@ -1405,19 +1410,21 @@ class Parser {
                 $value = strtr($value, "\t\n\r\f", "    ");
                 # Append value to output
                 $output[] = $value;
-            } elseif ($node->namespaceURI === $this->ns && ($n instanceof \DOMElement || $n instanceof \Dom\HTMLElement)) {
+            } elseif ($n instanceof \DOMElement || $n instanceof \Dom\HTMLElement) {
                 # If child is an Element, switch on its tagName:
                 // NOTE: we switch on localName instead to avoid silly case folding
-                switch ($n->localName) {
-                    case "script":
-                    case "style":
-                    case "template":
+                switch ("{$n->localName} {$n->namespaceURI}") {
+                    case "script {$this->ns}":
+                    case "style {$this->ns}":
+                    case "script ".self::NS_SVG:
+                    case "style ".self::NS_SVG:
+                    case "template {$this->ns}":
                         # SCRIPT
                         # STYLE
                         // TEMPLATE as well
                         # Continue
                         continue 2;
-                    case "img":
+                    case "img {$this->ns}":
                         # IMG
                         if ($n->hasAttribute("alt")) {
                             # If child has an alt attribute, then:
@@ -1439,12 +1446,12 @@ class Parser {
                         # Append value to output
                         $output[] = " ".$value." ";
                         break;
-                    case "br":
+                    case "br {$this->ns}":
                         # BR
                         # Append a string containing a single U+000A LF code point to output
                         $output[] = "\n";
                         break;
-                    case "p":
+                    case "p {$this->ns}":
                         # P
                         # Let value be the result of running this algorithm on child
                         # Prepend a single U+000A LF code point to value
