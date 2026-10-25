@@ -80,6 +80,10 @@ The parsing methods all optionally take an `$options` array as an argument. Thes
 
 ## Change log
 
+### Version 1.0.0 (2026-10-25)
+
+- Resolve relative URLs in SVG and MathML elements
+
 ### Version 0.2.0 (2026-02-17)
 
 - Accept and use `Dom\HTMLDocument` when available (since PHP 8.4)
