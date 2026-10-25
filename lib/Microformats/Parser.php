@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace MensBeam\Microformats;
 
 use MensBeam\HTML\Parser\Serializer;
+use MensBeam\HTML\UrlResolver;
 use Uri\WhatWg\InvalidUrlException;
 use Uri\WhatWg\Url;
 
@@ -151,35 +152,6 @@ class Parser {
     ];
     protected const NS_HTML = "http://www.w3.org/1999/xhtml";
     protected const NS_SVG = "http://www.w3.org/2000/svg";
-    protected const NS_MATHML = "http://www.w3.org/1998/Math/MathML";
-    protected const NS_XLINK = "http://www.w3.org/1999/xlink";
-    /** @var array The list of (global) attributes which contain URLs and apply to any element */
-    protected const URL_ATTRS_GLOBAL = ["itemid", "itemprop", "itemtype"];
-    /** @var array The list of (non-global) attributes which contain URLs and their host elements */
-    protected const URL_ATTRS = [
-        // TODO: Fill this out with SVG and MathML attributes as well
-        // See https://github.com/microformats/mf2py/issues/181#issuecomment-1625461973
-        'a http://www.w3.org/1999/xhtml'          => ["href", "ping"],
-        'area http://www.w3.org/1999/xhtml'       => ["href", "ping"],
-        'audio http://www.w3.org/1999/xhtml'      => ["src"],
-        'base http://www.w3.org/1999/xhtml'       => ["href"], // this requires special processing to not resolve against itself
-        'blockquote http://www.w3.org/1999/xhtml' => ["cite"],
-        'button http://www.w3.org/1999/xhtml'     => ["formaction"],
-        'del http://www.w3.org/1999/xhtml'        => ["cite"],
-        'embed http://www.w3.org/1999/xhtml'      => ["src"],
-        'form http://www.w3.org/1999/xhtml'       => ["action"],
-        'iframe http://www.w3.org/1999/xhtml'     => ["src"],
-        'img http://www.w3.org/1999/xhtml'        => ["src"],
-        'input http://www.w3.org/1999/xhtml'      => ["formaction", "src"],
-        'ins http://www.w3.org/1999/xhtml'        => ["cite"],
-        'link http://www.w3.org/1999/xhtml'       => ["href"],
-        'object http://www.w3.org/1999/xhtml'     => ["data"],
-        'q http://www.w3.org/1999/xhtml'          => ["cite"],
-        'script http://www.w3.org/1999/xhtml'     => ["src"],
-        'source http://www.w3.org/1999/xhtml'     => ["src"],
-        'track http://www.w3.org/1999/xhtml'      => ["src"],
-        'video http://www.w3.org/1999/xhtml'      => ["poster", "src"],
-    ];
     protected const DATE_TYPE_DATE = 1 << 0;
     protected const DATE_TYPE_HOUR = 1 << 1;
     protected const DATE_TYPE_MIN = 1 << 2;
@@ -1016,16 +988,7 @@ class Parser {
                 # value: the textContent of the element after [cleaning]
                 $copy = $node->cloneNode(true);
                 // normalize URLs in the copy
-                $copyNode = $copy;
-                while ($copyNode) {
-                    $ns = $copyNode->namespaceURI ?? ($this->ns === null ? self::NS_HTML : null);
-                    foreach (array_merge($ns === self::NS_HTML ? self::URL_ATTRS_GLOBAL : [], self::URL_ATTRS["{$copyNode->localName} $ns"] ?? []) as $attr) {
-                        if ($copyNode->hasAttribute($attr)) {
-                            $copyNode->setAttribute($attr, $this->normalizeUrl($copyNode->getAttribute($attr), ($copyNode->localName === "base" ? $this->docUrl : $this->baseUrl)));
-                        }
-                    }
-                    $copyNode = $this->nextElement($copyNode, $copy, true);
-                }
+                UrlResolver::resolveTree($copy, $this->baseUrl);
                 // return the result
                 $out = [
                     'html'  => $this->trim($copy instanceof \Dom\HTMLElement ? $copy->innerHTML : Serializer::serializeInner($copy)),

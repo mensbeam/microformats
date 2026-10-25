@@ -18,7 +18,8 @@
         "ext-dom": "*",
         "mensbeam/html-parser": "^1.3",
         "mensbeam/mimesniff": ">=0.3",
-        "mensbeam/uri": "^1.0"
+        "mensbeam/uri": "^1.0",
+        "mensbeam/html-urlresolver": "^1.0.1"
     },
     "require-dev": {
         "bamarni/composer-bin-plugin": "*"
